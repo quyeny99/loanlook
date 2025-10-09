@@ -88,10 +88,7 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-medium">Total rejected</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-500 text-white font-bold">1</div>
-                <p className="text-2xl font-bold text-red-600">1</p>
-            </div>
+            <p className="text-2xl font-bold text-red-600">1</p>
           </CardContent>
         </Card>
         <Card>
