@@ -211,7 +211,7 @@ export default function ReportsPage() {
               <BarChart data={statusData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" type="category" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
-                <YAxis label={{ value: 'Number of Applications', angle: -90, position: 'insideLeft' }} allowDecimals={false} />
+                <YAxis allowDecimals={false} />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="Applications" fill="#3b82f6" />
