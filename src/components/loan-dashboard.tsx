@@ -108,8 +108,7 @@ export default function LoanDashboard() {
   };
   
   const currencyFormatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+    style: 'decimal',
     minimumFractionDigits: 2,
   });
 
