@@ -163,12 +163,8 @@ export default function LoanDashboard() {
                     <TableHead><Button variant="ghost" onClick={() => handleSort('dueDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Due Date{getSortIcon('dueDate')}</Button></TableHead>
                     <TableHead><Button variant="ghost" onClick={() => handleSort('interestDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Interest Date{getSortIcon('interestDate')}</Button></TableHead>
                     <TableHead><Button variant="ghost" onClick={() => handleSort('principalDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Principal Date{getSortIcon('principalDate')}</Button></TableHead>
-                    <TableHead className="text-xs sm:text-sm">Int. Term</TableHead>
-                    <TableHead className="text-xs sm:text-sm">Princ. Term</TableHead>
                     <TableHead className="text-xs sm:text-sm">Collateral</TableHead>
-                    <TableHead className="text-right text-xs sm:text-sm">Profit</TableHead>
                     <TableHead className="text-xs sm:text-sm">Status</TableHead>
-                    <TableHead className="text-xs sm:text-sm">Note</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -203,10 +199,7 @@ export default function LoanDashboard() {
                         <TableCell>{dateFormatter.format(loan.dueDate)}</TableCell>
                         <TableCell>{dateFormatter.format(loan.interestDate)}</TableCell>
                         <TableCell>{dateFormatter.format(loan.principalDate)}</TableCell>
-                        <TableCell>{loan.interestPaymentTerm}</TableCell>
-                        <TableCell>{loan.principalRepaymentTerm}</TableCell>
                         <TableCell>{loan.collateral}</TableCell>
-                        <TableCell className="text-right">{currencyFormatter.format(loan.profit)}</TableCell>
                         <TableCell>
                           <Badge variant={
                             loan.status === 'Paid' ? 'secondary' :
@@ -219,12 +212,11 @@ export default function LoanDashboard() {
                             {loan.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{loan.note}</TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={19} className="h-24 text-center">
+                      <TableCell colSpan={15} className="h-24 text-center">
                         No loans found.
                       </TableCell>
                     </TableRow>
