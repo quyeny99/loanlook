@@ -287,7 +287,7 @@ export default function LoanDashboard() {
                         <TableCell>
                           <div>{formatDateString(loan.due_date)}</div>
                           {daysRemaining !== null && daysRemaining >= 0 && (
-                            <div className="text-green-600">({daysRemaining} days left)</div>
+                            <div className="text-green-600">({daysRemaining}D)</div>
                           )}
                         </TableCell>
                         <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
