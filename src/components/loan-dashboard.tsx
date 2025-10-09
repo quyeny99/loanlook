@@ -251,6 +251,7 @@ export default function LoanDashboard() {
                       const itrUnpaid = loan.itr_num_cycle - loan.itr_pay_cycle;
                       const prinPaid = loan.prin_pay_cycle;
                       const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
+                      const isPendingDisbursement = loan.status__name.includes('Pending Disbursement');
 
                       return (
                       <TableRow key={loan.code}>
@@ -268,18 +269,22 @@ export default function LoanDashboard() {
                         <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1">
-                            {typeof itrPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
-                            {typeof itrUnpaid === 'number' && <Badge>{itrUnpaid}</Badge>}
-                            {loan.itr_ovd_cycle > 0 && <Badge variant="destructive">{loan.itr_ovd_cycle}</Badge>}
-                          </div>
+                          {!isPendingDisbursement && (
+                            <div className="flex items-center gap-1">
+                              {typeof itrPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
+                              {typeof itrUnpaid === 'number' && <Badge>{itrUnpaid}</Badge>}
+                              {loan.itr_ovd_cycle > 0 && <Badge variant="destructive">{loan.itr_ovd_cycle}</Badge>}
+                            </div>
+                          )}
                         </TableCell>
                          <TableCell>
-                          <div className="flex items-center gap-1">
-                            {typeof prinPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
-                            {typeof prinUnpaid === 'number' && <Badge>{prinUnpaid}</Badge>}
-                            {loan.prin_ovd_cycle > 0 && <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>}
-                          </div>
+                          {!isPendingDisbursement && (
+                            <div className="flex items-center gap-1">
+                              {typeof prinPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
+                              {typeof prinUnpaid === 'number' && <Badge>{prinUnpaid}</Badge>}
+                              {loan.prin_ovd_cycle > 0 && <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>}
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>{loan.collat_count}</TableCell>
                         <TableCell>
