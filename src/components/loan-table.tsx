@@ -30,39 +30,48 @@ export function LoanTable({
   currencyFormatter,
   formatDateString,
 }: LoanTableProps) {
+  const tableHeaders = [
+    { label: 'Loan Code', style: { width: '120px' } },
+    { label: 'App Code', style: { width: '120px' } },
+    { label: 'Customer', style: { width: '150px' } },
+    { label: 'Product', style: { width: '200px' } },
+    { label: 'From Date', style: { width: '100px' } },
+    { label: 'To Date', style: { width: '100px' } },
+    { label: 'CCY', style: { width: '60px' } },
+    { label: 'Disbursed', style: { width: '120px' }, className: 'text-right' },
+    { label: 'Outstanding', style: { width: '120px' }, className: 'text-right' },
+    { label: 'Due Amount', style: { width: '120px' }, className: 'text-right' },
+    { label: 'Due Date', style: { width: '120px' } },
+    { label: 'Interest Date', style: { width: '120px' } },
+    { label: 'Principal Date', style: { width: '120px' } },
+    { label: 'Fee Date', style: { width: '120px' } },
+    { label: 'Interest Payment Term', style: { width: '150px' } },
+    { label: 'Principal Repayment Term', style: { width: '150px' } },
+    { label: 'Collateral', style: { width: '100px' } },
+    { label: 'Profit', style: { width: '100px' }, className: 'text-right' },
+    { label: 'Status', style: { width: '120px' } },
+  ];
   return (
     <div className="rounded-md border">
       <Table className="text-xs">
         <TableHeader>
           <TableRow>
-            <TableHead style={{ width: '120px' }}>Loan Code</TableHead>
-            <TableHead style={{ width: '120px' }}>App Code</TableHead>
-            <TableHead style={{ width: '150px' }}>Customer</TableHead>
-            <TableHead style={{ width: '200px' }}>Product</TableHead>
-            <TableHead style={{ width: '100px' }}>From Date</TableHead>
-            <TableHead style={{ width: '100px' }}>To Date</TableHead>
-            <TableHead style={{ width: '60px' }}>CCY</TableHead>
-            <TableHead className="text-right" style={{ width: '120px' }}>Disbursed</TableHead>
-            <TableHead className="text-right" style={{ width: '120px' }}>Outstanding</TableHead>
-            <TableHead className="text-right" style={{ width: '120px' }}>Due Amount</TableHead>
-            <TableHead style={{ width: '120px' }}>Due Date</TableHead>
-            <TableHead style={{ width: '120px' }}>Interest Date</TableHead>
-            <TableHead style={{ width: '120px' }}>Principal Date</TableHead>
-            <TableHead style={{ width: '120px' }}>Fee Date</TableHead>
-            <TableHead style={{ width: '150px' }}>Interest Payment Term</TableHead>
-            <TableHead style={{ width: '150px' }}>Principal Repayment Term</TableHead>
-            <TableHead style={{ width: '100px' }}>Collateral</TableHead>
-            <TableHead className="text-right" style={{ width: '100px' }}>Profit</TableHead>
-            <TableHead style={{ width: '120px' }}>Status</TableHead>
+            {tableHeaders.map((header, index) => (
+              <TableHead key={index} style={header.style} className={header.className}>
+                {header.label}
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {loading ? (
-            Array.from({ length: itemsPerPage }).map((_, index) => (
-              <TableRow key={index}>
-                <TableCell colSpan={19}>
-                  <Skeleton className="h-[40px] w-full" />
-                </TableCell>
+            Array.from({ length: itemsPerPage }).map((_, rowIndex) => (
+              <TableRow key={rowIndex}>
+                {tableHeaders.map((_, cellIndex) => (
+                  <TableCell key={cellIndex}>
+                    <Skeleton className="h-[20px] w-full" />
+                  </TableCell>
+                ))}
               </TableRow>
             ))
           ) : loans.length > 0 ? (
@@ -217,7 +226,7 @@ export function LoanTable({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={19} className="h-24 text-center">
+              <TableCell colSpan={tableHeaders.length} className="h-24 text-center">
                 No loans found.
               </TableCell>
             </TableRow>
