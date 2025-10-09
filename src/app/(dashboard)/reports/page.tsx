@@ -80,10 +80,7 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-medium">Total applications</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-blue-500 text-white font-bold">7</div>
-                <p className="text-2xl font-bold text-blue-600">7</p>
-            </div>
+             <p className="text-2xl font-bold text-blue-600">7</p>
           </CardContent>
         </Card>
         <Card>
