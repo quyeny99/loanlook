@@ -296,7 +296,12 @@ export default function LoanDashboard() {
                             <div className="text-muted-foreground">{currencyFormatter.format(loan.itr_next_amount)}</div>
                           )}
                         </TableCell>
-                        <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
+                        <TableCell>
+                          <div>{formatDateString(loan.prin_next_date)}</div>
+                          {loan.prin_next_amount > 0 && (
+                            <div className="text-muted-foreground">{currencyFormatter.format(loan.prin_next_amount)}</div>
+                          )}
+                        </TableCell>
                         <TableCell>
                           {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
