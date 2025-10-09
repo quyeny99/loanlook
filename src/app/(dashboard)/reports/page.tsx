@@ -13,8 +13,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 const paperData = [
-  { name: 'Căn cước công dân', value: 6, fill: '#3b82f6' },
-  { name: 'Hộ chiếu', value: 1, fill: '#60a5fa' },
+  { name: 'Citizen Identification Card', value: 6, fill: '#3b82f6' },
+  { name: 'Passport', value: 1, fill: '#60a5fa' },
 ];
 
 const regionData = [
@@ -28,33 +28,30 @@ const regionData = [
 ];
 
 const statusData = [
-  { name: 'Mới khởi tạo', 'Số đơn': 3 },
-  { name: 'Chờ thẩm định', 'Số đơn': 1 },
-  { name: 'Bổ sung thông tin', 'Số đơn': 1 },
-  { name: 'Từ chối', 'Số đơn': 1 },
-  { name: 'Đã duyệt', 'Số đơn': 0 },
-  { name: 'Đã ký hợp đồng', 'Số đơn': 0 },
-  { name: 'Đã giải ngân', 'Số đơn': 1 },
+  { name: '1. Newly Created', 'Applications': 3 },
+  { name: '2. Pending Review', 'Applications': 1 },
+  { name: '3. Request More Info', 'Applications': 1 },
+  { name: '4. Rejected', 'Applications': 1 },
+  { name: '5. Approved', 'Applications': 0 },
+  { name: '6. Contract signed', 'Applications': 0 },
+  { name: '7. Disbursed', 'Applications': 1 },
 ];
 
 const typeData = [
-  { name: 'Cầm đồ', value: 4, fill: '#4f46e5' },
-  { name: 'Tín chấp', value: 1, fill: '#3b82f6' },
+  { name: 'Pawn loan', value: 4, fill: '#4f46e5' },
+  { name: 'Unsecured loan', value: 1, fill: '#3b82f6' },
 ];
 
 const sourceData = [
-    { name: 'Apps', 'Số đơn': 0 },
-    { name: 'CTV', 'Số đơn': 0 },
-    { name: 'Website', 'Số đơn': 6 },
+    { name: 'Apps', 'Applications': 0 },
+    { name: 'CTV', 'Applications': 0 },
+    { name: 'Website', 'Applications': 6 },
 ];
 
 const COLORS = ['#3b82f6', '#60a5fa', '#2dd4bf', '#f97316', '#a855f7', '#ec4899', '#84cc16'];
 
 
-const currencyFormatter = new Intl.NumberFormat('vi-VN', {
-  style: 'currency',
-  currency: 'VND',
-});
+const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 
 export default function ReportsPage() {
@@ -63,14 +60,14 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
        <div className="flex items-center text-sm text-muted-foreground">
-        <span>Báo cáo</span>
+        <span>Reports</span>
         <ChevronRight className="h-4 w-4" />
-        <span className="font-semibold text-foreground">1. Theo ngày</span>
+        <span className="font-semibold text-foreground">1. Daily</span>
       </div>
 
       <div className="flex items-center justify-between mt-6 mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          Báo cáo đơn vay trong ngày
+          Daily Report
           <Button variant="ghost" size="icon">
             <RefreshCw className="h-5 w-5" />
           </Button>
@@ -80,70 +77,68 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Số đơn vay</CardTitle>
+            <CardTitle className="text-sm font-medium">Total applications</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-blue-500 text-white font-bold">7</div>
                 <p className="text-2xl font-bold text-blue-600">7</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Số đơn từ chối</CardTitle>
+            <CardTitle className="text-sm font-medium">Total rejected</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-600 text-white font-bold">1</div>
                 <p className="text-2xl font-bold text-red-600">1</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Số tiền cho vay</CardTitle>
+            <CardTitle className="text-sm font-medium">Loan Amount</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center px-2 h-7 rounded-md bg-blue-500 text-white font-bold">1</div>
-                <p className="text-2xl font-bold text-blue-600">{currencyFormatter.format(5000000)}</p>
+                <p className="text-2xl font-bold text-blue-600">{currencyFormatter.format(5000000)} ₫</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Tổng thu nợ</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-                 <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">4</div>
-                <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(5605885)}</p>
+                 <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">1</div>
+                <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(5605885)} ₫</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Thời hạn vay trung bình</CardTitle>
+            <CardTitle className="text-sm font-medium">Average Loan Term</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">6 tháng</p>
+            <p className="text-2xl font-bold">6 months</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Tổng tiền hoa hồng</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Commission</CardTitle>
           </CardHeader>
           <CardContent>
              <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-600 text-white font-bold">0</div>
-                <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(0)}</p>
+                <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(0)} ₫</p>
             </div>
           </CardContent>
         </Card>
         <Card>
             <CardHeader>
-                <CardTitle className="text-sm font-medium">Chọn ngày</CardTitle>
+                <CardTitle className="text-sm font-medium">Select Date</CardTitle>
             </CardHeader>
             <CardContent>
                 <Popover>
@@ -175,7 +170,7 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Loại giấy tờ sử dụng</CardTitle>
+            <CardTitle>Legal Document Types</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -194,7 +189,7 @@ export default function ReportsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Các khu vực vay</CardTitle>
+            <CardTitle>Loan Areas</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -213,17 +208,17 @@ export default function ReportsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Trạng thái đơn vay</CardTitle>
+            <CardTitle>Loan Application Status</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={statusData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" allowDecimals={false} />
-                <YAxis dataKey="name" type='category' tick={{ fontSize: 10 }} width={120} />
+                <XAxis dataKey="name" type="category" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
+                <YAxis label={{ value: 'Number of Applications', angle: -90, position: 'insideLeft' }} allowDecimals={false} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="Số đơn" fill="#3b82f6" />
+                <Bar dataKey="Applications" fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -231,7 +226,7 @@ export default function ReportsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Tỉ lệ hình thức vay</CardTitle>
+            <CardTitle>Loan Type Ratio</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -250,17 +245,17 @@ export default function ReportsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Nguồn</CardTitle>
+            <CardTitle>Source</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={sourceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
-                    <YAxis allowDecimals={false} />
+                    <YAxis label={{ value: 'Applications', angle: -90, position: 'insideLeft' }} allowDecimals={false} />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="Số đơn" fill="#22c55e" />
+                    <Bar dataKey="Applications" fill="#22c55e" />
                 </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -270,3 +265,4 @@ export default function ReportsPage() {
     </div>
   );
 }
+

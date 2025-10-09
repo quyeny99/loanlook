@@ -20,8 +20,8 @@ const loanRegionsData = [
     { name: 'HỒ CHÍ MINH', value: 400 },
 ];
 const loanTypeData = [
-  { name: 'Cầm đồ', value: 4567, fill: '#4f46e5' },
-  { name: 'Tín chấp', value: 1234, fill: '#3b82f6' },
+  { name: 'Pawn loan', value: 4567, fill: '#4f46e5' },
+  { name: 'Unsecured loan', value: 1234, fill: '#3b82f6' },
 ];
 
 const applicationsByMonthData = [
@@ -72,9 +72,9 @@ const applicationSourcesData = [
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 
-const currencyFormatter = new Intl.NumberFormat('vi-VN', {
+const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
-  currency: 'VND',
+  currency: 'USD',
 });
 
 export default function MonthlyReportPage() {
@@ -109,7 +109,7 @@ export default function MonthlyReportPage() {
             <CardHeader><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
             <CardContent>
                 <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(1510300000)}</p>
-                <p className="text-xs text-muted-foreground">Avg 125.8M ₫ /month</p>
+                <p className="text-xs text-muted-foreground">Avg 125.8M /month</p>
             </CardContent>
         </Card>
          <Card>
