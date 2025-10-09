@@ -48,6 +48,18 @@ export default function LoanDashboard() {
     fetchLoans();
   }, [fetchLoans]);
 
+  const timeFilteredCounts = React.useMemo(() => {
+    if (!loans) return { Today: 0, '1D': 0, '7D': 0, '30D': 0, 'All Time': 0 };
+    const now = new Date();
+    return {
+      'Today': loans.filter(loan => loan.create_time && isToday(parseISO(loan.create_time))).length,
+      '1D': loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 1), end: now })).length,
+      '7D': loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 7), end: now })).length,
+      '30D': loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 30), end: now })).length,
+      'All Time': loans.length,
+    };
+  }, [loans]);
+
   const processedLoans = React.useMemo(() => {
     if (!loans) {
       return []; 
@@ -154,11 +166,11 @@ export default function LoanDashboard() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
             <TabsList>
-              <TabsTrigger value="Today">Today</TabsTrigger>
-              <TabsTrigger value="1D">1D</TabsTrigger>
-              <TabsTrigger value="7D">7D</TabsTrigger>
-              <TabsTrigger value="30D">30D</TabsTrigger>
-              <TabsTrigger value="All Time">All Time</TabsTrigger>
+              <TabsTrigger value="Today">Today ({timeFilteredCounts['Today']})</TabsTrigger>
+              <TabsTrigger value="1D">1D ({timeFilteredCounts['1D']})</TabsTrigger>
+              <TabsTrigger value="7D">7D ({timeFilteredCounts['7D']})</TabsTrigger>
+              <TabsTrigger value="30D">30D ({timeFilteredCounts['30D']})</TabsTrigger>
+              <TabsTrigger value="All Time">All Time ({timeFilteredCounts['All Time']})</TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <div className="relative w-full sm:w-auto">
