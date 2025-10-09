@@ -47,9 +47,18 @@ export default function LoginPage() {
       )}`;
 
       const response = await fetch(url);
+      
+      if (!response.ok) {
+        form.setError('password', {
+          type: 'manual',
+          message: 'Invalid email or password.',
+        });
+        return;
+      }
+      
       const data = await response.json();
 
-      if (!response.ok || !data.rows || data.rows.length === 0) {
+      if (!data.rows || data.rows.length === 0) {
         form.setError('password', {
           type: 'manual',
           message: 'Invalid email or password.',
