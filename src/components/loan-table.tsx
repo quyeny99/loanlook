@@ -52,6 +52,7 @@ export function LoanTable({
             <TableHead>Interest Payment Term</TableHead>
             <TableHead>Principal Repayment Term</TableHead>
             <TableHead>Collateral</TableHead>
+            <TableHead className="text-right">Profit</TableHead>
             <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
@@ -59,7 +60,7 @@ export function LoanTable({
           {loading ? (
             Array.from({ length: itemsPerPage }).map((_, index) => (
               <TableRow key={index}>
-                <TableCell colSpan={18}>
+                <TableCell colSpan={19}>
                   <Skeleton className="h-[40px] w-full" />
                 </TableCell>
               </TableRow>
@@ -197,6 +198,7 @@ export function LoanTable({
                     )}
                   </TableCell>
                   <TableCell>{loan.collat_count}</TableCell>
+                  <TableCell className="text-right">{loan.revenue ? currencyFormatter.format(loan.revenue) : ''}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     <Badge variant={
                       loan.status__code === 'O' ? 'destructive' : 'default'
@@ -215,7 +217,7 @@ export function LoanTable({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={18} className="h-24 text-center">
+              <TableCell colSpan={19} className="h-24 text-center">
                 No loans found.
               </TableCell>
             </TableRow>
