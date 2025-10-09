@@ -122,7 +122,7 @@ export default function LoanDashboard() {
 
     return filteredLoans;
   }, [debouncedSearchTerm, activeTab, loans]);
-
+  
   const totalPages = Math.ceil(processedLoans.length / ITEMS_PER_PAGE);
 
   const handlePageChange = React.useCallback((newPage: number) => {
@@ -287,16 +287,21 @@ export default function LoanDashboard() {
                         <TableCell>
                           <div>{formatDateString(loan.due_date)}</div>
                           {daysRemaining !== null && daysRemaining >= 0 && (
-                            <div className="text-green-600">({daysRemaining}D)</div>
+                            <div className="text-green-600">({daysRemaining + 1}D)</div>
                           )}
                         </TableCell>
-                        <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
+                        <TableCell>
+                          <div>{formatDateString(loan.itr_next_date)}</div>
+                          {loan.itr_next_amount > 0 && (
+                            <div className="text-muted-foreground">{currencyFormatter.format(loan.itr_next_amount)}</div>
+                          )}
+                        </TableCell>
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
                           {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
-                              {typeof itrPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
-                              {typeof itrUnpaid === 'number' && itrUnpaid >= 0 && <Badge>{itrUnpaid}</Badge>}
+                              {typeof itrPaid === 'number' && itrPaid > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
+                              {typeof itrUnpaid === 'number' && itrUnpaid > 0 && <Badge>{itrUnpaid}</Badge>}
                               {loan.itr_ovd_cycle > 0 && <Badge variant="destructive">{loan.itr_ovd_cycle}</Badge>}
                             </div>
                           )}
@@ -304,8 +309,8 @@ export default function LoanDashboard() {
                          <TableCell>
                           {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
-                              {typeof prinPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
-                              {typeof prinUnpaid === 'number' && prinUnpaid >= 0 && <Badge>{prinUnpaid}</Badge>}
+                              {typeof prinPaid === 'number' && prinPaid > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
+                              {typeof prinUnpaid === 'number' && prinUnpaid > 0 && <Badge>{prinUnpaid}</Badge>}
                               {loan.prin_ovd_cycle > 0 && <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>}
                             </div>
                           )}
@@ -320,6 +325,7 @@ export default function LoanDashboard() {
                             'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__code === 'A' && loan.outstanding > 0, // còn dư nợ
                             'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': (loan.status__code === 'A' && loan.outstanding === 0) || loan.status__code === 'C', // Hết dư nợ / Đã tất toán
                             'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__code === 'O', // Quá hạn
+                            'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300': loan.status__code === 'A' && loan.outstanding > 0,
                           })}>
                             {loan.status__name}
                           </Badge>
@@ -375,5 +381,3 @@ export default function LoanDashboard() {
     </TooltipProvider>
   );
 }
-
-    
