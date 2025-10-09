@@ -26,6 +26,8 @@ export default function LoanDashboard() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
+  const [inputValue, setInputValue] = React.useState(String(currentPage));
+
 
   const fetchLoans = React.useCallback(async () => {
     try {
@@ -98,11 +100,26 @@ export default function LoanDashboard() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  React.useEffect(() => {
+    setInputValue(String(currentPage));
+  }, [currentPage]);
+
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const pageNum = Number(value);
+    setInputValue(e.target.value);
+  };
+
+  const handleInputBlur = () => {
+    const pageNum = Number(inputValue);
     if (!isNaN(pageNum) && pageNum > 0 && pageNum <= totalPages) {
         handlePageChange(pageNum);
+    } else {
+        setInputValue(String(currentPage));
+    }
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleInputBlur();
     }
   };
 
@@ -239,17 +256,10 @@ export default function LoanDashboard() {
               <div className="flex items-center space-x-1">
                 <Input
                     type="number"
-                    value={currentPage}
+                    value={inputValue}
                     onChange={handlePageInputChange}
-                    onBlur={(e) => {
-                        const pageNum = Number(e.target.value);
-                        if (!isNaN(pageNum) && pageNum > 0 && pageNum <= totalPages) {
-                            handlePageChange(pageNum);
-                        } else {
-                            // Reset to current page if invalid value
-                            e.target.value = String(currentPage);
-                        }
-                    }}
+                    onBlur={handleInputBlur}
+                    onKeyDown={handleInputKeyDown}
                     className="h-9 w-16 text-center"
                     min="1"
                     max={totalPages}
