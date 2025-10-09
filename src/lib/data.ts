@@ -5,7 +5,6 @@ export type Loan = {
     name: string;
     avatarUrl: string;
     avatarHint: string;
-    phone: string;
   };
   product: string;
   fromDate: Date;
@@ -35,7 +34,6 @@ export const loansData: Loan[] = [
       name: 'Liam Johnson',
       avatarUrl: 'https://picsum.photos/seed/1/32/32',
       avatarHint: "man portrait",
-      phone: '555-0101'
     },
     product: 'Personal Loan',
     fromDate: new Date(new Date().setDate(new Date().getDate() - 10)),
@@ -63,7 +61,6 @@ export const loansData: Loan[] = [
       name: 'Olivia Smith',
       avatarUrl: 'https://picsum.photos/seed/2/32/32',
       avatarHint: "woman portrait",
-      phone: '555-0102'
     },
     product: 'Mortgage',
     fromDate: new Date('2023-05-20'),
@@ -91,7 +88,6 @@ export const loansData: Loan[] = [
       name: 'Noah Williams',
       avatarUrl: 'https://picsum.photos/seed/3/32/32',
       avatarHint: "man face",
-      phone: '555-0103'
     },
     product: 'Payday Loan',
     fromDate: new Date('2024-01-10'),
@@ -119,7 +115,6 @@ export const loansData: Loan[] = [
       name: 'Emma Brown',
       avatarUrl: 'https://picsum.photos/seed/4/32/32',
       avatarHint: "woman face",
-      phone: '555-0104'
     },
     product: 'Auto Loan',
     fromDate: new Date(),
@@ -147,7 +142,6 @@ export const loansData: Loan[] = [
       name: 'Oliver Jones',
       avatarUrl: 'https://picsum.photos/seed/5/32/32',
       avatarHint: "man smiling",
-      phone: '555-0105'
     },
     product: 'Business Loan',
     fromDate: new Date(new Date().setDate(new Date().getDate() - 35)),

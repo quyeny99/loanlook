@@ -67,8 +67,7 @@ export default function LoanDashboard() {
       filteredLoans = filteredLoans.filter(loan =>
         loan.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         loan.loanCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.applicationCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.customer.phone.toLowerCase().includes(searchTerm.toLowerCase())
+        loan.applicationCode.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -83,13 +82,6 @@ export default function LoanDashboard() {
           aValue = a[sortConfig.key as keyof Loan];
           bValue = b[sortConfig.key as keyof Loan];
         }
-        
-        // Handle nested customer phone
-        if(sortConfig.key === 'customer.phone') {
-            aValue = a.customer.phone;
-            bValue = b.customer.phone;
-        }
-
 
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -161,7 +153,6 @@ export default function LoanDashboard() {
                     <TableHead><Button variant="ghost" onClick={() => handleSort('loanCode')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Loan Code{getSortIcon('loanCode')}</Button></TableHead>
                     <TableHead><Button variant="ghost" onClick={() => handleSort('applicationCode')} className="px-0 hover:bg-transparent text-xs sm:text-sm">App Code{getSortIcon('applicationCode')}</Button></TableHead>
                     <TableHead><Button variant="ghost" onClick={() => handleSort('customer')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Customer{getSortIcon('customer')}</Button></TableHead>
-                    <TableHead><Button variant="ghost" onClick={() => handleSort('customer.phone')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Phone{getSortIcon('customer.phone')}</Button></TableHead>
                     <TableHead><Button variant="ghost" onClick={() => handleSort('product')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Product{getSortIcon('product')}</Button></TableHead>
                     <TableHead><Button variant="ghost" onClick={() => handleSort('fromDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">From Date{getSortIcon('fromDate')}</Button></TableHead>
                     <TableHead><Button variant="ghost" onClick={() => handleSort('toDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">To Date{getSortIcon('toDate')}</Button></TableHead>
@@ -202,7 +193,6 @@ export default function LoanDashboard() {
                             <span className="font-medium">{loan.customer.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{loan.customer.phone}</TableCell>
                         <TableCell>{loan.product}</TableCell>
                         <TableCell>{dateFormatter.format(loan.fromDate)}</TableCell>
                         <TableCell>{dateFormatter.format(loan.toDate)}</TableCell>
@@ -234,7 +224,7 @@ export default function LoanDashboard() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={20} className="h-24 text-center">
+                      <TableCell colSpan={19} className="h-24 text-center">
                         No loans found.
                       </TableCell>
                     </TableRow>
