@@ -26,13 +26,13 @@ const regionData = [
 ];
 
 const statusData = [
-  { name: 'Mới khởi tạo', 'Số đơn': 3.2 },
-  { name: 'Chờ thẩm định', 'Số đơn': 0.5 },
-  { name: 'Bổ sung thông tin', 'Số đơn': 0.8 },
-  { name: 'Từ chối', 'Số đơn': 0.6 },
-  { name: 'Đã duyệt', 'Số đơn': 0.4 },
-  { name: 'Đã ký hợp đồng', 'Số đơn': 0.3 },
-  { name: 'Đã giải ngân', 'Số đơn': 0.7 },
+  { name: 'Mới khởi tạo', 'Số đơn': 3 },
+  { name: 'Chờ thẩm định', 'Số đơn': 1 },
+  { name: 'Bổ sung thông tin', 'Số đơn': 1 },
+  { name: 'Từ chối', 'Số đơn': 1 },
+  { name: 'Đã duyệt', 'Số đơn': 0 },
+  { name: 'Đã ký hợp đồng', 'Số đơn': 0 },
+  { name: 'Đã giải ngân', 'Số đơn': 1 },
 ];
 
 const typeData = [
@@ -202,7 +202,7 @@ export default function ReportsPage() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={statusData} layout="vertical" margin={{ left: 20, right: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
+                <XAxis type="number" allowDecimals={false} />
                 <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12 }}/>
                 <Tooltip />
                 <Legend />
@@ -240,7 +240,7 @@ export default function ReportsPage() {
                 <BarChart data={sourceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
-                    <YAxis />
+                    <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="Số đơn" fill="#22c55e" />
