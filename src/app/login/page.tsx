@@ -50,7 +50,11 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok || !data.rows || data.rows.length === 0) {
-        throw new Error('Invalid username or password.');
+        form.setError('password', {
+          type: 'manual',
+          message: 'Invalid email or password.',
+        });
+        return;
       }
       
       localStorage.setItem('isAuthenticated', 'true');
@@ -66,7 +70,7 @@ export default function LoginPage() {
        toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message || 'An unexpected error occurred.',
+        description: 'An unexpected error occurred. Please try again.',
       });
     }
   }
