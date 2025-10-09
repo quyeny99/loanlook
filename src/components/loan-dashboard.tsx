@@ -175,17 +175,6 @@ export default function LoanDashboard() {
                         <TableCell>{loan.applicationCode}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                               <AvatarImage asChild>
-                                <Image 
-                                    src={loan.customer.avatarUrl} 
-                                    alt={loan.customer.name} 
-                                    width={32} height={32}
-                                    data-ai-hint={loan.customer.avatarHint}
-                                 />
-                                </AvatarImage>
-                              <AvatarFallback>{loan.customer.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
                             <span className="font-medium">{loan.customer.name}</span>
                           </div>
                         </TableCell>
