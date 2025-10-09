@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { isToday, subDays, subMonths, isWithinInterval, parseISO } from 'date-fns';
+import { isToday, subDays, subMonths, isWithinInterval, parseISO, differenceInDays } from 'date-fns';
 import { Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { type Loan } from '@/lib/data';
@@ -260,6 +260,8 @@ export default function LoanDashboard() {
                       const prinPaid = loan.prin_pay_cycle;
                       const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
                       const isPendingDisbursement = loan.status__code === 'P';
+                      const daysRemaining = loan.due_date ? differenceInDays(parseISO(loan.due_date), new Date()) : null;
+
 
                       return (
                       <TableRow key={loan.code}>
@@ -282,7 +284,12 @@ export default function LoanDashboard() {
                         <TableCell className="text-right">{currencyFormatter.format(loan.disbursement)}</TableCell>
                         <TableCell className="text-right">{currencyFormatter.format(loan.outstanding)}</TableCell>
                         <TableCell className="text-right">{currencyFormatter.format(loan.due_amount)}</TableCell>
-                        <TableCell>{formatDateString(loan.due_date)}</TableCell>
+                        <TableCell>
+                          <div>{formatDateString(loan.due_date)}</div>
+                          {daysRemaining !== null && daysRemaining >= 0 && (
+                            <div className="text-green-600">({daysRemaining} days left)</div>
+                          )}
+                        </TableCell>
                         <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
@@ -309,10 +316,10 @@ export default function LoanDashboard() {
                             loan.status__code === 'O' ? 'destructive' 
                             : 'default'
                           } className={cn({
-                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status__code === 'P',
-                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__code === 'A' && loan.outstanding > 0,
-                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': (loan.status__code === 'A' && loan.outstanding === 0) || loan.status__code === 'C',
-                            'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__code === 'O',
+                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status__code === 'P', // Chờ giải ngân
+                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__code === 'A' && loan.outstanding > 0, // còn dư nợ
+                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': (loan.status__code === 'A' && loan.outstanding === 0) || loan.status__code === 'C', // Hết dư nợ / Đã tất toán
+                            'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__code === 'O', // Quá hạn
                           })}>
                             {loan.status__name}
                           </Badge>
