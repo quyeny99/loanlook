@@ -41,8 +41,8 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 
 export default function DateRangeReportsPage() {
-  const [fromDate, setFromDate] = useState<Date>();
-  const [toDate, setToDate] = useState<Date>();
+  const [fromDate, setFromDate] = useState<Date | undefined>(new Date());
+  const [toDate, setToDate] = useState<Date | undefined>(new Date());
 
   return (
     <div className="space-y-6">
