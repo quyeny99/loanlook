@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell } from 'recharts';
@@ -66,7 +67,7 @@ export default function ReportsPage() {
         <span className="font-semibold text-foreground">1. Theo ngày</span>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mt-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Báo cáo đơn vay trong ngày
           <Button variant="ghost" size="icon">
@@ -81,7 +82,10 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-medium">Số đơn vay</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-blue-600">7</p>
+            <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-blue-500 text-white font-bold">7</div>
+                <p className="text-2xl font-bold text-blue-600">7</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -89,7 +93,10 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-medium">Số đơn từ chối</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-red-600">1</p>
+            <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-600 text-white font-bold">1</div>
+                <p className="text-2xl font-bold text-red-600">1</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
