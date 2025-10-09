@@ -254,14 +254,14 @@ export default function LoanDashboard() {
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <Badge variant="secondary" className="bg-teal-100 text-teal-800">{loan.itr_ovd_cycle}</Badge>
-                            <Badge>{loan.itr_num_cycle}</Badge>
+                            {loan.itr_ovd_cycle != null && <Badge variant="secondary" className="bg-teal-100 text-teal-800">{loan.itr_ovd_cycle}</Badge>}
+                            {loan.itr_num_cycle != null && <Badge>{loan.itr_num_cycle}</Badge>}
                           </div>
                         </TableCell>
                          <TableCell>
                           <div className="flex items-center gap-1">
-                            <Badge variant="secondary" className="bg-teal-100 text-teal-800">{loan.prin_ovd_cycle}</Badge>
-                            <Badge>{loan.prin_num_cycle}</Badge>
+                            {loan.prin_ovd_cycle != null && <Badge variant="secondary" className="bg-teal-100 text-teal-800">{loan.prin_ovd_cycle}</Badge>}
+                            {loan.prin_num_cycle != null && <Badge>{loan.prin_num_cycle}</Badge>}
                           </div>
                         </TableCell>
                         <TableCell>{loan.collat_count}</TableCell>
