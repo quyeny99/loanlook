@@ -92,9 +92,10 @@ export default function LoanDashboard() {
     }
 
     if (searchTerm) {
+      const lowercasedSearchTerm = searchTerm.toLowerCase();
       filteredLoans = filteredLoans.filter(loan =>
-        (loan.customer__fullname && loan.customer__fullname.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (loan.application__code && loan.application__code.toLowerCase().includes(searchTerm.toLowerCase()))
+        (loan.customer__fullname && loan.customer__fullname.toLowerCase().includes(lowercasedSearchTerm)) ||
+        (loan.application__code && loan.application__code.toLowerCase().includes(lowercasedSearchTerm))
       );
     }
 
