@@ -287,7 +287,7 @@ export default function LoanDashboard() {
                         <TableCell>
                           <div>{formatDateString(loan.due_date)}</div>
                           {daysRemaining !== null && daysRemaining >= 0 && (
-                            <div className="text-green-600">({daysRemaining + 1}D)</div>
+                            <div className="text-green-600">({daysRemaining}D)</div>
                           )}
                         </TableCell>
                         <TableCell>
@@ -305,8 +305,8 @@ export default function LoanDashboard() {
                         <TableCell>
                           {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
-                              {typeof itrPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
-                              {typeof itrUnpaid === 'number' && <Badge>{itrUnpaid}</Badge>}
+                              {itrPaid >= 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
+                              {itrUnpaid >= 0 && <Badge>{itrUnpaid}</Badge>}
                               {loan.itr_ovd_cycle > 0 && <Badge variant="destructive">{loan.itr_ovd_cycle}</Badge>}
                             </div>
                           )}
@@ -314,8 +314,8 @@ export default function LoanDashboard() {
                          <TableCell>
                           {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
-                              {typeof prinPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
-                              {typeof prinUnpaid === 'number' && <Badge>{prinUnpaid}</Badge>}
+                              {prinPaid >= 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
+                              {prinUnpaid >= 0 && <Badge>{prinUnpaid}</Badge>}
                               {loan.prin_ovd_cycle > 0 && <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>}
                             </div>
                           )}
@@ -326,11 +326,11 @@ export default function LoanDashboard() {
                             loan.status__code === 'O' ? 'destructive' 
                             : 'default'
                           } className={cn({
-                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status__code === 'P', // Chờ giải ngân
-                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__code === 'A' && loan.outstanding > 0, // còn dư nợ
-                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': (loan.status__code === 'A' && loan.outstanding === 0) || loan.status__code === 'C', // Hết dư nợ / Đã tất toán
-                            'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__code === 'O', // Quá hạn
-                            'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300': loan.status__code === 'A' && loan.outstanding > 0,
+                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status__code === 'P',
+                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__code === 'A' && loan.outstanding > 0,
+                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': (loan.status__code === 'A' && loan.outstanding === 0) || loan.status__code === 'C',
+                            'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__code === 'O',
+                            'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300': loan.status__code === 'A' && loan.outstanding > 0 && !((loan.status__code === 'A' && loan.outstanding === 0) || loan.status__code === 'C') ,
                           })}>
                             {loan.status__name}
                           </Badge>
