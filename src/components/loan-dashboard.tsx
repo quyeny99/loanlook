@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { isToday, subDays, isWithinInterval, parseISO } from 'date-fns';
-import { Search, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { type Loan } from '@/lib/data';
 import { cn } from '@/lib/utils';
@@ -13,11 +14,18 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+const ITEMS_PER_PAGE = 10;
+
 export default function LoanDashboard() {
   const [loans, setLoans] = React.useState<Loan[]>([]);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [activeTab, setActiveTab] = React.useState('All Time');
   const [loading, setLoading] = React.useState(true);
+  
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
 
   const fetchLoans = React.useCallback(async () => {
     try {
@@ -74,7 +82,21 @@ export default function LoanDashboard() {
 
     return filteredLoans;
   }, [searchTerm, activeTab, loans, loading]);
+
+  const totalPages = Math.ceil(processedLoans.length / ITEMS_PER_PAGE);
+
+  const paginatedLoans = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return processedLoans.slice(startIndex, endIndex);
+  }, [processedLoans, currentPage]);
   
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'decimal',
     maximumFractionDigits: 0,
@@ -155,8 +177,8 @@ export default function LoanDashboard() {
                         Loading...
                       </TableCell>
                     </TableRow>
-                  ) : processedLoans && processedLoans.length > 0 ? (
-                    processedLoans.map((loan) => (
+                  ) : paginatedLoans && paginatedLoans.length > 0 ? (
+                    paginatedLoans.map((loan) => (
                       <TableRow key={loan.code}>
                         <TableCell className="font-medium">{loan.code}</TableCell>
                         <TableCell>{loan.application__code}</TableCell>
@@ -195,6 +217,29 @@ export default function LoanDashboard() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+            <div className="flex items-center justify-end space-x-2 py-4">
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Previous</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+              >
+                <span className="sr-only">Next</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </TabsContent>
         </Tabs>
