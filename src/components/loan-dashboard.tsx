@@ -76,7 +76,6 @@ export default function LoanDashboard() {
   
   const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'decimal',
-    minimumFractionDigits: 2,
   });
 
   const dateFormatter = new Intl.DateTimeFormat('en-GB', {
