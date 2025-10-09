@@ -67,7 +67,7 @@ export default function ReportsPage() {
         <span className="font-semibold text-foreground">1. Theo ngày</span>
       </div>
 
-      <div className="flex items-center justify-between mt-6">
+      <div className="flex items-center justify-between mt-6 mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Báo cáo đơn vay trong ngày
           <Button variant="ghost" size="icon">
@@ -216,10 +216,10 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={statusData} layout="vertical" margin={{ left: 20, right: 20 }}>
+              <BarChart data={statusData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" allowDecimals={false} />
-                <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12 }}/>
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
+                <YAxis allowDecimals={false} />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="Số đơn" fill="#3b82f6" />
