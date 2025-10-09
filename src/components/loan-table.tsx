@@ -71,9 +71,8 @@ export function LoanTable({
               const itrUnpaid = loan.itr_num_cycle - loan.itr_pay_cycle;
               const prinPaid = loan.prin_pay_cycle;
               const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
-              const isPendingDisbursement = loan.status__code === 'P';
+              const isPendingDisbursement = loan.status === 1;
               const daysRemaining = loan.due_date ? differenceInCalendarDays(parseISO(loan.due_date), new Date()) : null;
-              const isPaidOff = loan.status__name === 'Đã tất toán';
 
               return (
                 <TableRow key={loan.code}>
@@ -97,15 +96,19 @@ export function LoanTable({
                   <TableCell className="text-right">{currencyFormatter.format(loan.outstanding)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(loan.due_amount)}</TableCell>
                   <TableCell>
-                    <div>{formatDateString(loan.due_date)}</div>
-                    {isPaidOff ? (
-                      <div className="text-green-600">(0D)</div>
-                    ) : daysRemaining !== null && (
-                      <div className={cn({
-                        "text-green-600": daysRemaining >= 0,
-                        "text-red-600": daysRemaining < 0,
-                      })}>({Math.abs(daysRemaining)}D)</div>
-                    )}
+                  <div>{formatDateString(loan.due_date)}</div>
+                  {[4, 5].includes(loan.status) ? (
+                    <div className="text-green-600">(0D)</div>
+                  ) : daysRemaining !== null && (
+                    <div
+                      className={cn({
+                        "text-green-600": daysRemaining <= 0,
+                        "text-red-600": daysRemaining > 0,
+                      })}
+                    >
+                      ({Math.abs(daysRemaining)}D)
+                    </div>
+                  )}
                   </TableCell>
                   <TableCell>
                     <div>{formatDateString(loan.itr_next_date)}</div>
@@ -203,11 +206,11 @@ export function LoanTable({
                     <Badge variant={
                       loan.status__code === 'O' ? 'destructive' : 'default'
                     } className={cn({
-                      'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status__name === 'Chờ giải ngân',
-                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__name === 'Còn dư nợ',
-                      'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': loan.status__name === 'Hết dư nợ' || loan.status__name === 'Đã tất toán',
-                      'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__name === 'Quá hạn',
-                      'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300': loan.status__name === 'Trong hạn',
+                      'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status === 1,
+                      'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300': loan.status === 2,
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status === 3 && loan.status__code !== 'O',
+                      'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__code === 'O',
+                      'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': loan.status === 4 || loan.status === 5,
                     })}>
                       {loan.status__name}
                     </Badge>
