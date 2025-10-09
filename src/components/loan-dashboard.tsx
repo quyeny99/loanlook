@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { isToday, subDays, isWithinInterval, parseISO } from 'date-fns';
+import { isToday, subDays, subMonths, isWithinInterval, parseISO } from 'date-fns';
 import { Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { type Loan } from '@/lib/data';
@@ -49,13 +49,14 @@ export default function LoanDashboard() {
   }, [fetchLoans]);
 
   const timeFilteredCounts = React.useMemo(() => {
-    if (!loans) return { Today: 0, '1D': 0, '7D': 0, '30D': 0, 'All Time': 0 };
+    if (!loans) return { Today: 0, '1D': 0, '7D': 0, '30D': 0, '1M': 0, 'All Time': 0 };
     const now = new Date();
     return {
       'Today': loans.filter(loan => loan.create_time && isToday(parseISO(loan.create_time))).length,
       '1D': loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 1), end: now })).length,
       '7D': loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 7), end: now })).length,
       '30D': loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 30), end: now })).length,
+      '1M': loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subMonths(now, 1), end: now })).length,
       'All Time': loans.length,
     };
   }, [loans]);
@@ -80,6 +81,9 @@ export default function LoanDashboard() {
         break;
       case '30D':
         filteredLoans = loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 30), end: now }));
+        break;
+      case '1M':
+        filteredLoans = loans.filter(loan => loan.create_time && isWithinInterval(parseISO(loan.create_time), { start: subMonths(now, 1), end: now }));
         break;
       case 'All Time':
       default:
@@ -170,6 +174,7 @@ export default function LoanDashboard() {
               <TabsTrigger value="1D">1D ({timeFilteredCounts['1D']})</TabsTrigger>
               <TabsTrigger value="7D">7D ({timeFilteredCounts['7D']})</TabsTrigger>
               <TabsTrigger value="30D">30D ({timeFilteredCounts['30D']})</TabsTrigger>
+              <TabsTrigger value="1M">1M ({timeFilteredCounts['1M']})</TabsTrigger>
               <TabsTrigger value="All Time">All Time ({timeFilteredCounts['All Time']})</TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-2 w-full sm:w-auto">
