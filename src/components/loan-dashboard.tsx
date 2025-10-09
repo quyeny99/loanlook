@@ -29,7 +29,7 @@ export default function LoanDashboard() {
   
   React.useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(searchTerm.trim());
     }, 300);
 
     return () => {
