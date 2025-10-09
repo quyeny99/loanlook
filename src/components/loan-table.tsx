@@ -97,7 +97,7 @@ export function LoanTable({
                   <TableCell className="text-right">{currencyFormatter.format(loan.due_amount)}</TableCell>
                   <TableCell>
                   <div>{formatDateString(loan.due_date)}</div>
-                  {[4, 5].includes(loan.status) ? (
+                  {[4, 5, 8].includes(loan.status) ? (
                     <div className="text-green-600">(0D)</div>
                   ) : daysRemaining !== null && (
                     <div
@@ -203,14 +203,12 @@ export function LoanTable({
                   <TableCell>{loan.collat_count}</TableCell>
                   <TableCell className="text-right">{loan.revenue ? currencyFormatter.format(loan.revenue) : ''}</TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <Badge variant={
-                      loan.status__code === 'O' ? 'destructive' : 'default'
-                    } className={cn({
-                      'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status === 1,
-                      'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300': loan.status === 2,
-                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status === 3 && loan.status__code !== 'O',
-                      'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__code === 'O',
-                      'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': loan.status === 4 || loan.status === 5,
+                    <Badge variant={'default'} className={cn({
+                      'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status === 2,
+                      'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300': loan.status === 1,
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status === 3,
+                      'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status === 5,
+                      'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': loan.status === 8,
                     })}>
                       {loan.status__name}
                     </Badge>
