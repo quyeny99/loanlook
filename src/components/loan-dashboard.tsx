@@ -305,8 +305,8 @@ export default function LoanDashboard() {
                         <TableCell>
                           {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
-                              {typeof itrPaid === 'number' && itrPaid > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
-                              {typeof itrUnpaid === 'number' && itrUnpaid > 0 && <Badge>{itrUnpaid}</Badge>}
+                              {typeof itrPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
+                              {typeof itrUnpaid === 'number' && <Badge>{itrUnpaid}</Badge>}
                               {loan.itr_ovd_cycle > 0 && <Badge variant="destructive">{loan.itr_ovd_cycle}</Badge>}
                             </div>
                           )}
@@ -314,8 +314,8 @@ export default function LoanDashboard() {
                          <TableCell>
                           {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
-                              {typeof prinPaid === 'number' && prinPaid > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
-                              {typeof prinUnpaid === 'number' && prinUnpaid > 0 && <Badge>{prinUnpaid}</Badge>}
+                              {typeof prinPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
+                              {typeof prinUnpaid === 'number' && <Badge>{prinUnpaid}</Badge>}
                               {loan.prin_ovd_cycle > 0 && <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>}
                             </div>
                           )}
