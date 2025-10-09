@@ -53,7 +53,7 @@ export default function LoanDashboard() {
   const fetchLoans = React.useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://api.y99.vn/data/Loan/?values=id,beneficiary_account,beneficiary_bank,customer__code,fee_ovd_cycle,fee_income,fee_num_cycle,fee_pay_cycle,fee_ovd_days,fee_penalty,fee_ovd,fee_next_date,fee_next_amount,fees,fee_collected,application__code,application,amount_given,penalty_ratio,product__install_cycle_days,product__type__code,product__base__code,penalty_amount,revenue,itr_next_amount,status__code,prin_ovd_days,itr_ovd_days,batch_date,due_date,due_days,product__currency__code,due_amount,prin_next_amount,itr_penalty,prin_penalty,itr_ovd_cycle,prin_ovd,itr_ovd,prin_ovd_cycle,itr_ovd,prin_num_cycle,itr_num_cycle,prin_collected,itr_last_date,prin_last_date,itr_last_amount,prin_last_amount,itr_collected,itr_income,itr_pay_cycle,prin_pay_cycle,itr_next_date,prin_next_date,branch,branch__code,branch__name,product__type__name,prin_first_date,itr_first_date,prin_cycle_days,itr_cycle_days,dbm_entry__account,approver,approve_time,prin_pay_type,prin_pay_type__code,prin_pay_type__name,itr_pay_type,itr_pay_type__code,itr_pay_type__name,customer,customer__phone,customer__fullname,code,product,product__code,product__name,valid_from,valid_to,rate_info,disbursement,disbursement_local,outstanding,outstanding_local,principal,rate,status__name,dbm_entry,dbm_entry__code,dbm_entry__account,creator__fullname,approver__fullname,update_time,create_time,approve_time,ratio,approver,status,creator&distinct_values=%7B%22count_note%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_Note%22,%22column%22:%22ref%22%7D%7D,%22sms_count%22:%7B%22type%22:%22Count%22,%22subquery%22:%7B%22model%22:%22Loan_Sms%22,%22column%22:%22ref%22%7D,%22field%22:%22id%22%7D,%22file_count%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_File%22,%22column%22:%22ref%22%7D%7D,%22collat_count%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_Collateral%22,%22column%22:%22loan%22%7D%7D%7D&filter=%7B%22deleted%22:0,%22create_time__date__gte%22:%221927-03-18%22%7D&sort=-id&summary=annotate&login=16');
+      const response = await fetch('https://api.y99.vn/data/Loan/?values=id,beneficiary_account,beneficiary_bank,customer__code,fee_ovd_cycle,fee_income,fee_num_cycle,fee_pay_cycle,fee_ovd_days,fee_penalty,fee_ovd,fee_next_date,fee_next_amount,fees,fee_collected,application__code,application,amount_given,penalty_ratio,product__install_cycle_days,product__type__code,product__base__code,penalty_amount,revenue,itr_next_amount,status__code,prin_ovd_days,itr_ovd_days,batch_date,due_date,due_days,product__currency__code,due_amount,prin_next_amount,itr_penalty,prin_penalty,itr_ovd_cycle,prin_ovd,itr_ovd,prin_ovd_cycle,itr_ovd,prin_num_cycle,itr_num_cycle,prin_collected,itr_last_date,prin_last_date,itr_last_amount,prin_last_amount,itr_collected,itr_income,itr_pay_cycle,prin_pay_cycle,itr_next_date,prin_next_date,branch,branch__code,branch__name,product__type__name,prin_first_date,itr_first_date,prin_cycle_days,itr_cycle_days,dbm_entry__account,approver,approve_time,prin_pay_type,prin_pay_type__code,prin_pay_type__name,itr_pay_type,itr_pay_type__code,itr_pay_type__name,customer,customer__phone,customer__fullname,code,product,product__code,product__name,valid_from,valid_to,rate_info,disbursement,disbursement_local,outstanding,outstanding_local,principal,rate,status__name,dbm_entry,dbm_entry__code,creator__fullname,approver__fullname,update_time,create_time,approve_time,ratio,approver,status,creator&distinct_values=%7B%22count_note%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_Note%22,%22column%22:%22ref%22%7D%7D,%22sms_count%22:%7B%22type%22:%22Count%22,%22subquery%22:%7B%22model%22:%22Loan_Sms%22,%22column%22:%22ref%22%7D,%22field%22:%22id%22%7D,%22file_count%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_File%22,%22column%22:%22ref%22%7D%7D,%22collat_count%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_Collateral%22,%22column%22:%22loan%22%7D%7D%7D&filter=%7B%22deleted%22:0,%22create_time__date__gte%22:%221927-03-18%22%7D&sort=-id&summary=annotate&login=16');
       const data = await response.json();
       setLoans(data.rows || []);
     } catch (error) {
@@ -246,7 +246,13 @@ export default function LoanDashboard() {
                       </TableRow>
                     ))
                   ) : paginatedLoans.length > 0 ? (
-                    paginatedLoans.map((loan) => (
+                    paginatedLoans.map((loan) => {
+                      const itrPaid = loan.itr_pay_cycle;
+                      const itrUnpaid = loan.itr_num_cycle - loan.itr_pay_cycle;
+                      const prinPaid = loan.prin_pay_cycle;
+                      const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
+
+                      return (
                       <TableRow key={loan.code}>
                         <TableCell className="font-medium">{loan.code}</TableCell>
                         <TableCell>{loan.application__code}</TableCell>
@@ -263,14 +269,16 @@ export default function LoanDashboard() {
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            {loan.itr_ovd_cycle != null && <Badge variant="secondary" className="bg-teal-100 text-teal-800">{loan.itr_ovd_cycle}</Badge>}
-                            {loan.itr_num_cycle != null && <Badge>{loan.itr_num_cycle}</Badge>}
+                            {itrPaid > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
+                            {itrUnpaid > 0 && <Badge>{itrUnpaid}</Badge>}
+                            {loan.itr_ovd_cycle > 0 && <Badge variant="destructive">{loan.itr_ovd_cycle}</Badge>}
                           </div>
                         </TableCell>
                          <TableCell>
                           <div className="flex items-center gap-1">
-                            {loan.prin_ovd_cycle != null && <Badge variant="secondary" className="bg-teal-100 text-teal-800">{loan.prin_ovd_cycle}</Badge>}
-                            {loan.prin_num_cycle != null && <Badge>{loan.prin_num_cycle}</Badge>}
+                            {prinPaid > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
+                            {prinUnpaid > 0 && <Badge>{prinUnpaid}</Badge>}
+                            {loan.prin_ovd_cycle > 0 && <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>}
                           </div>
                         </TableCell>
                         <TableCell>{loan.collat_count}</TableCell>
@@ -287,7 +295,8 @@ export default function LoanDashboard() {
                           </Badge>
                         </TableCell>
                       </TableRow>
-                    ))
+                      );
+                    })
                   ) : (
                     <TableRow>
                       <TableCell colSpan={17} className="h-24 text-center">
