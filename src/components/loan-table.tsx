@@ -97,13 +97,11 @@ export function LoanTable({
                   <TableCell className="text-right">{currencyFormatter.format(loan.due_amount)}</TableCell>
                   <TableCell>
                   <div>{formatDateString(loan.due_date)}</div>
-                  {[4, 5, 8].includes(loan.status) ? (
-                    <div className="text-green-600">(0D)</div>
-                  ) : daysRemaining !== null && (
+                  {daysRemaining !== null && (
                     <div
                       className={cn({
-                        'text-green-600': loan.status === 2,
-                        'text-red-600': loan.status !== 2,
+                        'text-green-600': daysRemaining >= 0,
+                        'text-red-600': daysRemaining < 0,
                       })}
                     >
                       ({Math.abs(daysRemaining)}D)
