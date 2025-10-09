@@ -1,3 +1,4 @@
+
 'use client';
 
 import { LogOut, BarChart2 } from 'lucide-react';
@@ -48,6 +49,7 @@ export default function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
                 <DropdownMenuItem onSelect={() => router.push('/reports')}>1. Theo ngày</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>2. Monthly</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -61,3 +63,5 @@ export default function Header() {
     </header>
   );
 }
+
+    
