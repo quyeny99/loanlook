@@ -25,7 +25,7 @@ export default function Header() {
   };
 
   return (
-    <CardHeader className="flex flex-row items-center justify-between border-b">
+    <CardHeader className="fixed top-0 left-0 right-0 z-50 flex flex-row items-center justify-between border-b bg-background">
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2">
             <Image
