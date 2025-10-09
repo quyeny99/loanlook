@@ -96,26 +96,29 @@ export function LoanTable({
                   <TableCell className="text-right">{currencyFormatter.format(loan.due_amount)}</TableCell>
                   <TableCell>
                     <div>{formatDateString(loan.due_date)}</div>
-                    {daysRemaining !== null && daysRemaining >= 0 && (
-                      <div className="text-green-600">({daysRemaining}D)</div>
+                    {daysRemaining !== null && (
+                      <div className={cn({
+                        "text-green-600": daysRemaining >= 0,
+                        "text-red-600": daysRemaining < 0,
+                      })}>({Math.abs(daysRemaining)}D)</div>
                     )}
                   </TableCell>
                   <TableCell>
                     <div>{formatDateString(loan.itr_next_date)}</div>
                     {loan.itr_next_amount > 0 && (
-                      <div className="text-accent">{currencyFormatter.format(loan.itr_next_amount)}</div>
+                      <div className={cn("text-accent", { "text-red-600": loan.itr_ovd_days && loan.itr_ovd_days > 0 })}>{currencyFormatter.format(loan.itr_next_amount)}</div>
                     )}
                   </TableCell>
                   <TableCell>
                     <div>{formatDateString(loan.prin_next_date)}</div>
                     {loan.prin_next_amount > 0 && (
-                      <div className="text-accent">{currencyFormatter.format(loan.prin_next_amount)}</div>
+                       <div className={cn("text-accent", { "text-red-600": loan.prin_ovd_days && loan.prin_ovd_days > 0 })}>{currencyFormatter.format(loan.prin_next_amount)}</div>
                     )}
                   </TableCell>
                   <TableCell>
                     <div>{formatDateString(loan.fee_next_date)}</div>
                     {loan.fee_next_amount > 0 && (
-                        <div className="text-accent">{currencyFormatter.format(loan.fee_next_amount)}</div>
+                        <div className={cn("text-accent", { "text-red-600": loan.fee_ovd_days && loan.fee_ovd_days > 0 })}>{currencyFormatter.format(loan.fee_next_amount)}</div>
                     )}
                   </TableCell>
                   <TableCell>
