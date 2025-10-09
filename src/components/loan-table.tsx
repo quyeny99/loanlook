@@ -104,7 +104,7 @@ export function LoanTable({
                         'text-red-600': daysRemaining < 0,
                       })}
                     >
-                      ({daysRemaining < 0 ? Math.abs(daysRemaining) : daysRemaining}D)
+                      ({daysRemaining >= 0 ? daysRemaining : differenceInCalendarDays(new Date(), parseISO(loan.due_date))}D)
                     </div>
                   )}
                   </TableCell>
