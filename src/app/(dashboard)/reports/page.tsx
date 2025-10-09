@@ -55,7 +55,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 
 export default function ReportsPage() {
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date>(new Date());
 
   return (
     <div className="space-y-6">
@@ -81,6 +81,7 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-blue-500 text-white font-bold">7</div>
                 <p className="text-2xl font-bold text-blue-600">7</p>
             </div>
           </CardContent>
@@ -91,6 +92,7 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-500 text-white font-bold">1</div>
                 <p className="text-2xl font-bold text-red-600">1</p>
             </div>
           </CardContent>
@@ -265,4 +267,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-
