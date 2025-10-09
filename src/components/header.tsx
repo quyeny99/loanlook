@@ -4,7 +4,7 @@ import { LogOut } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { CardDescription, CardHeader, CardTitle } from './ui/card';
+import { CardHeader, CardTitle } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Header() {
@@ -36,9 +36,6 @@ export default function Header() {
           />
           <div>Loan</div>
         </CardTitle>
-        <CardDescription>
-          Manage and track all your loan data in one place.
-        </CardDescription>
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>

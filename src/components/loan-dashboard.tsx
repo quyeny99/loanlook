@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { isToday, subDays, subMonths, isWithinInterval, parseISO } from 'date-fns';
 
 import { type Loan } from '@/lib/data';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LoanFilters } from '@/components/loan-filters';
@@ -163,6 +163,9 @@ export default function LoanDashboard() {
     <TooltipProvider>
       <Card className="w-full shadow-lg">
         <CardContent className="pt-6">
+          <CardDescription className="mb-6">
+            Manage and track all your loan data in one place.
+          </CardDescription>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <LoanFilters
               timeFilteredCounts={timeFilteredCounts}
