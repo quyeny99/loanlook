@@ -298,12 +298,10 @@ export default function LoanDashboard() {
                         <TableCell>{loan.collat_count}</TableCell>
                         <TableCell className="whitespace-nowrap">
                           <Badge variant={
-                            loan.status__name === 'Paid' ? 'secondary' :
-                            loan.status__name.includes('Overdue') ? 'destructive' :
-                            'default'
+                            loan.status__name.includes('Overdue') ? 'destructive' : 'default'
                           } className={cn(
                             loan.status__name.includes('Pending') && 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-                            loan.status__name.includes('Paid') && 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+                            loan.status__name.includes('Paid') && 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
                           )}>
                             {loan.status__name}
                           </Badge>
