@@ -102,8 +102,8 @@ export function LoanTable({
                   ) : daysRemaining !== null && (
                     <div
                       className={cn({
-                        "text-green-600": daysRemaining <= 0,
-                        "text-red-600": daysRemaining > 0,
+                        'text-green-600': loan.status === 2,
+                        'text-red-600': loan.status !== 2,
                       })}
                     >
                       ({Math.abs(daysRemaining)}D)
