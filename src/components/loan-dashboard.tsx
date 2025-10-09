@@ -40,6 +40,15 @@ export default function LoanDashboard() {
     };
   }, [searchTerm]);
 
+  React.useEffect(() => {
+    if (debouncedSearchTerm && currentPage !== 1) {
+      const params = new URLSearchParams(searchParams);
+      params.set('page', '1');
+      router.push(`${pathname}?${params.toString()}`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm, router, pathname]);
+
 
   const fetchLoans = React.useCallback(async () => {
     try {
