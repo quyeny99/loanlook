@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { isToday, subDays, subMonths, isWithinInterval, parseISO, differenceInDays } from 'date-fns';
+import { isToday, subDays, subMonths, isWithinInterval, parseISO, differenceInCalendarDays } from 'date-fns';
 import { Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { type Loan } from '@/lib/data';
@@ -260,7 +260,7 @@ export default function LoanDashboard() {
                       const prinPaid = loan.prin_pay_cycle;
                       const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
                       const isPendingDisbursement = loan.status__code === 'P';
-                      const daysRemaining = loan.due_date ? differenceInDays(parseISO(loan.due_date), new Date()) : null;
+                      const daysRemaining = loan.due_date ? differenceInCalendarDays(parseISO(loan.due_date), new Date()) : null;
 
 
                       return (
@@ -375,3 +375,5 @@ export default function LoanDashboard() {
     </TooltipProvider>
   );
 }
+
+    
