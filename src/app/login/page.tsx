@@ -42,7 +42,7 @@ export default function LoginPage() {
         password: values.password,
       });
       const valuesParam = 'id,username,password,avatar,fullname,display_name,type__code,type__name,blocked,block_reason,block_reason__code,block_reason__name,blocked_by,last_login,auth_method,auth_method__code,auth_method__name,auth_status,auth_status__code,auth_status__name,register_method,register_method__code,register_method__name,create_time,update_time';
-      const url = `/api/login?values=${valuesParam}&filter=${encodeURIComponent(
+      const url = `https://api.y99.vn/login/?values=${valuesParam}&filter=${encodeURIComponent(
         filter
       )}`;
 
