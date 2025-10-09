@@ -104,7 +104,7 @@ export function LoanTable({
                         'text-red-600': daysRemaining < 0,
                       })}
                     >
-                      ({Math.abs(daysRemaining)}D)
+                      ({daysRemaining < 0 ? Math.abs(daysRemaining) : daysRemaining}D)
                     </div>
                   )}
                   </TableCell>
