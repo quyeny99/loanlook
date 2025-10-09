@@ -22,8 +22,10 @@ const regionData = [
 const statusData = [
   { name: '1. Newly Created', 'Total applications': 2 },
   { name: '2. Pending Review', 'Total applications': 1 },
+  { name: '3. Request More Info', 'Total applications': 0 },
   { name: '4. Rejected', 'Total applications': 1 },
   { name: '5. Approved', 'Total applications': 1 },
+  { name: '6. Contract signed', 'Total applications': 0 },
   { name: '7. Disbursed', 'Total applications': 1 },
 ];
 
