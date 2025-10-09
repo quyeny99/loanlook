@@ -216,7 +216,7 @@ export default function LoanDashboard() {
                 <TableBody>
                   {loading ? (
                     Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
-                      <TableRow key={index}>
+                      <TableRow key={index} className="h-[53px]">
                         <TableCell colSpan={15}>
                           <Skeleton className="h-5 w-full" />
                         </TableCell>
