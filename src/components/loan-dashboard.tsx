@@ -42,13 +42,11 @@ export default function LoanDashboard() {
   }, [searchTerm]);
 
   React.useEffect(() => {
-    if (debouncedSearchTerm && currentPage !== 1) {
-      const params = new URLSearchParams(searchParams);
-      params.set('page', '1');
-      router.push(`${pathname}?${params.toString()}`);
+    if (debouncedSearchTerm) {
+      handlePageChange(1, true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchTerm, router, pathname]);
+  }, [debouncedSearchTerm]);
 
 
   const fetchLoans = React.useCallback(async () => {
@@ -131,8 +129,8 @@ export default function LoanDashboard() {
     return processedLoans.slice(startIndex, endIndex);
   }, [processedLoans, currentPage]);
   
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages) return;
+  const handlePageChange = (newPage: number, isSearch: boolean = false) => {
+    if (newPage < 1 || (newPage > totalPages && !isSearch)) return;
     const params = new URLSearchParams(searchParams);
     params.set('page', newPage.toString());
     router.push(`${pathname}?${params.toString()}`);
@@ -280,7 +278,7 @@ export default function LoanDashboard() {
                         <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
-                          {isPendingDisbursement ? null : (
+                          {!isPendingDisbursement && (
                             <div className="flex items-center gap-1">
                               {typeof itrPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
                               {typeof itrUnpaid === 'number' && <Badge>{itrUnpaid}</Badge>}
@@ -289,7 +287,7 @@ export default function LoanDashboard() {
                           )}
                         </TableCell>
                          <TableCell>
-                          {isPendingDisbursement ? null : (
+                          {!isPendingDisbursement && (
                             <div className="flex items-center gap-1">
                               {typeof prinPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
                               {typeof prinUnpaid === 'number' && <Badge>{prinUnpaid}</Badge>}
@@ -298,7 +296,7 @@ export default function LoanDashboard() {
                           )}
                         </TableCell>
                         <TableCell>{loan.collat_count}</TableCell>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           <Badge variant={
                             loan.status__name === 'Paid' ? 'secondary' :
                             loan.status__name.includes('Overdue') ? 'destructive' :
