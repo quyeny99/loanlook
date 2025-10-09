@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 export default function Header() {
   const router = useRouter();
@@ -38,12 +39,18 @@ export default function Header() {
                 Loan
             </span>
         </Link>
-        <Button variant="ghost" asChild>
-            <Link href="/reports">
-                <BarChart2 className="mr-2 h-4 w-4" />
-                Reports
-            </Link>
-        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                    <BarChart2 className="mr-2 h-4 w-4" />
+                    Reports
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem onSelect={() => router.push('/reports')}>1. Theo ngày</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>
