@@ -66,7 +66,7 @@ export default function ReportsPage() {
         <span className="font-semibold text-foreground">1. Theo ngày</span>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Báo cáo đơn vay trong ngày
           <Button variant="ghost" size="icon">
