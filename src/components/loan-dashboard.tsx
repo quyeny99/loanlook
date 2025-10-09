@@ -139,6 +139,12 @@ export default function LoanDashboard() {
   }, [processedLoans, currentPage]);
   
   React.useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      handlePageChange(totalPages);
+    }
+  }, [currentPage, totalPages, handlePageChange]);
+
+  React.useEffect(() => {
     setInputValue(String(currentPage));
   }, [currentPage]);
 
@@ -216,7 +222,7 @@ export default function LoanDashboard() {
           </div>
           <TabsContent value={activeTab} className="mt-0">
              <div className="rounded-md border">
-              <Table>
+              <Table className="text-xs">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Loan Code</TableHead>
@@ -263,7 +269,7 @@ export default function LoanDashboard() {
                         <TableCell>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="truncate max-w-[200px]">{loan.product__name}</div>
+                              <div className="truncate max-w-[150px]">{loan.product__name}</div>
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>{loan.product__name}</p>
@@ -299,12 +305,14 @@ export default function LoanDashboard() {
                         </TableCell>
                         <TableCell>{loan.collat_count}</TableCell>
                         <TableCell className="whitespace-nowrap">
-                          <Badge variant={
-                            loan.status__code === 'O' ? 'destructive' : 'default'
+                           <Badge variant={
+                            loan.status__code === 'O' ? 'destructive' 
+                            : 'default'
                           } className={cn({
-                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status__code === 'P', // Chờ giải ngân
-                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__code === 'A' && loan.outstanding > 0, // Còn dư nợ
-                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': (loan.status__code === 'A' && loan.outstanding === 0) || loan.status__code === 'C', // Hết dư nợ / Đã tất toán
+                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status__code === 'P',
+                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__code === 'A' && loan.outstanding > 0,
+                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': (loan.status__code === 'A' && loan.outstanding === 0) || loan.status__code === 'C',
+                            'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': loan.status__code === 'O',
                           })}>
                             {loan.status__name}
                           </Badge>
