@@ -37,44 +37,42 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      // ** IMPORTANT: Replace this with your actual API endpoint **
-      const response = await fetch('YOUR_API_ENDPOINT/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
+      const filter = JSON.stringify({
+        username: values.email,
+        password: values.password,
       });
+      const valuesParam = 'id,username,password,avatar,fullname,display_name,type,type__code,type__name,blocked,block_reason,block_reason__code,block_reason__name,blocked_by,last_login,auth_method,auth_method__code,auth_method__name,auth_status,auth_status__code,auth_status__name,register_method,register_method__code,register_method__name,create_time,update_time';
+      const url = `https://apiy.y99.vn/login/?values=${valuesParam}&filter=${encodeURIComponent(
+        filter
+      )}`;
+
+      const response = await fetch(url);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        throw new Error('Login failed. Please check your credentials.');
       }
       
-      // Assuming your API returns a token or success message
-      // const data = await response.json(); 
+      const data = await response.json();
 
-      // For demonstration, we'll just simulate a successful login
-      // In a real app, you would store a JWT token here.
-      localStorage.setItem('isAuthenticated', 'true');
+      if (data && data.rows && data.rows.length > 0) {
+        localStorage.setItem('isAuthenticated', 'true');
 
-      toast({
-        title: 'Success',
-        description: 'You have successfully logged in.',
-      });
-      router.push('/');
-      router.refresh(); // Refresh the page to re-run auth checks
+        toast({
+          title: 'Success',
+          description: 'You have successfully logged in.',
+        });
+        router.push('/');
+        router.refresh();
+      } else {
+        throw new Error('Invalid username or password.');
+      }
     } catch (error: any) {
       console.error('Login Error:', error);
-      // For demonstration purposes, we will simulate a success even if the API call fails,
-      // as the endpoint is just a placeholder.
-      localStorage.setItem('isAuthenticated', 'true');
        toast({
-        title: 'Success (Demo)',
-        description: 'You have successfully logged in.',
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message || 'An unexpected error occurred.',
       });
-      router.push('/');
-      router.refresh();
     }
   }
 
