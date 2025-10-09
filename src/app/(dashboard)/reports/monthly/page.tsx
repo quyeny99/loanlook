@@ -2,7 +2,7 @@
 'use client';
 
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell, ComposedChart, Line } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
@@ -97,62 +97,33 @@ export default function MonthlyReportPage() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-            <p className="font-semibold">Total Number of Loans in the Year</p>
-            <p className="text-5xl font-bold text-blue-600">57 <span className="text-lg text-muted-foreground font-normal">(Average 4.8 loans/month)</span></p>
-
-            <p className="font-semibold">Total Loan Amount in the Year</p>
-            <p className="text-3xl font-bold text-green-600">{currencyFormatter.format(1510300000)}</p>
-            <p className="text-sm text-muted-foreground">Average 125.858.333 ₫ /month increase -59.4%/month</p>
-            
-            <p className="font-semibold">Total Commission</p>
-            <p className="text-3xl font-bold text-red-600">{currencyFormatter.format(600000)}</p>
-        </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6'>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Loan Regions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={150}>
-                        <PieChart>
-                            <Pie data={loanRegionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
-                                {loanRegionsData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{fontSize: '10px'}} iconSize={10} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Loan Type Ratio This Year</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={150}>
-                        <PieChart>
-                            <Pie data={loanTypeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
-                                {loanTypeData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{fontSize: '12px'}} iconSize={10}/>
-                        </PieChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader><CardTitle>Select Year</CardTitle></CardHeader>
-                <CardContent>
-                    <Input type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="YYYY" />
-                </CardContent>
-            </Card>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+            <CardHeader><CardTitle className='text-sm font-medium'>Total Number of Loans</CardTitle></CardHeader>
+            <CardContent>
+                <p className="text-2xl font-bold text-blue-600">57</p>
+                <p className='text-xs text-muted-foreground'>(Average 4.8 loans/month)</p>
+            </CardContent>
+        </Card>
+         <Card>
+            <CardHeader><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
+            <CardContent>
+                <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(1510300000)}</p>
+                <p className="text-xs text-muted-foreground">Avg 125.8M ₫ /month</p>
+            </CardContent>
+        </Card>
+         <Card>
+            <CardHeader><CardTitle className='text-sm font-medium'>Total Commission</CardTitle></CardHeader>
+            <CardContent>
+                <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(600000)}</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader><CardTitle className='text-sm font-medium'>Select Year</CardTitle></CardHeader>
+            <CardContent>
+                <Input type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="YYYY" />
+            </CardContent>
+        </Card>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -219,10 +190,48 @@ export default function MonthlyReportPage() {
                 </ResponsiveContainer>
             </CardContent>
         </Card>
+         <Card>
+            <CardHeader>
+                <CardTitle>Loan Regions</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ResponsiveContainer width="100%" height={150}>
+                    <PieChart>
+                        <Pie data={loanRegionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
+                            {loanRegionsData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{fontSize: '10px'}} iconSize={10} />
+                    </PieChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Loan Type Ratio This Year</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ResponsiveContainer width="100%" height={150}>
+                    <PieChart>
+                        <Pie data={loanTypeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
+                            {loanTypeData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{fontSize: '12px'}} iconSize={10}/>
+                    </PieChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
       </div>
 
     </div>
   );
 }
+
+    
 
     
