@@ -13,7 +13,7 @@ import { LoanFilters } from '@/components/loan-filters';
 import { LoanTable } from '@/components/loan-table';
 import { LoanPagination } from '@/components/loan-pagination';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 15;
 
 export default function LoanDashboard() {
   const [loans, setLoans] = React.useState<Loan[]>([]);
