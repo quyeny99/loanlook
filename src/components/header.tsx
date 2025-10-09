@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { CardTitle } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Header() {
@@ -35,9 +34,9 @@ export default function Header() {
                 height={60}
                 priority
             />
-            <CardTitle className="text-3xl font-bold font-headline">
+            <span className="text-3xl font-bold font-headline">
                 Loan
-            </CardTitle>
+            </span>
         </Link>
         <Button variant="ghost" asChild>
             <Link href="/reports">
