@@ -66,10 +66,10 @@ export default function LoanDashboard() {
     minimumFractionDigits: 2,
   });
 
-  const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
     year: 'numeric',
-    month: 'short',
-    day: 'numeric',
   });
 
   return (
@@ -109,7 +109,7 @@ export default function LoanDashboard() {
                     <TableHead>Product</TableHead>
                     <TableHead>From Date</TableHead>
                     <TableHead>To Date</TableHead>
-                    <TableHead className="text-right">CCY</TableHead>
+                    <TableHead>CCY</TableHead>
                     <TableHead className="text-right">Disbursed</TableHead>
                     <TableHead className="text-right">Outstanding</TableHead>
                     <TableHead className="text-right">Due Amount</TableHead>
@@ -134,7 +134,7 @@ export default function LoanDashboard() {
                         <TableCell>{loan.product}</TableCell>
                         <TableCell>{dateFormatter.format(loan.fromDate)}</TableCell>
                         <TableCell>{dateFormatter.format(loan.toDate)}</TableCell>
-                        <TableCell className="text-right">{loan.currency}</TableCell>
+                        <TableCell>{loan.currency}</TableCell>
                         <TableCell className="text-right">{currencyFormatter.format(loan.disbursed)}</TableCell>
                         <TableCell className="text-right">{currencyFormatter.format(loan.outstanding)}</TableCell>
                         <TableCell className="text-right">{currencyFormatter.format(loan.dueAmount)}</TableCell>
