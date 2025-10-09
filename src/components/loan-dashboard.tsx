@@ -94,7 +94,6 @@ export default function LoanDashboard() {
     if (searchTerm) {
       filteredLoans = filteredLoans.filter(loan =>
         (loan.customer__fullname && loan.customer__fullname.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (loan.code && loan.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (loan.application__code && loan.application__code.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
@@ -223,7 +222,7 @@ export default function LoanDashboard() {
                         </TableCell>
                       </TableRow>
                     ))
-                  ) : paginatedLoans && paginatedLoans.length > 0 ? (
+                  ) : paginatedLoans.length > 0 ? (
                     paginatedLoans.map((loan) => (
                       <TableRow key={loan.code}>
                         <TableCell className="font-medium">{loan.code}</TableCell>
