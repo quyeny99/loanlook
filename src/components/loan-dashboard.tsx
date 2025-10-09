@@ -162,7 +162,7 @@ export default function LoanDashboard() {
   return (
     <TooltipProvider>
       <Card className="w-full shadow-lg">
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 mt-10">
           <CardDescription className="mb-6 text-lg font-medium">
             Manage and track all your loan data in one place.
           </CardDescription>
