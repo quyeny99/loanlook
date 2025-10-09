@@ -72,6 +72,7 @@ export function LoanTable({
               const prinPaid = loan.prin_pay_cycle;
               const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
               const isPendingDisbursement = loan.status === 1;
+              const isPaidOff = loan.status === 8;
               const daysRemaining = loan.due_date ? differenceInCalendarDays(parseISO(loan.due_date), new Date()) : null;
 
               return (
@@ -100,11 +101,11 @@ export function LoanTable({
                   {daysRemaining !== null && (
                     <div
                       className={cn({
-                        'text-green-600': daysRemaining >= 0,
-                        'text-red-600': daysRemaining < 0,
+                        'text-green-600': daysRemaining >= 0 || isPaidOff,
+                        'text-red-600': daysRemaining < 0 && !isPaidOff,
                       })}
                     >
-                      ({daysRemaining >= 0 ? daysRemaining : differenceInCalendarDays(new Date(), parseISO(loan.due_date))}D)
+                      ({isPaidOff ? '0' : (daysRemaining >= 0 ? daysRemaining : differenceInCalendarDays(new Date(), parseISO(loan.due_date)))}D)
                     </div>
                   )}
                   </TableCell>
