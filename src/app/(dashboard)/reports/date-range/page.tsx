@@ -199,10 +199,10 @@ export default function DateRangeReportsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={statusData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" allowDecimals={false}/>
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={100} />
+                <XAxis dataKey="name" type="category" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
+                <YAxis allowDecimals={false}/>
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="Total applications" fill="#3b82f6" name="Total applications" />
