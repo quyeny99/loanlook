@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -181,6 +182,7 @@ export default function LoanDashboard() {
   };
 
   return (
+    <TooltipProvider>
     <Card className="w-full shadow-lg">
       <CardHeader>
         <CardTitle className="text-3xl font-bold font-headline">LoanLook</CardTitle>
@@ -239,9 +241,9 @@ export default function LoanDashboard() {
                 <TableBody>
                   {loading ? (
                     Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
-                      <TableRow key={index} className="h-[130px]">
+                      <TableRow key={index}>
                         <TableCell colSpan={17}>
-                          <Skeleton className="h-full w-full" />
+                          <Skeleton className="h-[130px] w-full" />
                         </TableCell>
                       </TableRow>
                     ))
@@ -258,7 +260,16 @@ export default function LoanDashboard() {
                         <TableCell className="font-medium">{loan.code}</TableCell>
                         <TableCell>{loan.application__code}</TableCell>
                         <TableCell>{loan.customer__fullname}</TableCell>
-                        <TableCell>{loan.product__name}</TableCell>
+                        <TableCell>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="truncate max-w-[200px]">{loan.product__name}</div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{loan.product__name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableCell>
                         <TableCell>{formatDateString(loan.valid_from)}</TableCell>
                         <TableCell>{formatDateString(loan.valid_to)}</TableCell>
                         <TableCell>{loan.product__currency__code}</TableCell>
@@ -347,5 +358,6 @@ export default function LoanDashboard() {
         </Tabs>
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 }
