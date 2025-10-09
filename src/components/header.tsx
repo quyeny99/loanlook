@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { CardHeader, CardTitle } from './ui/card';
+import { CardTitle } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Header() {
@@ -25,7 +25,7 @@ export default function Header() {
   };
 
   return (
-    <CardHeader className="fixed top-0 left-0 right-0 z-50 flex flex-row items-center justify-between border-b bg-background">
+    <header className="fixed top-0 left-0 right-0 z-50 flex flex-row items-center justify-between border-b bg-background p-4">
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2">
             <Image
@@ -52,6 +52,6 @@ export default function Header() {
           Sign Out
         </Button>
       </div>
-    </CardHeader>
+    </header>
   );
 }
