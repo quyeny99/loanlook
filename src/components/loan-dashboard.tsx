@@ -21,6 +21,11 @@ export default function LoanDashboard() {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [activeTab, setActiveTab] = React.useState('All Time');
   const [sortConfig, setSortConfig] = React.useState<{ key: SortableKey; direction: 'ascending' | 'descending' } | null>({ key: 'dueDate', direction: 'ascending' });
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSort = (key: SortableKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -31,6 +36,10 @@ export default function LoanDashboard() {
   };
 
   const processedLoans = React.useMemo(() => {
+    if (!isClient) {
+      return loansData;
+    }
+      
     const now = new Date();
     let filteredLoans: Loan[];
 
@@ -83,7 +92,7 @@ export default function LoanDashboard() {
     }
 
     return filteredLoans;
-  }, [searchTerm, activeTab, sortConfig]);
+  }, [searchTerm, activeTab, sortConfig, isClient]);
 
   const getSortIcon = (key: SortableKey) => {
     if (sortConfig?.key !== key) {
