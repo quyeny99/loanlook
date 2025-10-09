@@ -92,9 +92,18 @@ export default function LoanDashboard() {
   }, [processedLoans, currentPage]);
   
   const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
     const params = new URLSearchParams(searchParams);
     params.set('page', newPage.toString());
     router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const pageNum = Number(value);
+    if (!isNaN(pageNum) && pageNum > 0 && pageNum <= totalPages) {
+        handlePageChange(pageNum);
+    }
   };
 
   const currencyFormatter = new Intl.NumberFormat('en-US', {
@@ -219,25 +228,40 @@ export default function LoanDashboard() {
               </Table>
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
-              <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
+               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
               >
                 <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Previous</span>
               </Button>
+              <div className="flex items-center space-x-1">
+                <Input
+                    type="number"
+                    value={currentPage}
+                    onChange={handlePageInputChange}
+                    onBlur={(e) => {
+                        const pageNum = Number(e.target.value);
+                        if (!isNaN(pageNum) && pageNum > 0 && pageNum <= totalPages) {
+                            handlePageChange(pageNum);
+                        } else {
+                            // Reset to current page if invalid value
+                            e.target.value = String(currentPage);
+                        }
+                    }}
+                    className="h-9 w-16 text-center"
+                    min="1"
+                    max={totalPages}
+                />
+                <span className="text-sm text-muted-foreground">/ {totalPages}</span>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
               >
-                <span className="sr-only">Next</span>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
