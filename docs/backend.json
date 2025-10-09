@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "Loan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Loan",
+      "type": "object",
+      "description": "Represents a loan entry with details such as loan code, customer information, due date, and other relevant data.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Loan entry."
+        },
+        "loanCode": {
+          "type": "string",
+          "description": "The unique code assigned to the loan."
+        },
+        "customerName": {
+          "type": "string",
+          "description": "The name of the customer associated with the loan."
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "The date when the loan is due.",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the loan."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the loan (e.g., 'Pending', 'Approved', 'Paid')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the loan record was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "loanCode",
+        "customerName",
+        "dueDate",
+        "amount",
+        "status",
+        "createdAt"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application, storing their email and a reference to their profile.  Does NOT store passwords.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information.  The 'userId' parameter must match the Firebase Auth 'uid'.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, matching the Firebase Auth 'uid'."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/loans/{loanId}",
+        "definition": {
+          "entityName": "Loan",
+          "schema": {
+            "$ref": "#/backend/entities/Loan"
+          },
+          "description": "Stores loan data.",
+          "params": [
+            {
+              "name": "loanId",
+              "description": "The unique identifier for the loan."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the LoanLook application, emphasizing secure access and efficient data retrieval for loan information.  The structure uses path-based ownership for user data and segregates loans into a top-level collection. This structure supports the application's features: displaying loan data, time-based filtering, search functionality, and data sorting.\n\nKey structural decisions:\n\n*   **User Data:** User profiles are stored under `/users/{userId}`, with `userId` matching the `uid` from Firebase Authentication.  This collection is private and only accessible to the authenticated user.\n*   **Loan Data:** Loan records are stored in the `/loans/{loanId}` collection. There is no user ownership of loans, based on requirements. \n\nAuthorization Independence is achieved because the loan data does not depend on user information.  Security rules can directly validate loan data based on loan attributes without needing to fetch user documents. This approach maintains atomicity for loan operations.\n\nQAPs (Rules are not Filters) are supported as the loan data does not depend on complex authorization logic."
+  }
+}
