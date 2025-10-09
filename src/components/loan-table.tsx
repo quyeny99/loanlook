@@ -103,19 +103,19 @@ export function LoanTable({
                   <TableCell>
                     <div>{formatDateString(loan.itr_next_date)}</div>
                     {loan.itr_next_amount > 0 && (
-                      <div className="text-muted-foreground">{currencyFormatter.format(loan.itr_next_amount)}</div>
+                      <div className="text-accent">{currencyFormatter.format(loan.itr_next_amount)}</div>
                     )}
                   </TableCell>
                   <TableCell>
                     <div>{formatDateString(loan.prin_next_date)}</div>
                     {loan.prin_next_amount > 0 && (
-                      <div className="text-muted-foreground">{currencyFormatter.format(loan.prin_next_amount)}</div>
+                      <div className="text-accent">{currencyFormatter.format(loan.prin_next_amount)}</div>
                     )}
                   </TableCell>
                   <TableCell>
                     <div>{formatDateString(loan.fee_next_date)}</div>
                     {loan.fee_next_amount > 0 && (
-                        <div className="text-muted-foreground">{currencyFormatter.format(loan.fee_next_amount)}</div>
+                        <div className="text-accent">{currencyFormatter.format(loan.fee_next_amount)}</div>
                     )}
                   </TableCell>
                   <TableCell>
