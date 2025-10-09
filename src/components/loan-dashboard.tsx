@@ -20,6 +20,7 @@ const ITEMS_PER_PAGE = 10;
 export default function LoanDashboard() {
   const [loans, setLoans] = React.useState<Loan[]>([]);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = React.useState(searchTerm);
   const [activeTab, setActiveTab] = React.useState('All Time');
   const [loading, setLoading] = React.useState(true);
   
@@ -28,6 +29,16 @@ export default function LoanDashboard() {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
   const [inputValue, setInputValue] = React.useState(String(currentPage));
+
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
 
   const fetchLoans = React.useCallback(async () => {
@@ -91,8 +102,8 @@ export default function LoanDashboard() {
         break;
     }
 
-    if (searchTerm) {
-      const lowercasedSearchTerm = searchTerm.toLowerCase();
+    if (debouncedSearchTerm) {
+      const lowercasedSearchTerm = debouncedSearchTerm.toLowerCase();
       filteredLoans = filteredLoans.filter(loan =>
         (loan.customer__fullname && loan.customer__fullname.toLowerCase().includes(lowercasedSearchTerm)) ||
         (loan.application__code && loan.application__code.toLowerCase().includes(lowercasedSearchTerm))
@@ -100,7 +111,7 @@ export default function LoanDashboard() {
     }
 
     return filteredLoans;
-  }, [searchTerm, activeTab, loans]);
+  }, [debouncedSearchTerm, activeTab, loans]);
 
   const totalPages = Math.ceil(processedLoans.length / ITEMS_PER_PAGE);
 
