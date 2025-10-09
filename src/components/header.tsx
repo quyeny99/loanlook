@@ -1,7 +1,8 @@
 'use client';
 
-import { LogOut } from 'lucide-react';
+import { LogOut, BarChart2 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { CardHeader, CardTitle } from './ui/card';
@@ -25,17 +26,25 @@ export default function Header() {
 
   return (
     <CardHeader className="flex flex-row items-center justify-between border-b">
-      <div>
-        <CardTitle className="text-3xl font-bold font-headline flex items-center gap-1">
-          <Image
-            src="https://drive.google.com/uc?id=1P0wjUyetjh_7ERCxjmhWARWi8Ig1qng5"
-            alt="Company Logo"
-            width={60}
-            height={60}
-            priority
-          />
-          <div>Loan</div>
-        </CardTitle>
+      <div className="flex items-center gap-4">
+        <Link href="/" className="flex items-center gap-2">
+            <Image
+                src="https://drive.google.com/uc?id=1P0wjUyetjh_7ERCxjmhWARWi8Ig1qng5"
+                alt="Company Logo"
+                width={60}
+                height={60}
+                priority
+            />
+            <CardTitle className="text-3xl font-bold font-headline">
+                Loan
+            </CardTitle>
+        </Link>
+        <Button variant="ghost" asChild>
+            <Link href="/reports">
+                <BarChart2 className="mr-2 h-4 w-4" />
+                Reports
+            </Link>
+        </Button>
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>
