@@ -35,25 +35,25 @@ export function LoanTable({
       <Table className="text-xs">
         <TableHeader>
           <TableRow>
-            <TableHead>Loan Code</TableHead>
-            <TableHead>App Code</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Product</TableHead>
-            <TableHead>From Date</TableHead>
-            <TableHead>To Date</TableHead>
-            <TableHead>CCY</TableHead>
-            <TableHead className="text-right">Disbursed</TableHead>
-            <TableHead className="text-right">Outstanding</TableHead>
-            <TableHead className="text-right">Due Amount</TableHead>
-            <TableHead>Due Date</TableHead>
-            <TableHead>Interest Date</TableHead>
-            <TableHead>Principal Date</TableHead>
-            <TableHead>Fee Date</TableHead>
-            <TableHead>Interest Payment Term</TableHead>
-            <TableHead>Principal Repayment Term</TableHead>
-            <TableHead>Collateral</TableHead>
-            <TableHead className="text-right">Profit</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead style={{ width: '120px' }}>Loan Code</TableHead>
+            <TableHead style={{ width: '120px' }}>App Code</TableHead>
+            <TableHead style={{ width: '150px' }}>Customer</TableHead>
+            <TableHead style={{ width: '200px' }}>Product</TableHead>
+            <TableHead style={{ width: '100px' }}>From Date</TableHead>
+            <TableHead style={{ width: '100px' }}>To Date</TableHead>
+            <TableHead style={{ width: '60px' }}>CCY</TableHead>
+            <TableHead className="text-right" style={{ width: '120px' }}>Disbursed</TableHead>
+            <TableHead className="text-right" style={{ width: '120px' }}>Outstanding</TableHead>
+            <TableHead className="text-right" style={{ width: '120px' }}>Due Amount</TableHead>
+            <TableHead style={{ width: '120px' }}>Due Date</TableHead>
+            <TableHead style={{ width: '120px' }}>Interest Date</TableHead>
+            <TableHead style={{ width: '120px' }}>Principal Date</TableHead>
+            <TableHead style={{ width: '120px' }}>Fee Date</TableHead>
+            <TableHead style={{ width: '150px' }}>Interest Payment Term</TableHead>
+            <TableHead style={{ width: '150px' }}>Principal Repayment Term</TableHead>
+            <TableHead style={{ width: '100px' }}>Collateral</TableHead>
+            <TableHead className="text-right" style={{ width: '100px' }}>Profit</TableHead>
+            <TableHead style={{ width: '120px' }}>Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
