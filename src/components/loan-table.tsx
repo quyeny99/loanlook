@@ -105,7 +105,7 @@ export function LoanTable({
                         'text-red-600': daysRemaining < 0 && !isPaidOff,
                       })}
                     >
-                      ({isPaidOff ? '0' : (daysRemaining >= 0 ? daysRemaining : differenceInCalendarDays(new Date(), parseISO(loan.due_date)))}D)
+                      ({isPaidOff ? '0' : (daysRemaining >= 0 ? daysRemaining : differenceInCalendarDays(new Date(), parseISO(loan.due_date)) + 1)}D)
                     </div>
                   )}
                   </TableCell>
