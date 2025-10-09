@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from 'react';
-import { isToday, subDays, isWithinInterval, parseISO } from 'date-fns';
+import { isToday, subDays, isWithinInterval } from 'date-fns';
 import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 
@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-type SortableKey = 'loanCode' | 'customer' | 'dueDate';
+type SortableKey = keyof Loan | 'customer';
 
 export default function LoanDashboard() {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -37,7 +37,8 @@ export default function LoanDashboard() {
 
   const processedLoans = React.useMemo(() => {
     if (!isClient) {
-      return loansData;
+      // Return a sliced version for SSR to avoid large initial payload
+      return loansData.slice(0, 5); 
     }
       
     const now = new Date();
@@ -65,7 +66,9 @@ export default function LoanDashboard() {
     if (searchTerm) {
       filteredLoans = filteredLoans.filter(loan =>
         loan.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.loanCode.toLowerCase().includes(searchTerm.toLowerCase())
+        loan.loanCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loan.applicationCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loan.customer.phone.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -77,9 +80,16 @@ export default function LoanDashboard() {
           aValue = a.customer.name;
           bValue = b.customer.name;
         } else {
-          aValue = a[sortConfig.key];
-          bValue = b[sortConfig.key];
+          aValue = a[sortConfig.key as keyof Loan];
+          bValue = b[sortConfig.key as keyof Loan];
         }
+        
+        // Handle nested customer phone
+        if(sortConfig.key === 'customer.phone') {
+            aValue = a.customer.phone;
+            bValue = b.customer.phone;
+        }
+
 
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -136,7 +146,7 @@ export default function LoanDashboard() {
             <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by name or code..."
+                placeholder="Search..."
                 className="pl-9 w-full sm:w-[250px]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -148,28 +158,26 @@ export default function LoanDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('loanCode')} className="px-0 hover:bg-transparent text-xs sm:text-sm">
-                        LOAN CODE
-                        {getSortIcon('loanCode')}
-                      </Button>
-                    </TableHead>
-                    <TableHead>
-                       <Button variant="ghost" onClick={() => handleSort('customer')} className="px-0 hover:bg-transparent text-xs sm:text-sm">
-                        CUSTOMER
-                        {getSortIcon('customer')}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="text-right text-xs sm:text-sm">LOAN AMOUNT</TableHead>
-                    <TableHead className="text-right text-xs sm:text-sm">INTEREST RATE</TableHead>
-                    <TableHead className="text-xs sm:text-sm">LOAN DATE</TableHead>
-                    <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort('dueDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">
-                        DUE DATE
-                        {getSortIcon('dueDate')}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="text-xs sm:text-sm">STATUS</TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('loanCode')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Loan Code{getSortIcon('loanCode')}</Button></TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('applicationCode')} className="px-0 hover:bg-transparent text-xs sm:text-sm">App Code{getSortIcon('applicationCode')}</Button></TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('customer')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Customer{getSortIcon('customer')}</Button></TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('customer.phone')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Phone{getSortIcon('customer.phone')}</Button></TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('product')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Product{getSortIcon('product')}</Button></TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('fromDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">From Date{getSortIcon('fromDate')}</Button></TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('toDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">To Date{getSortIcon('toDate')}</Button></TableHead>
+                    <TableHead className="text-right text-xs sm:text-sm">CCY</TableHead>
+                    <TableHead className="text-right text-xs sm:text-sm">Disbursed</TableHead>
+                    <TableHead className="text-right text-xs sm:text-sm">Outstanding</TableHead>
+                    <TableHead className="text-right text-xs sm:text-sm">Due Amount</TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('dueDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Due Date{getSortIcon('dueDate')}</Button></TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('interestDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Interest Date{getSortIcon('interestDate')}</Button></TableHead>
+                    <TableHead><Button variant="ghost" onClick={() => handleSort('principalDate')} className="px-0 hover:bg-transparent text-xs sm:text-sm">Principal Date{getSortIcon('principalDate')}</Button></TableHead>
+                    <TableHead className="text-xs sm:text-sm">Int. Term</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Princ. Term</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Collateral</TableHead>
+                    <TableHead className="text-right text-xs sm:text-sm">Profit</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Status</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Note</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -177,12 +185,11 @@ export default function LoanDashboard() {
                     processedLoans.map((loan) => (
                       <TableRow key={loan.loanCode} className="transition-colors hover:bg-muted/50">
                         <TableCell className="font-medium">{loan.loanCode}</TableCell>
+                        <TableCell>{loan.applicationCode}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
-                               <AvatarImage 
-                                 asChild
-                                >
+                               <AvatarImage asChild>
                                 <Image 
                                     src={loan.customer.avatarUrl} 
                                     alt={loan.customer.name} 
@@ -195,10 +202,21 @@ export default function LoanDashboard() {
                             <span className="font-medium">{loan.customer.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">{currencyFormatter.format(loan.loanAmount)}</TableCell>
-                        <TableCell className="text-right">{loan.interestRate.toFixed(1)}%</TableCell>
-                        <TableCell>{dateFormatter.format(loan.loanDate)}</TableCell>
+                        <TableCell>{loan.customer.phone}</TableCell>
+                        <TableCell>{loan.product}</TableCell>
+                        <TableCell>{dateFormatter.format(loan.fromDate)}</TableCell>
+                        <TableCell>{dateFormatter.format(loan.toDate)}</TableCell>
+                        <TableCell className="text-right">{loan.currency}</TableCell>
+                        <TableCell className="text-right">{currencyFormatter.format(loan.disbursed)}</TableCell>
+                        <TableCell className="text-right">{currencyFormatter.format(loan.outstanding)}</TableCell>
+                        <TableCell className="text-right">{currencyFormatter.format(loan.dueAmount)}</TableCell>
                         <TableCell>{dateFormatter.format(loan.dueDate)}</TableCell>
+                        <TableCell>{dateFormatter.format(loan.interestDate)}</TableCell>
+                        <TableCell>{dateFormatter.format(loan.principalDate)}</TableCell>
+                        <TableCell>{loan.interestPaymentTerm}</TableCell>
+                        <TableCell>{loan.principalRepaymentTerm}</TableCell>
+                        <TableCell>{loan.collateral}</TableCell>
+                        <TableCell className="text-right">{currencyFormatter.format(loan.profit)}</TableCell>
                         <TableCell>
                           <Badge variant={
                             loan.status === 'Paid' ? 'secondary' :
@@ -211,11 +229,12 @@ export default function LoanDashboard() {
                             {loan.status}
                           </Badge>
                         </TableCell>
+                        <TableCell>{loan.note}</TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
+                      <TableCell colSpan={20} className="h-24 text-center">
                         No loans found.
                       </TableCell>
                     </TableRow>
