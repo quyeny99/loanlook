@@ -14,6 +14,7 @@ import { LoanPagination } from '@/components/loan-pagination';
 import { Button } from './ui/button';
 import { LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -180,8 +181,15 @@ export default function LoanDashboard() {
       <Card className="w-full shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-3xl font-bold font-headline">
-              LoanLook
+            <CardTitle className="text-3xl font-bold font-headline flex items-center gap-1">
+              <Image
+                src="https://drive.google.com/uc?id=1P0wjUyetjh_7ERCxjmhWARWi8Ig1qng5"
+                alt="Company Logo"
+                width={60}
+                height={60}
+                priority
+              />
+              <div>Loan</div>
             </CardTitle>
             <CardDescription>
               Manage and track all your loan data in one place.

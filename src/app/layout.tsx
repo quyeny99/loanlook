@@ -3,8 +3,11 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'LoanLook',
-  description: 'Manage and track all your loan data in one place.',
+  title: "Y99 Platform",
+  description: "Fast & Transparent Services",
+  icons: {
+    icon: "/logo.png",
+  }
 };
 
 export default function RootLayout({
@@ -20,7 +23,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
-          {children}
+        {children}
         <Toaster />
       </body>
     </html>
