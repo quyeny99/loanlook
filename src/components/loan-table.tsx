@@ -71,7 +71,7 @@ export function LoanTable({
               const prinPaid = loan.prin_pay_cycle;
               const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
               const isPendingDisbursement = loan.status__code === 'P';
-              const daysRemaining = loan.due_date ? differenceInCalendarDays(parseISO(loan.due_date), new Date()) + 1 : null;
+              const daysRemaining = loan.due_date ? differenceInCalendarDays(parseISO(loan.due_date), new Date()) : null;
               const isPaidOff = loan.status__name === 'Đã tất toán';
 
               return (
