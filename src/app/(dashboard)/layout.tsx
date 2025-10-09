@@ -1,3 +1,5 @@
+import Header from '@/components/header';
+
 export default function DashboardLayout({
   children,
 }: Readonly<{
@@ -5,7 +7,8 @@ export default function DashboardLayout({
 }>) {
   return (
     <div>
-        <div>{children}</div>
+      <Header />
+      <div className="p-4 sm:p-6">{children}</div>
     </div>
   );
 }

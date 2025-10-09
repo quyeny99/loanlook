@@ -5,16 +5,12 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { isToday, subDays, subMonths, isWithinInterval, parseISO } from 'date-fns';
 
 import { type Loan } from '@/lib/data';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LoanFilters } from '@/components/loan-filters';
 import { LoanTable } from '@/components/loan-table';
 import { LoanPagination } from '@/components/loan-pagination';
-import { Button } from './ui/button';
-import { LogOut } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import Image from 'next/image';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -26,23 +22,10 @@ export default function LoanDashboard() {
   const [loading, setLoading] = React.useState(true);
   
   const router = useRouter();
-  const { toast } = useToast();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
 
-  const handleSignOut = () => {
-    localStorage.removeItem('isAuthenticated');
-    
-    toast({
-      title: 'Signed Out',
-      description: 'You have been successfully signed out.',
-    });
-    
-    router.push('/login');
-    router.refresh();
-  };
-  
   React.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm.trim());
@@ -179,30 +162,7 @@ export default function LoanDashboard() {
   return (
     <TooltipProvider>
       <Card className="w-full shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-3xl font-bold font-headline flex items-center gap-1">
-              <Image
-                src="https://drive.google.com/uc?id=1P0wjUyetjh_7ERCxjmhWARWi8Ig1qng5"
-                alt="Company Logo"
-                width={60}
-                height={60}
-                priority
-              />
-              <div>Loan</div>
-            </CardTitle>
-            <CardDescription>
-              Manage and track all your loan data in one place.
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <LoanFilters
               timeFilteredCounts={timeFilteredCounts}
