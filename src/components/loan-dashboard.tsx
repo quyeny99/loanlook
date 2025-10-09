@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -48,7 +49,7 @@ export default function LoanDashboard() {
   }, [fetchLoans]);
 
   const processedLoans = React.useMemo(() => {
-    if (loading || !loans) {
+    if (!loans) {
       return []; 
     }
       
@@ -83,7 +84,7 @@ export default function LoanDashboard() {
     }
 
     return filteredLoans;
-  }, [searchTerm, activeTab, loans, loading]);
+  }, [searchTerm, activeTab, loans]);
 
   const totalPages = Math.ceil(processedLoans.length / ITEMS_PER_PAGE);
 
@@ -198,11 +199,13 @@ export default function LoanDashboard() {
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={15} className="h-24 text-center">
-                        Loading...
-                      </TableCell>
-                    </TableRow>
+                    Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell colSpan={15}>
+                          <Skeleton className="h-5 w-full" />
+                        </TableCell>
+                      </TableRow>
+                    ))
                   ) : paginatedLoans && paginatedLoans.length > 0 ? (
                     paginatedLoans.map((loan) => (
                       <TableRow key={loan.code}>
