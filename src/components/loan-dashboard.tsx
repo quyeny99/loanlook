@@ -269,15 +269,15 @@ export default function LoanDashboard() {
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            {itrPaid > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
-                            {itrUnpaid > 0 && <Badge>{itrUnpaid}</Badge>}
+                            {itrPaid >= 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
+                            {itrUnpaid >= 0 && <Badge>{itrUnpaid}</Badge>}
                             {loan.itr_ovd_cycle > 0 && <Badge variant="destructive">{loan.itr_ovd_cycle}</Badge>}
                           </div>
                         </TableCell>
                          <TableCell>
                           <div className="flex items-center gap-1">
-                            {prinPaid > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
-                            {prinUnpaid > 0 && <Badge>{prinUnpaid}</Badge>}
+                            {prinPaid >= 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
+                            {prinUnpaid >= 0 && <Badge>{prinUnpaid}</Badge>}
                             {loan.prin_ovd_cycle > 0 && <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>}
                           </div>
                         </TableCell>
