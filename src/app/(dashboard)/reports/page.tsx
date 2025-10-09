@@ -97,7 +97,10 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-medium">Số tiền cho vay</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-blue-600">{currencyFormatter.format(5000000)}</p>
+            <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-blue-500 text-white font-bold">1</div>
+                <p className="text-2xl font-bold text-blue-600">{currencyFormatter.format(5000000)}</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -105,7 +108,10 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-medium">Tổng thu nợ</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(5605885)}</p>
+            <div className="flex items-center gap-2">
+                 <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">4</div>
+                <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(5605885)}</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -121,7 +127,10 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-medium">Tổng tiền hoa hồng</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(0)}</p>
+             <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-600 text-white font-bold">0</div>
+                <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(0)}</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
