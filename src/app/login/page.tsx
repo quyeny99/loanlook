@@ -47,44 +47,18 @@ export default function LoginPage() {
       )}`;
 
       const response = await fetch(url);
-
-      const text = await response.text();
       
-      if (!response.ok || !text) {
+      const text = await response.text();
+
+      if (response.status !== 200 || !text) {
         form.setError('password', {
           type: 'manual',
           message: 'Invalid email or password.',
         });
         return;
       }
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        console.error("Parse JSON lỗi:", e);
-        form.setError('password', {
-          type: 'manual',
-          message: 'An error occurred during login.',
-        });
-        return;
-      }
-
-      if (!data.rows || data.rows.length === 0) {
-        form.setError('password', {
-          type: 'manual',
-          message: 'Invalid email or password.',
-        });
-        return;
-      }
-
-      const user = data.rows[0];
       
       localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify({
-        fullName: user.fullname,
-        avatar: user.avatar
-      }));
 
       toast({
         title: 'Success',
