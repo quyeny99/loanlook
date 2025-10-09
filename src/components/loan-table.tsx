@@ -124,7 +124,16 @@ export function LoanTable({
                             </TooltipContent>
                           </Tooltip>
                         )}
-                        {itrUnpaid >= 0 && <Badge>{itrUnpaid}</Badge>}
+                        {itrUnpaid >= 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge>{itrUnpaid}</Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Unpaid periods</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                         {loan.itr_ovd_cycle > 0 && <Badge variant="destructive">{loan.itr_ovd_cycle}</Badge>}
                       </div>
                     )}
@@ -142,7 +151,16 @@ export function LoanTable({
                             </TooltipContent>
                           </Tooltip>
                         )}
-                        {prinUnpaid >= 0 && <Badge>{prinUnpaid}</Badge>}
+                        {prinUnpaid >= 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge>{prinUnpaid}</Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Unpaid periods</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                         {loan.prin_ovd_cycle > 0 && <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>}
                       </div>
                     )}
