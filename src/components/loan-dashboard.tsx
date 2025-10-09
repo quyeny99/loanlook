@@ -41,12 +41,18 @@ export default function LoanDashboard() {
     };
   }, [searchTerm]);
 
+  const handlePageChange = React.useCallback((newPage: number, isSearch: boolean = false) => {
+    if (newPage < 1 || (newPage > totalPages && !isSearch && totalPages > 0)) return;
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  }, [searchParams, router, pathname]);
+
   React.useEffect(() => {
     if (debouncedSearchTerm) {
       handlePageChange(1, true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, handlePageChange]);
 
 
   const fetchLoans = React.useCallback(async () => {
@@ -129,13 +135,6 @@ export default function LoanDashboard() {
     return processedLoans.slice(startIndex, endIndex);
   }, [processedLoans, currentPage]);
   
-  const handlePageChange = (newPage: number, isSearch: boolean = false) => {
-    if (newPage < 1 || (newPage > totalPages && !isSearch)) return;
-    const params = new URLSearchParams(searchParams);
-    params.set('page', newPage.toString());
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
   React.useEffect(() => {
     setInputValue(String(currentPage));
   }, [currentPage]);
@@ -251,7 +250,7 @@ export default function LoanDashboard() {
                       const itrUnpaid = loan.itr_num_cycle - loan.itr_pay_cycle;
                       const prinPaid = loan.prin_pay_cycle;
                       const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
-                      const isPendingDisbursement = loan.status__name.includes('Pending Disbursement');
+                      const isPendingDisbursement = loan.status__code === 'P';
 
                       return (
                       <TableRow key={loan.code}>
@@ -278,7 +277,7 @@ export default function LoanDashboard() {
                         <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
-                          {!isPendingDisbursement && (
+                          {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
                               {typeof itrPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
                               {typeof itrUnpaid === 'number' && <Badge>{itrUnpaid}</Badge>}
@@ -287,7 +286,7 @@ export default function LoanDashboard() {
                           )}
                         </TableCell>
                          <TableCell>
-                          {!isPendingDisbursement && (
+                          {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
                               {typeof prinPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
                               {typeof prinUnpaid === 'number' && <Badge>{prinUnpaid}</Badge>}
@@ -298,11 +297,12 @@ export default function LoanDashboard() {
                         <TableCell>{loan.collat_count}</TableCell>
                         <TableCell className="whitespace-nowrap">
                           <Badge variant={
-                            loan.status__name.includes('Overdue') ? 'destructive' : 'default'
-                          } className={cn(
-                            loan.status__name.includes('Pending') && 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-                            loan.status__name.includes('Paid') && 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
-                          )}>
+                            loan.status__code === 'O' ? 'destructive' : 'default'
+                          } className={cn({
+                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': loan.status__code === 'P', // Chờ giải ngân
+                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300': loan.status__code === 'A' && loan.outstanding > 0, // Còn dư nợ
+                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': ['A', 'C'].includes(loan.status__code) && loan.outstanding === 0, // Hết dư nợ / Đã tất toán
+                          })}>
                             {loan.status__name}
                           </Badge>
                         </TableCell>
@@ -345,7 +345,7 @@ export default function LoanDashboard() {
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages}
+                disabled={currentPage >= totalPages || totalPages === 0}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
