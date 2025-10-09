@@ -3,8 +3,6 @@ export type Loan = {
   applicationCode: string;
   customer: {
     name: string;
-    avatarUrl: string;
-    avatarHint: string;
   };
   product: string;
   fromDate: Date;
@@ -16,14 +14,9 @@ export type Loan = {
   dueDate: Date;
   interestDate: Date;
   principalDate: Date;
-  interestPaymentTerm: string;
-  principalRepaymentTerm: string;
-  collateral: string;
-  profit: number;
+  collateral: number;
   status: 'Paid' | 'Pending' | 'Overdue';
-  note: string;
-  interestRate: number; // Keep for sorting if needed, though not in new table
-  loanDate: Date; // Keep for filtering, can be same as fromDate
+  loanDate: Date; 
 };
 
 export const loansData: Loan[] = [
@@ -32,8 +25,6 @@ export const loansData: Loan[] = [
     applicationCode: 'APP-0123',
     customer: {
       name: 'Liam Johnson',
-      avatarUrl: 'https://picsum.photos/seed/1/32/32',
-      avatarHint: "man portrait",
     },
     product: 'Personal Loan',
     fromDate: new Date(new Date().setDate(new Date().getDate() - 10)),
@@ -45,13 +36,8 @@ export const loansData: Loan[] = [
     dueDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
     interestDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
     principalDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-    interestPaymentTerm: 'Monthly',
-    principalRepaymentTerm: 'Monthly',
-    collateral: 'No',
-    profit: 0,
+    collateral: 0,
     status: 'Pending',
-    note: '',
-    interestRate: 5.5,
     loanDate: new Date(new Date().setDate(new Date().getDate() - 10)),
   },
   {
@@ -59,8 +45,6 @@ export const loansData: Loan[] = [
     applicationCode: 'APP-0124',
     customer: {
       name: 'Olivia Smith',
-      avatarUrl: 'https://picsum.photos/seed/2/32/32',
-      avatarHint: "woman portrait",
     },
     product: 'Mortgage',
     fromDate: new Date('2023-05-20'),
@@ -72,13 +56,8 @@ export const loansData: Loan[] = [
     dueDate: new Date('2024-05-20'),
     interestDate: new Date('2024-05-20'),
     principalDate: new Date('2024-05-20'),
-    interestPaymentTerm: 'Monthly',
-    principalRepaymentTerm: 'Monthly',
-    collateral: 'Yes',
-    profit: 1500,
+    collateral: 1,
     status: 'Paid',
-    note: 'Early repayment',
-    interestRate: 4.2,
     loanDate: new Date('2023-05-20'),
   },
   {
@@ -86,8 +65,6 @@ export const loansData: Loan[] = [
     applicationCode: 'APP-0125',
     customer: {
       name: 'Noah Williams',
-      avatarUrl: 'https://picsum.photos/seed/3/32/32',
-      avatarHint: "man face",
     },
     product: 'Payday Loan',
     fromDate: new Date('2024-01-10'),
@@ -99,13 +76,8 @@ export const loansData: Loan[] = [
     dueDate: new Date('2024-07-10'),
     interestDate: new Date('2024-02-10'),
     principalDate: new Date('2024-07-10'),
-    interestPaymentTerm: 'On-Maturity',
-    principalRepaymentTerm: 'On-Maturity',
-    collateral: 'No',
-    profit: -50,
+    collateral: 0,
     status: 'Overdue',
-    note: 'Contacted customer',
-    interestRate: 10.0,
     loanDate: new Date('2024-01-10'),
   },
     {
@@ -113,8 +85,6 @@ export const loansData: Loan[] = [
     applicationCode: 'APP-0126',
     customer: {
       name: 'Emma Brown',
-      avatarUrl: 'https://picsum.photos/seed/4/32/32',
-      avatarHint: "woman face",
     },
     product: 'Auto Loan',
     fromDate: new Date(),
@@ -126,13 +96,8 @@ export const loansData: Loan[] = [
     dueDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
     interestDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
     principalDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-    interestPaymentTerm: 'Monthly',
-    principalRepaymentTerm: 'Monthly',
-    collateral: 'Yes',
-    profit: 0,
+    collateral: 1,
     status: 'Pending',
-    note: 'Awaiting first payment',
-    interestRate: 6.1,
     loanDate: new Date(),
   },
   {
@@ -140,8 +105,6 @@ export const loansData: Loan[] = [
     applicationCode: 'APP-0127',
     customer: {
       name: 'Oliver Jones',
-      avatarUrl: 'https://picsum.photos/seed/5/32/32',
-      avatarHint: "man smiling",
     },
     product: 'Business Loan',
     fromDate: new Date(new Date().setDate(new Date().getDate() - 35)),
@@ -153,13 +116,8 @@ export const loansData: Loan[] = [
     dueDate: new Date(new Date().setFullYear(new Date().getFullYear() + 5)),
     interestDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
     principalDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-    interestPaymentTerm: 'Quarterly',
-    principalRepaymentTerm: 'Quarterly',
-    collateral: 'Yes',
-    profit: 1500,
+    collateral: 2,
     status: 'Pending',
-    note: '',
-    interestRate: 3.8,
     loanDate: new Date(new Date().setDate(new Date().getDate() - 35)),
   },
 ];

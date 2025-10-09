@@ -24,7 +24,6 @@ export default function LoanDashboard() {
 
   const processedLoans = React.useMemo(() => {
     if (!isClient) {
-      // Return a sliced version for SSR to avoid large initial payload
       return loansData.slice(0, 5); 
     }
       
@@ -123,14 +122,10 @@ export default function LoanDashboard() {
                 <TableBody>
                   {processedLoans.length > 0 ? (
                     processedLoans.map((loan) => (
-                      <TableRow key={loan.loanCode} className="transition-colors hover:bg-muted/50">
+                      <TableRow key={loan.loanCode}>
                         <TableCell className="font-medium">{loan.loanCode}</TableCell>
                         <TableCell>{loan.applicationCode}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium">{loan.customer.name}</span>
-                          </div>
-                        </TableCell>
+                        <TableCell>{loan.customer.name}</TableCell>
                         <TableCell>{loan.product}</TableCell>
                         <TableCell>{dateFormatter.format(loan.fromDate)}</TableCell>
                         <TableCell>{dateFormatter.format(loan.toDate)}</TableCell>
