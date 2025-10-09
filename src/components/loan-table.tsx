@@ -48,6 +48,7 @@ export function LoanTable({
             <TableHead>Due Date</TableHead>
             <TableHead>Interest Date</TableHead>
             <TableHead>Principal Date</TableHead>
+            <TableHead>Fee Date</TableHead>
             <TableHead>Interest Payment Term</TableHead>
             <TableHead>Principal Repayment Term</TableHead>
             <TableHead>Collateral</TableHead>
@@ -58,7 +59,7 @@ export function LoanTable({
           {loading ? (
             Array.from({ length: itemsPerPage }).map((_, index) => (
               <TableRow key={index}>
-                <TableCell colSpan={17}>
+                <TableCell colSpan={18}>
                   <Skeleton className="h-[40px] w-full" />
                 </TableCell>
               </TableRow>
@@ -109,6 +110,12 @@ export function LoanTable({
                     <div>{formatDateString(loan.prin_next_date)}</div>
                     {loan.prin_next_amount > 0 && (
                       <div className="text-muted-foreground">{currencyFormatter.format(loan.prin_next_amount)}</div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div>{formatDateString(loan.fee_next_date)}</div>
+                    {loan.fee_next_amount > 0 && (
+                        <div className="text-muted-foreground">{currencyFormatter.format(loan.fee_next_amount)}</div>
                     )}
                   </TableCell>
                   <TableCell>
@@ -202,7 +209,7 @@ export function LoanTable({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={17} className="h-24 text-center">
+              <TableCell colSpan={18} className="h-24 text-center">
                 No loans found.
               </TableCell>
             </TableRow>
