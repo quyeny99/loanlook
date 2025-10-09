@@ -1,6 +1,3 @@
-import { LoanDashboardHeader } from "@/components/loan-dashboard-header";
-
-
 export default function DashboardLayout({
   children,
 }: Readonly<{
@@ -8,7 +5,6 @@ export default function DashboardLayout({
 }>) {
   return (
     <div>
-        <LoanDashboardHeader></LoanDashboardHeader>
         <div>{children}</div>
     </div>
   );
