@@ -221,6 +221,8 @@ export default function LoanDashboard() {
                     <TableHead>Due Date</TableHead>
                     <TableHead>Interest Date</TableHead>
                     <TableHead>Principal Date</TableHead>
+                    <TableHead>Interest Payment Term</TableHead>
+                    <TableHead>Principal Repayment Term</TableHead>
                     <TableHead>Collateral</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
@@ -229,7 +231,7 @@ export default function LoanDashboard() {
                   {loading ? (
                     Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
                       <TableRow key={index} className="h-[130px]">
-                        <TableCell colSpan={15}>
+                        <TableCell colSpan={17}>
                           <Skeleton className="h-full w-full" />
                         </TableCell>
                       </TableRow>
@@ -250,6 +252,18 @@ export default function LoanDashboard() {
                         <TableCell>{formatDateString(loan.due_date)}</TableCell>
                         <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary" className="bg-teal-100 text-teal-800">{loan.itr_ovd_cycle}</Badge>
+                            <Badge>{loan.itr_num_cycle}</Badge>
+                          </div>
+                        </TableCell>
+                         <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary" className="bg-teal-100 text-teal-800">{loan.prin_ovd_cycle}</Badge>
+                            <Badge>{loan.prin_num_cycle}</Badge>
+                          </div>
+                        </TableCell>
                         <TableCell>{loan.collat_count}</TableCell>
                         <TableCell>
                           <Badge variant={
@@ -267,7 +281,7 @@ export default function LoanDashboard() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={15} className="h-24 text-center">
+                      <TableCell colSpan={17} className="h-24 text-center">
                         No loans found.
                       </TableCell>
                     </TableRow>
@@ -312,5 +326,3 @@ export default function LoanDashboard() {
     </Card>
   );
 }
-
-    
