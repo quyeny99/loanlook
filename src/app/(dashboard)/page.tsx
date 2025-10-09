@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoanDashboard from '@/components/loan-dashboard';
-import { LoanDashboardHeader } from '@/components/loan-dashboard-header';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {

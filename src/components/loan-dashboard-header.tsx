@@ -1,3 +1,5 @@
+'use client';
+
 import { useRouter } from 'next/navigation';
 import {
   CardDescription,
@@ -14,7 +16,6 @@ export function LoanDashboardHeader() {
 
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
     
     toast({
       title: 'Signed Out',
