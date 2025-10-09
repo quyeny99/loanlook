@@ -269,7 +269,7 @@ export default function LoanDashboard() {
                         <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
                         <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
                         <TableCell>
-                          {isPendingDisbursement ? '' : (
+                          {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
                               {typeof itrPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{itrPaid}</Badge>}
                               {typeof itrUnpaid === 'number' && <Badge>{itrUnpaid}</Badge>}
@@ -278,7 +278,7 @@ export default function LoanDashboard() {
                           )}
                         </TableCell>
                          <TableCell>
-                          {isPendingDisbursement ? '' : (
+                          {isPendingDisbursement ? null : (
                             <div className="flex items-center gap-1">
                               {typeof prinPaid === 'number' && <Badge variant="secondary" className="bg-blue-100 text-blue-800">{prinPaid}</Badge>}
                               {typeof prinUnpaid === 'number' && <Badge>{prinUnpaid}</Badge>}
