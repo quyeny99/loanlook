@@ -47,25 +47,20 @@ export default function LoginPage() {
       )}`;
 
       const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error('Login failed. Please check your credentials.');
-      }
-      
       const data = await response.json();
 
-      if (data && data.rows && data.rows.length > 0) {
-        localStorage.setItem('isAuthenticated', 'true');
-
-        toast({
-          title: 'Success',
-          description: 'You have successfully logged in.',
-        });
-        router.push('/');
-        router.refresh();
-      } else {
+      if (!response.ok || !data.rows || data.rows.length === 0) {
         throw new Error('Invalid username or password.');
       }
+      
+      localStorage.setItem('isAuthenticated', 'true');
+
+      toast({
+        title: 'Success',
+        description: 'You have successfully logged in.',
+      });
+      router.push('/');
+      router.refresh();
     } catch (error: any) {
       console.error('Login Error:', error);
        toast({
