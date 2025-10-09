@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from 'react';
-import { isToday, subDays, isWithinInterval } from 'date-fns';
+import { isToday, subDays, isWithinInterval, parseISO } from 'date-fns';
 import { Search } from 'lucide-react';
 
-import { loansData, type Loan } from '@/lib/data';
+import { type Loan } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,17 +14,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function LoanDashboard() {
+  const [loans, setLoans] = React.useState<Loan[]>([]);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [activeTab, setActiveTab] = React.useState('All Time');
-  const [isClient, setIsClient] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    setIsClient(true);
+    async function fetchLoans() {
+      try {
+        setLoading(true);
+        const response = await fetch('https://api.y99.vn/data/Loan/?values=id,beneficiary_account,beneficiary_bank,customer__code,fee_ovd_cycle,fee_income,fee_num_cycle,fee_pay_cycle,fee_ovd_days,fee_penalty,fee_ovd,fee_next_date,fee_next_amount,fees,fee_collected,application__code,application,amount_given,penalty_ratio,product__install_cycle_days,product__type__code,product__base__code,penalty_amount,revenue,itr_next_amount,status__code,prin_ovd_days,itr_ovd_days,batch_date,due_date,due_days,product__currency__code,due_amount,prin_next_amount,itr_penalty,prin_penalty,itr_ovd_cycle,prin_ovd,itr_ovd,prin_ovd_cycle,itr_ovd,prin_num_cycle,itr_num_cycle,prin_collected,itr_last_date,prin_last_date,itr_last_amount,prin_last_amount,itr_collected,itr_income,itr_pay_cycle,prin_pay_cycle,itr_next_date,prin_next_date,branch,branch__code,branch__name,product__type__name,prin_first_date,itr_first_date,prin_cycle_days,itr_cycle_days,dbm_entry__account,approver,approve_time,prin_pay_type,prin_pay_type__code,prin_pay_type__name,itr_pay_type,itr_pay_type__code,itr_pay_type__name,customer,customer__phone,customer__fullname,code,product,product__code,product__name,valid_from,valid_to,rate_info,disbursement,disbursement_local,outstanding,outstanding_local,principal,rate,status__name,dbm_entry,dbm_entry__code,dbm_entry__account,creator__fullname,approver__fullname,update_time,create_time,approve_time,ratio,approver,status,creator&distinct_values=%7B%22count_note%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_Note%22,%22column%22:%22ref%22%7D%7D,%22sms_count%22:%7B%22type%22:%22Count%22,%22subquery%22:%7B%22model%22:%22Loan_Sms%22,%22column%22:%22ref%22%7D,%22field%22:%22id%22%7D,%22file_count%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_File%22,%22column%22:%22ref%22%7D%7D,%22collat_count%22:%7B%22type%22:%22Count%22,%22field%22:%22id%22,%22subquery%22:%7B%22model%22:%22Loan_Collateral%22,%22column%22:%22loan%22%7D%7D%7D&filter=%7B%22deleted%22:0,%22create_time__date__gte%22:%221927-03-18%22%7D&sort=-id&summary=annotate&login=16');
+        const data = await response.json();
+        setLoans(data.results);
+      } catch (error) {
+        console.error('Failed to fetch loans:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchLoans();
   }, []);
 
   const processedLoans = React.useMemo(() => {
-    if (!isClient) {
-      return loansData.slice(0, 5); 
+    if (loading) {
+      return []; 
     }
       
     const now = new Date();
@@ -32,33 +45,33 @@ export default function LoanDashboard() {
 
     switch (activeTab) {
       case 'Today':
-        filteredLoans = loansData.filter(loan => isToday(loan.loanDate));
+        filteredLoans = loans.filter(loan => isToday(parseISO(loan.create_time)));
         break;
       case '1D':
-        filteredLoans = loansData.filter(loan => isWithinInterval(loan.loanDate, { start: subDays(now, 1), end: now }));
+        filteredLoans = loans.filter(loan => isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 1), end: now }));
         break;
       case '7D':
-        filteredLoans = loansData.filter(loan => isWithinInterval(loan.loanDate, { start: subDays(now, 7), end: now }));
+        filteredLoans = loans.filter(loan => isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 7), end: now }));
         break;
       case '30D':
-        filteredLoans = loansData.filter(loan => isWithinInterval(loan.loanDate, { start: subDays(now, 30), end: now }));
+        filteredLoans = loans.filter(loan => isWithinInterval(parseISO(loan.create_time), { start: subDays(now, 30), end: now }));
         break;
       case 'All Time':
       default:
-        filteredLoans = loansData;
+        filteredLoans = loans;
         break;
     }
 
     if (searchTerm) {
       filteredLoans = filteredLoans.filter(loan =>
-        loan.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.loanCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.applicationCode.toLowerCase().includes(searchTerm.toLowerCase())
+        loan.customer__fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loan.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loan.application__code.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     return filteredLoans;
-  }, [searchTerm, activeTab, isClient]);
+  }, [searchTerm, activeTab, loans, loading]);
   
   const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'decimal',
@@ -70,6 +83,15 @@ export default function LoanDashboard() {
     month: '2-digit',
     year: 'numeric',
   });
+
+  const formatDateString = (dateString: string | null) => {
+    if (!dateString) return '';
+    try {
+      return dateFormatter.format(parseISO(dateString));
+    } catch (error) {
+      return dateString;
+    }
+  };
 
   return (
     <Card className="w-full shadow-lg">
@@ -120,33 +142,39 @@ export default function LoanDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {processedLoans.length > 0 ? (
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={15} className="h-24 text-center">
+                        Loading...
+                      </TableCell>
+                    </TableRow>
+                  ) : processedLoans.length > 0 ? (
                     processedLoans.map((loan) => (
-                      <TableRow key={loan.loanCode}>
-                        <TableCell className="font-medium">{loan.loanCode}</TableCell>
-                        <TableCell>{loan.applicationCode}</TableCell>
-                        <TableCell>{loan.customer.name}</TableCell>
-                        <TableCell>{loan.product}</TableCell>
-                        <TableCell>{dateFormatter.format(loan.fromDate)}</TableCell>
-                        <TableCell>{dateFormatter.format(loan.toDate)}</TableCell>
-                        <TableCell>{loan.currency}</TableCell>
-                        <TableCell className="text-right">{currencyFormatter.format(loan.disbursed)}</TableCell>
+                      <TableRow key={loan.code}>
+                        <TableCell className="font-medium">{loan.code}</TableCell>
+                        <TableCell>{loan.application__code}</TableCell>
+                        <TableCell>{loan.customer__fullname}</TableCell>
+                        <TableCell>{loan.product__name}</TableCell>
+                        <TableCell>{formatDateString(loan.valid_from)}</TableCell>
+                        <TableCell>{formatDateString(loan.valid_to)}</TableCell>
+                        <TableCell>{loan.product__currency__code}</TableCell>
+                        <TableCell className="text-right">{currencyFormatter.format(loan.disbursement)}</TableCell>
                         <TableCell className="text-right">{currencyFormatter.format(loan.outstanding)}</TableCell>
-                        <TableCell className="text-right">{currencyFormatter.format(loan.dueAmount)}</TableCell>
-                        <TableCell>{dateFormatter.format(loan.dueDate)}</TableCell>
-                        <TableCell>{dateFormatter.format(loan.interestDate)}</TableCell>
-                        <TableCell>{dateFormatter.format(loan.principalDate)}</TableCell>
-                        <TableCell>{loan.collateral}</TableCell>
+                        <TableCell className="text-right">{currencyFormatter.format(loan.due_amount)}</TableCell>
+                        <TableCell>{formatDateString(loan.due_date)}</TableCell>
+                        <TableCell>{formatDateString(loan.itr_next_date)}</TableCell>
+                        <TableCell>{formatDateString(loan.prin_next_date)}</TableCell>
+                        <TableCell>{loan.collat_count}</TableCell>
                         <TableCell>
                           <Badge variant={
-                            loan.status === 'Paid' ? 'secondary' :
-                            loan.status === 'Overdue' ? 'destructive' :
+                            loan.status__name === 'Paid' ? 'secondary' :
+                            loan.status__name === 'Overdue' ? 'destructive' :
                             'default'
                           } className={cn(
-                            loan.status === 'Pending' && 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-                            loan.status === 'Paid' && 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+                            loan.status__name === 'Pending' && 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+                            loan.status__name === 'Paid' && 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
                           )}>
-                            {loan.status}
+                            {loan.status__name}
                           </Badge>
                         </TableCell>
                       </TableRow>
