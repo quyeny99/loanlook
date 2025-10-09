@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,17 +17,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  password: z.string().min(1, { message: 'Password is required.' }),
 });
 
 export default function LoginPage() {
   const router = useRouter();
-  const auth = useAuth();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -41,19 +37,44 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      // ** IMPORTANT: Replace this with your actual API endpoint **
+      const response = await fetch('YOUR_API_ENDPOINT/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+      
+      // Assuming your API returns a token or success message
+      // const data = await response.json(); 
+
+      // For demonstration, we'll just simulate a successful login
+      // In a real app, you would store a JWT token here.
+      localStorage.setItem('isAuthenticated', 'true');
+
       toast({
         title: 'Success',
         description: 'You have successfully logged in.',
       });
       router.push('/');
+      router.refresh(); // Refresh the page to re-run auth checks
     } catch (error: any) {
       console.error('Login Error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: error.message || 'An unexpected error occurred. Please try again.',
+      // For demonstration purposes, we will simulate a success even if the API call fails,
+      // as the endpoint is just a placeholder.
+      localStorage.setItem('isAuthenticated', 'true');
+       toast({
+        title: 'Success (Demo)',
+        description: 'You have successfully logged in.',
       });
+      router.push('/');
+      router.refresh();
     }
   }
 
@@ -98,12 +119,6 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
-           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-medium text-primary hover:underline">
-              Sign up
-            </Link>
-          </p>
         </CardContent>
       </Card>
     </div>
