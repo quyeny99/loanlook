@@ -53,7 +53,7 @@ export default function DateRangeReportsPage() {
     const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
     const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
     const averageLoanTerm = disbursedApps.length > 0 
-      ? disbursedApps.reduce((acc, app) => acc + app.loan_term, 0) / disbursedApps.length
+      ? disbursedApps.reduce((acc, app) => acc + app.approve_term, 0) / disbursedApps.length
       : 0;
 
     const paperData = applications.reduce((acc, app) => {
