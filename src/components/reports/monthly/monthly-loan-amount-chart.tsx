@@ -27,6 +27,7 @@ export default function MonthlyLoanAmountChart({ data }: MonthlyLoanAmountChartP
             tooltipFormatter={currencyFormatter}
             className='lg:col-span-1'
             barProps={{ name: "Loan Amount" }}
+            showTotal={false}
         />
     );
 }

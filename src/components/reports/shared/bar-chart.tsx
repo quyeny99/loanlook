@@ -17,15 +17,16 @@ type BarChartCardProps = {
     xAxisProps?: any;
     tooltipFormatter?: (value: any, name: any, props: any) => any;
     barProps?: Partial<ComponentProps<typeof Bar>>;
+    showTotal?: boolean;
 };
 
-export default function BarChartCard({ title, data, dataKey, xAxisKey, className, yAxisFormatter, yAxisLabel, allowDecimals = false, xAxisProps = {}, tooltipFormatter, barProps }: BarChartCardProps) {
+export default function BarChartCard({ title, data, dataKey, xAxisKey, className, yAxisFormatter, yAxisLabel, allowDecimals = false, xAxisProps = {}, tooltipFormatter, barProps, showTotal = true }: BarChartCardProps) {
     const totalValue = data.reduce((acc, entry) => acc + (entry[dataKey] || 0), 0);
     
     return (
         <Card className={className}>
             <CardHeader>
-                <CardTitle>{title} ({totalValue})</CardTitle>
+                <CardTitle>{title} {showTotal && `(${totalValue})`}</CardTitle>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
