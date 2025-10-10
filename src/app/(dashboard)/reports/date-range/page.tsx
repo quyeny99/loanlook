@@ -9,7 +9,7 @@ import SummaryCards from '@/components/reports/date-range/summary-cards';
 import LegalDocTypeChart from '@/components/reports/date-range/legal-doc-type-chart';
 import LoanRegionsChart from '@/components/reports/date-range/loan-regions-chart';
 import StatusChart from '@/components/reports/date-range/status-chart';
-import LoanTypeChart from '@/components/reports/date-range/loan-type-chart';
+import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
 import { type Application } from '@/lib/data';
 
@@ -164,7 +164,7 @@ export default function DateRangeReportsPage() {
         <LegalDocTypeChart data={reportData.paperData} />
         <LoanRegionsChart data={reportData.regionData} />
         <StatusChart data={reportData.statusData} />
-        <LoanTypeChart data={reportData.typeData} />
+        <LoanTypeChart typeData={reportData.typeData} />
         <SourceChart data={reportData.sourceData} />
       </div>
     </div>
