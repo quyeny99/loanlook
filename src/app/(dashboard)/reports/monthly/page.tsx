@@ -73,7 +73,7 @@ export default function MonthlyReportPage() {
     const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
     const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
 
-    const allLoanRegions = applications.reduce((acc, app) => {
+    const allLoanRegions = disbursedApps.reduce((acc, app) => {
         const name = app.province || 'Unknown';
         const existing = acc.find(item => item.name === name);
         if (existing) {
@@ -137,8 +137,8 @@ export default function MonthlyReportPage() {
             </CardContent>
         </Card>
          <Card>
-            <CardHeader><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
-            <CardContent>
+            <CardHeader className="p-6"><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
+            <CardContent className="p-6 pt-0">
                 <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(reportData.totalLoanAmount)}</p>
                 <p className="text-xs text-muted-foreground">Avg {currencyFormatter.format(reportData.totalLoanAmount / 12)} /month</p>
             </CardContent>
