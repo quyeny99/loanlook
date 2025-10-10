@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from './ui/dropdown-menu';
 
 export default function Header() {
   const router = useRouter();
@@ -49,9 +49,18 @@ export default function Header() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuItem onSelect={() => router.push('/reports')}>1. Daily</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>2. Monthly</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
+                <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                        <span>Application Report</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuItem onSelect={() => router.push('/reports/daily')}>1. Daily</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>2. Monthly</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                </DropdownMenuSub>
             </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -64,5 +73,3 @@ export default function Header() {
     </header>
   );
 }
-
-    
