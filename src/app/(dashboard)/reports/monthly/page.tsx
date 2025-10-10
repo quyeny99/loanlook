@@ -137,8 +137,8 @@ export default function MonthlyReportPage() {
             </CardContent>
         </Card>
          <Card>
-            <CardHeader><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
-            <CardContent>
+            <CardHeader className="p-4 pb-0"><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
+            <CardContent className="p-4 pt-2">
                 <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(reportData.totalLoanAmount)}</p>
                 <p className="text-xs text-muted-foreground">Avg {currencyFormatter.format(reportData.totalLoanAmount / 12)} /month</p>
             </CardContent>
@@ -271,4 +271,5 @@ export default function MonthlyReportPage() {
   );
 }
 
+    
     
