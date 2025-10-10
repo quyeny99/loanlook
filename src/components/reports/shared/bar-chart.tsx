@@ -1,7 +1,9 @@
+
 'use client';
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ComponentProps } from 'react';
 
 type BarChartCardProps = {
     title: string;
@@ -14,9 +16,10 @@ type BarChartCardProps = {
     allowDecimals?: boolean;
     xAxisProps?: any;
     tooltipFormatter?: (value: any, name: any, props: any) => any;
+    barProps?: Partial<ComponentProps<typeof Bar>>;
 };
 
-export default function BarChartCard({ title, data, dataKey, xAxisKey, className, yAxisFormatter, yAxisLabel, allowDecimals = false, xAxisProps = {}, tooltipFormatter }: BarChartCardProps) {
+export default function BarChartCard({ title, data, dataKey, xAxisKey, className, yAxisFormatter, yAxisLabel, allowDecimals = false, xAxisProps = {}, tooltipFormatter, barProps }: BarChartCardProps) {
     return (
         <Card className={className}>
             <CardHeader>
@@ -30,7 +33,7 @@ export default function BarChartCard({ title, data, dataKey, xAxisKey, className
                         <YAxis allowDecimals={allowDecimals} tickFormatter={yAxisFormatter} label={yAxisLabel} />
                         <Tooltip formatter={tooltipFormatter}/>
                         <Legend />
-                        <Bar dataKey={dataKey} fill="#3b82f6" />
+                        <Bar dataKey={dataKey} fill="#3b82f6" name="Total applications" {...barProps} />
                     </BarChart>
                 </ResponsiveContainer>
             </CardContent>
