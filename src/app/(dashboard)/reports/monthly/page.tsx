@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const loanRegionsData = [
     { name: 'ĐỒNG NAI', value: 400 },
@@ -78,7 +78,10 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 });
 
 export default function MonthlyReportPage() {
-  const [year, setYear] = useState('2025');
+  const currentYear = new Date().getFullYear();
+  const startYear = 2025;
+  const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => String(startYear + i));
+  const [year, setYear] = useState(String(currentYear));
 
   return (
     <div className="space-y-6">
@@ -121,7 +124,16 @@ export default function MonthlyReportPage() {
         <Card>
             <CardHeader><CardTitle className='text-sm font-medium'>Select Year</CardTitle></CardHeader>
             <CardContent>
-                <Input type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="YYYY" />
+                <Select value={year} onValueChange={setYear}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map(y => (
+                      <SelectItem key={y} value={y}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
             </CardContent>
         </Card>
       </div>
