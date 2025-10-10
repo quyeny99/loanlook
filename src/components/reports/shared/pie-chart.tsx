@@ -16,10 +16,12 @@ type PieChartCardProps = {
 };
 
 export default function PieChartCard({ title, data, showLegend = true, legendLayout, legendAlign, legendVerticalAlign, legendWrapperStyle, label = true, labelLine = true }: PieChartCardProps) {
+    const totalValue = data.reduce((acc, entry) => acc + entry.value, 0);
+
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
+                <CardTitle>{title} ({totalValue})</CardTitle>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>

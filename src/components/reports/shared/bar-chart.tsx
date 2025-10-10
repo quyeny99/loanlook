@@ -20,10 +20,12 @@ type BarChartCardProps = {
 };
 
 export default function BarChartCard({ title, data, dataKey, xAxisKey, className, yAxisFormatter, yAxisLabel, allowDecimals = false, xAxisProps = {}, tooltipFormatter, barProps }: BarChartCardProps) {
+    const totalValue = data.reduce((acc, entry) => acc + (entry[dataKey] || 0), 0);
+    
     return (
         <Card className={className}>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
+                <CardTitle>{title} ({totalValue})</CardTitle>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
