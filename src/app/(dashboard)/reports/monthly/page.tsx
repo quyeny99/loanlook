@@ -18,6 +18,20 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {
     maximumFractionDigits: 0,
 });
 
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+      {name}
+    </text>
+  );
+};
+
+
 export default function MonthlyReportPage() {
   const currentYear = new Date().getFullYear();
   const startYear = 2025;
@@ -237,7 +251,16 @@ export default function MonthlyReportPage() {
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
-                        <Pie data={reportData.loanRegionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                        <Pie 
+                            data={reportData.loanRegionsData} 
+                            dataKey="value" 
+                            nameKey="name" 
+                            cx="50%" 
+                            cy="50%" 
+                            outerRadius={80} 
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                        >
                             {reportData.loanRegionsData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
@@ -270,3 +293,5 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    
