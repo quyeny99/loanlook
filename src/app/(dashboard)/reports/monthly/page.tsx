@@ -8,7 +8,7 @@ import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { type Application } from '@/lib/data';
-import { parse, getMonth } from 'date-fns';
+import { getMonth } from 'date-fns';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 
@@ -239,7 +239,6 @@ export default function MonthlyReportPage() {
                             ))}
                         </Pie>
                         <Tooltip />
-                        <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{fontSize: '10px'}} iconSize={10} />
                     </PieChart>
                 </ResponsiveContainer>
             </CardContent>
