@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format } from 'date-fns';
+import { format, startOfMonth } from 'date-fns';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
@@ -18,7 +18,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 
 export default function DateRangeReportsPage() {
-  const [fromDate, setFromDate] = useState<Date | undefined>(new Date());
+  const [fromDate, setFromDate] = useState<Date | undefined>(startOfMonth(new Date()));
   const [toDate, setToDate] = useState<Date | undefined>(new Date());
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
