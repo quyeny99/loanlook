@@ -45,22 +45,24 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost">
                     <BarChart2 className="mr-2 h-4 w-4" />
-                    Reports
+                    Application Report
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                        <span>Application Report</span>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                            <DropdownMenuItem onSelect={() => router.push('/reports/daily')}>1. Daily</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>2. Monthly</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                </DropdownMenuSub>
+                <DropdownMenuItem onSelect={() => router.push('/reports/daily')}>1. Daily</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>2. Monthly</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                    <BarChart2 className="mr-2 h-4 w-4" />
+                    Disbursement Report
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                {/* Add disbursement report items here when they are created */}
             </DropdownMenuContent>
         </DropdownMenu>
       </div>
