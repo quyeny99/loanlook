@@ -48,7 +48,7 @@ export default function ReportsPage() {
     const loanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
     const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
     const averageLoanTerm = disbursedApps.length > 0
-      ? disbursedApps.reduce((acc, app) => acc + app.loan_term, 0) / disbursedApps.length
+      ? disbursedApps.reduce((acc, app) => acc + app.approve_term, 0) / disbursedApps.length
       : 0;
 
     const paperData = applications.reduce((acc, app) => {
@@ -113,12 +113,13 @@ export default function ReportsPage() {
       loanAmount,
       disbursedCount: disbursedApps.length,
       totalCommission,
-      averageLoanTerm,
+      averageLoanTerm: Math.round(averageLoanTerm),
       paperData,
       regionData,
       statusData,
       typeData,
-      sourceData
+      sourceData,
+      commissionCount: applications.filter(a => a.commission).length
     };
   }, [applications]);
 

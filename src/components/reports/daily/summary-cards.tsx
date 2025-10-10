@@ -17,6 +17,7 @@ type SummaryCardsProps = {
         disbursedCount: number;
         totalCommission: number;
         averageLoanTerm: number;
+        commissionCount: number;
     };
     applications: Application[];
     date: Date;
@@ -71,7 +72,7 @@ export default function SummaryCards({ reportData, applications, date, setDate }
                     <CardTitle className="text-sm font-medium">Average Loan Term</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold">{Math.round(reportData.averageLoanTerm)} months</p>
+                    <p className="text-2xl font-bold">{reportData.averageLoanTerm} months</p>
                 </CardContent>
             </Card>
             <Card>
@@ -80,7 +81,7 @@ export default function SummaryCards({ reportData, applications, date, setDate }
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center gap-2">
-                        <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-600 text-white font-bold">{applications.filter(a => a.commission).length}</div>
+                        <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-600 text-white font-bold">{reportData.commissionCount}</div>
                         <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)} ₫</p>
                     </div>
                 </CardContent>
