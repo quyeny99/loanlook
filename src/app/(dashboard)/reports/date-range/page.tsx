@@ -15,29 +15,49 @@ import { type Application } from '@/lib/data';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
+const API_BASE_URL = 'https://api.y99.vn/data/Application/';
+const API_VALUES = 'id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date';
+const LOGIN_PARAM = 'login=372';
 
 
 export default function DateRangeReportsPage() {
   const [fromDate, setFromDate] = useState<Date | undefined>(startOfMonth(new Date()));
   const [toDate, setToDate] = useState<Date | undefined>(new Date());
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [createdApplications, setCreatedApplications] = useState<Application[]>([]);
+  const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchApplications = useCallback(async (start?: Date, end?: Date) => {
     if (!start || !end) return;
     setLoading(true);
     try {
-      const filter = encodeURIComponent(JSON.stringify({ 
+      const disbursementFilter = encodeURIComponent(JSON.stringify({ 
         "loanapp__dbm_entry__date__gte": format(start, 'yyyy-MM-dd'),
         "loanapp__dbm_entry__date__lte": format(end, 'yyyy-MM-dd')
       }));
-      const url = `https://api.y99.vn/data/Application/?sort=-id&values=id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date&filter=${filter}&page=-1&login=372`;
-      const response = await fetch(url);
-      const data = await response.json();
-      setApplications(data.rows || []);
+      const creationFilter = encodeURIComponent(JSON.stringify({ 
+        "create_time__date__gte": format(start, 'yyyy-MM-dd'),
+        "create_time__date__lte": format(end, 'yyyy-MM-dd')
+      }));
+
+      const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&${LOGIN_PARAM}`;
+      const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&${LOGIN_PARAM}`;
+
+      const [disbursedResponse, createdResponse] = await Promise.all([
+        fetch(disbursedUrl),
+        fetch(createdUrl)
+      ]);
+
+      const disbursedData = await disbursedResponse.json();
+      const createdData = await createdResponse.json();
+
+      setDisbursedApplications(disbursedData.rows || []);
+      setCreatedApplications(createdData.rows || []);
+
     } catch (error) {
       console.error("Failed to fetch applications", error);
-      setApplications([]);
+      setDisbursedApplications([]);
+      setCreatedApplications([]);
     } finally {
       setLoading(false);
     }
@@ -48,19 +68,19 @@ export default function DateRangeReportsPage() {
   }, [fromDate, toDate, fetchApplications]);
 
   const reportData = useMemo(() => {
-    const totalApplications = applications.length;
-    const disbursedApps = applications.filter(app => app.status === 7);
+    const totalApplications = createdApplications.length;
+    const disbursedApps = disbursedApplications.filter(app => app.status === 7);
     const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
-    const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
+    const totalCommission = disbursedApps.reduce((acc, app) => acc + (app.commission || 0), 0);
     const averageLoanTerm = disbursedApps.length > 0 
-      ? disbursedApps.reduce((acc, app) => acc + (app.approve_term || 0), 0) / disbursedApps.length
+      ? Math.round(disbursedApps.reduce((acc, app) => acc + (app.approve_term || 0), 0) / disbursedApps.length)
       : 0;
 
     const paperData = [
         { name: 'Căn cước công dân', value: 0, fill: '#3b82f6' },
         { name: 'Hộ chiếu', value: 0, fill: '#a855f7' }
     ];
-    applications.forEach(app => {
+    disbursedApplications.forEach(app => {
         const name = app.legal_type__name || 'Unknown';
         const existing = paperData.find(item => item.name === name);
         if (existing) {
@@ -68,7 +88,7 @@ export default function DateRangeReportsPage() {
         }
     });
 
-    const allLoanRegions = applications.reduce((acc, app) => {
+    const allLoanRegions = disbursedApplications.reduce((acc, app) => {
         const name = app.province || 'Unknown';
         const existing = acc.find(item => item.name === name);
         if (existing) {
@@ -90,16 +110,16 @@ export default function DateRangeReportsPage() {
 
 
     const statusData = [
-        { name: '1. Newly Created', 'Total applications': applications.filter(a => a.status === 1).length },
-        { name: '2. Pending Review', 'Total applications': applications.filter(a => a.status === 2).length },
-        { name: '3. Request More Info', 'Total applications': applications.filter(a => a.status === 3).length },
-        { name: '4. Rejected', 'Total applications': applications.filter(a => a.status === 4).length },
-        { name: '5. Approved', 'Total applications': applications.filter(a => a.status === 5).length },
-        { name: '6. Contract signed', 'Total applications': applications.filter(a => a.status === 6).length },
-        { name: '7. Disbursed', 'Total applications': applications.filter(a => a.status === 7).length },
+        { name: '1. Newly Created', 'Total applications': createdApplications.filter(a => a.status === 1).length },
+        { name: '2. Pending Review', 'Total applications': createdApplications.filter(a => a.status === 2).length },
+        { name: '3. Request More Info', 'Total applications': createdApplications.filter(a => a.status === 3).length },
+        { name: '4. Rejected', 'Total applications': createdApplications.filter(a => a.status === 4).length },
+        { name: '5. Approved', 'Total applications': createdApplications.filter(a => a.status === 5).length },
+        { name: '6. Contract signed', 'Total applications': createdApplications.filter(a => a.status === 6).length },
+        { name: '7. Disbursed', 'Total applications': createdApplications.filter(a => a.status === 7).length },
     ];
     
-    const typeData = applications.reduce((acc, app) => {
+    const typeData = disbursedApplications.reduce((acc, app) => {
         const name = app.product__type__en || 'Unknown';
         const existing = acc.find(item => item.name === name);
         if (existing) {
@@ -111,7 +131,7 @@ export default function DateRangeReportsPage() {
     }, [] as { name: string; value: number; fill: string }[]);
 
 
-    const sourceData = applications.reduce((acc, app) => {
+    const sourceData = createdApplications.reduce((acc, app) => {
         const name = app.source__name || 'Unknown';
         const existing = acc.find(item => item.name === name);
         if (existing) {
@@ -128,14 +148,14 @@ export default function DateRangeReportsPage() {
         disbursedCount: disbursedApps.length,
         totalLoanAmount,
         totalCommission,
-        averageLoanTerm: Math.round(averageLoanTerm),
+        averageLoanTerm: averageLoanTerm,
         paperData,
         regionData: regionDataWithColors,
         statusData,
         typeData,
         sourceData,
     }
-  }, [applications]);
+  }, [createdApplications, disbursedApplications]);
 
   return (
     <div className="space-y-6">
