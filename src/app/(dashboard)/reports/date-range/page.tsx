@@ -160,7 +160,7 @@ export default function DateRangeReportsPage() {
         reportData={reportData}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <LegalDocTypeChart data={reportData.paperData} />
         <LoanRegionsChart data={reportData.regionData} />
         <StatusChart data={reportData.statusData} />
@@ -169,5 +169,4 @@ export default function DateRangeReportsPage() {
       </div>
     </div>
   );
-
-    
+}
