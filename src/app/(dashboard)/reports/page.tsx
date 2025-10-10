@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { type Application } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
@@ -16,7 +16,7 @@ import SourceChart from '@/components/reports/daily/source-chart';
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 
 export default function ReportsPage() {
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(subDays(new Date(), 1));
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -156,5 +156,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-
-    
