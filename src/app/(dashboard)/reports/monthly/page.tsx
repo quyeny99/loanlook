@@ -153,7 +153,7 @@ export default function MonthlyReportPage() {
         years={years}
       />
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyStatusChart data={reportData.monthlyData} />
         <MonthlyLoanAmountChart data={reportData.monthlyData} />
         <MonthlySourceChart data={reportData.monthlyData} />
