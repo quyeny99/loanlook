@@ -15,7 +15,7 @@ import SourceChart from '@/components/reports/daily/source-chart';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
-const API_VALUES = 'id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date';
+const API_VALUES = 'id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date';
 const LOGIN_PARAM = 'login=372';
 
 export default function ReportsPage() {
@@ -78,22 +78,23 @@ export default function ReportsPage() {
     
     const disbursedApps = disbursedApplications.filter(app => app.status === 7);
     const loanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
-    const totalCommission = disbursedApplications.reduce((acc, app) => acc + (app.commission || 0), 0);
+    const totalCommission = createdApplications.reduce((acc, app) => acc + (app.commission || 0), 0);
     const averageLoanTerm = disbursedApps.length > 0
       ? disbursedApps.reduce((acc, app) => acc + (app.approve_term || 0), 0) / disbursedApps.length
       : 0;
-    const commissionCount = disbursedApplications.filter(app => app.commission).length;
+    const commissionCount = createdApplications.filter(app => app.commission).length;
 
-    const paperData = disbursedApplications.reduce((acc, app) => {
-      const name = app.legal_type__name || 'Unknown';
-      const existing = acc.find(item => item.name === name);
-      if (existing) {
-        existing.value += 1;
-      } else {
-        acc.push({ name, value: 1 });
-      }
-      return acc;
-    }, [] as { name: string; value: number }[]).map((item, index) => ({ ...item, fill: ['#3b82f6', '#a855f7'][index % 2] }));
+    const paperData = [
+        { name: 'Căn cước công dân', value: 0, fill: '#3b82f6' },
+        { name: 'Hộ chiếu', value: 0, fill: '#a855f7' }
+    ];
+    disbursedApplications.forEach(app => {
+        const name = app.legal_type__name || 'Unknown';
+        const existing = paperData.find(item => item.name === name);
+        if (existing) {
+            existing.value += 1;
+        }
+    });
 
     const regionData = disbursedApplications.reduce((acc, app) => {
         const name = app.province || 'Unknown';
@@ -128,16 +129,17 @@ export default function ReportsPage() {
     }, [] as { name: string; value: number }[]).map((item, index) => ({ ...item, fill: COLORS[index % COLORS.length] }));
 
 
-    const sourceData = createdApplications.reduce((acc, app) => {
-        const name = app.source__name || 'Unknown';
-        const existing = acc.find(item => item.name === name);
-        if (existing) {
-            existing.Applications += 1;
-        } else {
-            acc.push({ name, Applications: 1 });
+    const sourceData = [
+        { name: 'Apps', Applications: 0 },
+        { name: 'CTV', Applications: 0 },
+        { name: 'Website', Applications: 0 },
+    ];
+    createdApplications.forEach(app => {
+        const source = sourceData.find(s => s.name === app.source__name);
+        if (source) {
+            source.Applications += 1;
         }
-        return acc;
-    }, [] as { name: string; Applications: number }[]);
+    });
 
 
     return {
