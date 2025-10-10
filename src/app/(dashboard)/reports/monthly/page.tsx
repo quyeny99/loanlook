@@ -1,87 +1,111 @@
 
 'use client';
 
-import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell, ComposedChart, Line } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const loanRegionsData = [
-    { name: 'ĐỒNG NAI', value: 400 },
-    { name: 'Đào Viên', value: 300 },
-    { name: 'Singapore', value: 300 },
-    { name: 'Tân Bắc', value: 200 },
-    { name: 'Đài Bắc', value: 278 },
-    { name: 'Đài Trung', value: 189 },
-    { name: 'Cần Thơ', value: 239 },
-    { name: 'BẮC NINH', value: 349 },
-    { name: 'HỒ CHÍ MINH', value: 400 },
-];
-const loanTypeData = [
-  { name: 'Pawn loan', value: 4567, fill: '#4f46e5' },
-  { name: 'Unsecured loan', value: 1234, fill: '#3b82f6' },
-];
-
-const applicationsByMonthData = [
-  { month: 'Month 1', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-  { month: 'Month 2', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-  { month: 'Month 3', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-  { month: 'Month 4', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-  { month: 'Month 5', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-  { month: 'Month 6', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-  { month: 'Month 7', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-  { month: 'Month 8', '1. Newly Created': 257, '4. Rejected': 10 },
-  { month: 'Month 9', '1. Newly Created': 181, '5. Approved': 20 },
-  { month: 'Month 10', '7. Disbursed': 67 },
-  { month: 'Month 11', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-  { month: 'Month 12', '1. Newly Created': 0, '2. Pending Review': 0, '3. Request More Info': 0, '4. Rejected': 0, '5. Approved': 0, '6. Contract signed': 0, '7. Disbursed': 0 },
-];
-
-const loanAmountByMonthData = [
-    { month: 'Month 1', 'Loan Amount': 0 },
-    { month: 'Month 2', 'Loan Amount': 0 },
-    { month: 'Month 3', 'Loan Amount': 0 },
-    { month: 'Month 4', 'Loan Amount': 0 },
-    { month: 'Month 5', 'Loan Amount': 0 },
-    { month: 'Month 6', 'Loan Amount': 0 },
-    { month: 'Month 7', 'Loan Amount': 0 },
-    { month: 'Month 8', 'Loan Amount': 600000000 },
-    { month: 'Month 9', 'Loan Amount': 350000000 },
-    { month: 'Month 10', 'Loan Amount': 100000000 },
-    { month: 'Month 11', 'Loan Amount': 0 },
-    { month: 'Month 12', 'Loan Amount': 0 },
-];
-
-const applicationSourcesData = [
-    { month: 'Month 1', Apps: 0, CTV: 0, Website: 0 },
-    { month: 'Month 2', Apps: 0, CTV: 0, Website: 0 },
-    { month: 'Month 3', Apps: 0, CTV: 0, Website: 0 },
-    { month: 'Month 4', Apps: 0, CTV: 0, Website: 0 },
-    { month: 'Month 5', Apps: 0, CTV: 0, Website: 0 },
-    { month: 'Month 6', Apps: 0, CTV: 0, Website: 0 },
-    { month: 'Month 7', Apps: 0, CTV: 0, Website: 0 },
-    { month: 'Month 8', Website: 257 },
-    { month: 'Month 9', Website: 181 },
-    { month: 'Month 10', Website: 65 },
-    { month: 'Month 11', Apps: 0, CTV: 0, Website: 0 },
-    { month: 'Month 12', Apps: 0, CTV: 0, Website: 0 },
-];
-
+import { type Application } from '@/lib/data';
+import { parse, getMonth } from 'date-fns';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
+const currencyFormatter = new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
 });
 
 export default function MonthlyReportPage() {
   const currentYear = new Date().getFullYear();
   const startYear = 2025;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => String(startYear + i));
+  
   const [year, setYear] = useState(String(currentYear));
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchApplications = useCallback(async (selectedYear: string) => {
+    setLoading(true);
+    try {
+      const filter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
+      const url = `https://api.y99.vn/data/Application/?sort=-id&values=id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__disbursement&filter=${filter}&page=-1&login=372`;
+      const response = await fetch(url);
+      const data = await response.json();
+      setApplications(data.rows || []);
+    } catch (error) {
+      console.error("Failed to fetch applications", error);
+      setApplications([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchApplications(year);
+  }, [year, fetchApplications]);
+
+  const reportData = useMemo(() => {
+    const months = Array.from({ length: 12 }, (_, i) => i);
+    const monthlyData = months.map(month => {
+        const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
+        return {
+            month: `Month ${month + 1}`,
+            apps: monthApps,
+            '1. Newly Created': monthApps.filter(a => a.status === 1).length,
+            '2. Pending Review': monthApps.filter(a => a.status === 2).length,
+            '3. Request More Info': monthApps.filter(a => a.status === 3).length,
+            '4. Rejected': monthApps.filter(a => a.status === 4).length,
+            '5. Approved': monthApps.filter(a => a.status === 5).length,
+            '6. Contract signed': monthApps.filter(a => a.status === 6).length,
+            '7. Disbursed': monthApps.filter(a => a.status === 7).length,
+            'Loan Amount': monthApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0),
+            'Apps': monthApps.filter(a => a.source__name === 'Apps').length,
+            'CTV': monthApps.filter(a => a.source__name === 'CTV').length,
+            'Website': monthApps.filter(a => a.source__name === 'Website').length,
+        }
+    });
+
+    const totalLoans = applications.length;
+    const disbursedApps = applications.filter(app => app.status === 7);
+    const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
+    const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
+
+    const loanRegionsData = applications.reduce((acc, app) => {
+        const name = app.province || 'Unknown';
+        const existing = acc.find(item => item.name === name);
+        if (existing) {
+            existing.value += 1;
+        } else {
+            acc.push({ name, value: 1 });
+        }
+        return acc;
+    }, [] as { name: string; value: number }[]);
+    
+    const loanTypeData = applications.reduce((acc, app) => {
+        const name = app.product__type__en || 'Unknown';
+        const existing = acc.find(item => item.name === name);
+        if (existing) {
+            existing.value += 1;
+        } else {
+            acc.push({ name, value: 1, fill: COLORS[acc.length % COLORS.length] });
+        }
+        return acc;
+    }, [] as { name: string; value: number; fill: string }[]);
+
+
+    return {
+        totalLoans,
+        totalLoanAmount,
+        totalCommission,
+        monthlyData,
+        loanRegionsData,
+        loanTypeData,
+    };
+  }, [applications]);
+
 
   return (
     <div className="space-y-6">
@@ -94,8 +118,8 @@ export default function MonthlyReportPage() {
       <div className="flex items-center justify-between mt-6 mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Monthly Loan Report for the Year
-          <Button variant="ghost" size="icon">
-            <RefreshCw className="h-5 w-5" />
+          <Button variant="ghost" size="icon" onClick={() => fetchApplications(year)} disabled={loading}>
+            <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </h1>
       </div>
@@ -104,21 +128,21 @@ export default function MonthlyReportPage() {
         <Card>
             <CardHeader><CardTitle className='text-sm font-medium'>Total Number of Loans</CardTitle></CardHeader>
             <CardContent>
-                <p className="text-2xl font-bold text-blue-600">57</p>
-                <p className='text-xs text-muted-foreground'>(Average 4.8 loans/month)</p>
+                <p className="text-2xl font-bold text-blue-600">{reportData.totalLoans}</p>
+                <p className='text-xs text-muted-foreground'>(Average { (reportData.totalLoans / 12).toFixed(1) } loans/month)</p>
             </CardContent>
         </Card>
          <Card>
             <CardHeader><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
             <CardContent>
-                <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(1510300000)}</p>
-                <p className="text-xs text-muted-foreground">Avg 125.8M /month</p>
+                <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(reportData.totalLoanAmount)}</p>
+                <p className="text-xs text-muted-foreground">Avg {currencyFormatter.format(reportData.totalLoanAmount / 12)} /month</p>
             </CardContent>
         </Card>
          <Card>
             <CardHeader><CardTitle className='text-sm font-medium'>Total Commission</CardTitle></CardHeader>
             <CardContent>
-                <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(600000)}</p>
+                <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)}</p>
             </CardContent>
         </Card>
         <Card>
@@ -145,7 +169,7 @@ export default function MonthlyReportPage() {
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={applicationsByMonthData}>
+                    <BarChart data={reportData.monthlyData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" fontSize={12} />
                         <YAxis label={{ value: 'applications', angle: -90, position: 'insideLeft' }} fontSize={12} />
@@ -168,11 +192,11 @@ export default function MonthlyReportPage() {
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                     <BarChart data={loanAmountByMonthData}>
+                     <BarChart data={reportData.monthlyData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" fontSize={12} />
                         <YAxis 
-                            tickFormatter={(value) => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(value)}
+                            tickFormatter={(value) => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(value as number)}
                             label={{ value: 'Loan Amount', angle: -90, position: 'insideLeft' }}
                             fontSize={12}
                         />
@@ -189,10 +213,10 @@ export default function MonthlyReportPage() {
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={applicationSourcesData}>
+                    <BarChart data={reportData.monthlyData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" fontSize={12}/>
-                        <YAxis label={{ value: 'applications', angle: -90, position: 'insideLeft' }} fontSize={12} />
+                        <YAxis label={{ value: 'applications', angle: -90, position: 'insideLeft' }} fontSize={12} allowDecimals={false} />
                         <Tooltip />
                         <Legend wrapperStyle={{fontSize: '12px'}} iconSize={10}/>
                         <Bar dataKey="Apps" stackId="a" fill="#3b82f6" />
@@ -207,10 +231,10 @@ export default function MonthlyReportPage() {
                 <CardTitle>Loan Regions</CardTitle>
             </CardHeader>
             <CardContent>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
-                        <Pie data={loanRegionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
-                            {loanRegionsData.map((entry, index) => (
+                        <Pie data={reportData.loanRegionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                            {reportData.loanRegionsData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
@@ -225,10 +249,10 @@ export default function MonthlyReportPage() {
                 <CardTitle>Loan Type Ratio This Year</CardTitle>
             </CardHeader>
             <CardContent>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
-                        <Pie data={loanTypeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
-                            {loanTypeData.map((entry, index) => (
+                        <Pie data={reportData.loanTypeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                            {reportData.loanTypeData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.fill} />
                             ))}
                         </Pie>
@@ -243,7 +267,3 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
-
-    
-
-    
