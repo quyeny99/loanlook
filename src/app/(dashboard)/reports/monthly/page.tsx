@@ -1,22 +1,18 @@
 
 'use client';
 
-import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { type Application } from '@/lib/data';
 import { getMonth } from 'date-fns';
+import PieChartCard from '@/components/reports/shared/pie-chart';
+import SummaryCards from '@/components/reports/monthly/summary-cards';
+import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
+import MonthlyLoanAmountChart from '@/components/reports/monthly/monthly-loan-amount-chart';
+import MonthlySourceChart from '@/components/reports/monthly/monthly-source-chart';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
-
-const currencyFormatter = new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'VND',
-    maximumFractionDigits: 0,
-});
 
 const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
@@ -100,7 +96,8 @@ export default function MonthlyReportPage() {
 
     const loanRegionsData = allLoanRegions
         .sort((a, b) => b.value - a.value)
-        .slice(0, 10);
+        .slice(0, 10)
+        .map((item, index) => ({...item, fill: COLORS[index % COLORS.length]}));
     
     const loanTypeData = applications.reduce((acc, app) => {
         const name = app.product__type__en || 'Unknown';
@@ -142,156 +139,36 @@ export default function MonthlyReportPage() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-            <CardHeader><CardTitle className='text-sm font-medium'>Total Number of Loans</CardTitle></CardHeader>
-            <CardContent>
-                <p className="text-2xl font-bold text-blue-600">{reportData.totalLoans}</p>
-                <p className='text-xs text-muted-foreground'>(Average { (reportData.totalLoans / 12).toFixed(1) } loans/month)</p>
-            </CardContent>
-        </Card>
-         <Card>
-            <CardHeader className="p-6"><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
-            <CardContent className="p-6 pt-0">
-                <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(reportData.totalLoanAmount)}</p>
-                <p className="text-xs text-muted-foreground">Avg {currencyFormatter.format(reportData.totalLoanAmount / 12)} /month</p>
-            </CardContent>
-        </Card>
-         <Card>
-            <CardHeader><CardTitle className='text-sm font-medium'>Total Commission</CardTitle></CardHeader>
-            <CardContent>
-                <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)}</p>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader><CardTitle className='text-sm font-medium'>Select Year</CardTitle></CardHeader>
-            <CardContent>
-                <Select value={year} onValueChange={setYear}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {years.map(y => (
-                      <SelectItem key={y} value={y}>{y}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-            </CardContent>
-        </Card>
-      </div>
+      <SummaryCards
+        totalLoans={reportData.totalLoans}
+        totalLoanAmount={reportData.totalLoanAmount}
+        totalCommission={reportData.totalCommission}
+        year={year}
+        setYear={setYear}
+        years={years}
+      />
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className='lg:col-span-1'>
-            <CardHeader>
-                <CardTitle>Applications by Month and Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={reportData.monthlyData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" fontSize={12} />
-                        <YAxis label={{ value: 'applications', angle: -90, position: 'insideLeft' }} fontSize={12} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{fontSize: '10px'}} iconSize={10} />
-                        <Bar dataKey="1. Newly Created" stackId="a" fill="#3b82f6" />
-                        <Bar dataKey="2. Pending Review" stackId="a" fill="#60a5fa" />
-                        <Bar dataKey="3. Request More Info" stackId="a" fill="#2dd4bf" />
-                        <Bar dataKey="4. Rejected" stackId="a" fill="#f97316" />
-                        <Bar dataKey="5. Approved" stackId="a" fill="#a855f7" />
-                        <Bar dataKey="6. Contract signed" stackId="a" fill="#ec4899" />
-                        <Bar dataKey="7. Disbursed" stackId="a" fill="#84cc16" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-        <Card className='lg:col-span-1'>
-            <CardHeader>
-                <CardTitle>Loan Amount by Month</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                     <BarChart data={reportData.monthlyData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" fontSize={12} />
-                        <YAxis 
-                            tickFormatter={(value) => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(value as number)}
-                            label={{ value: 'Loan Amount', angle: -90, position: 'insideLeft' }}
-                            fontSize={12}
-                        />
-                        <Tooltip formatter={(value: number) => currencyFormatter.format(value)} />
-                        <Legend wrapperStyle={{fontSize: '12px'}} iconSize={10}/>
-                        <Bar dataKey="Loan Amount" fill="#3b82f6" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-        <Card className='lg:col-span-1'>
-            <CardHeader>
-                <CardTitle>Application Sources</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={reportData.monthlyData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" fontSize={12}/>
-                        <YAxis label={{ value: 'applications', angle: -90, position: 'insideLeft' }} fontSize={12} allowDecimals={false} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{fontSize: '12px'}} iconSize={10}/>
-                        <Bar dataKey="Apps" stackId="a" fill="#3b82f6" />
-                        <Bar dataKey="CTV" stackId="a" fill="#f97316" />
-                        <Bar dataKey="Website" stackId="a" fill="#22c55e" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-         <Card>
-            <CardHeader>
-                <CardTitle>Loan Regions</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                        <Pie 
-                            data={reportData.loanRegionsData} 
-                            dataKey="value" 
-                            nameKey="name" 
-                            cx="50%" 
-                            cy="50%" 
-                            outerRadius={80} 
-                            labelLine={false}
-                            label={renderCustomizedLabel}
-                        >
-                            {reportData.loanRegionsData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                        <Tooltip />
-                    </PieChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle>Loan Type Ratio This Year</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                        <Pie data={reportData.loanTypeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                            {reportData.loanTypeData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{fontSize: '12px'}} iconSize={10}/>
-                    </PieChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
+        <MonthlyStatusChart data={reportData.monthlyData} />
+        <MonthlyLoanAmountChart data={reportData.monthlyData} />
+        <MonthlySourceChart data={reportData.monthlyData} />
+        <PieChartCard 
+          title="Loan Regions" 
+          data={reportData.loanRegionsData} 
+          label={renderCustomizedLabel} 
+          showLegend={false}
+          labelLine={true}
+        />
+        <PieChartCard 
+            title="Loan Type Ratio This Year" 
+            data={reportData.loanTypeData} 
+            legendLayout="vertical" 
+            legendAlign="right" 
+            legendVerticalAlign="middle" 
+            legendWrapperStyle={{fontSize: '12px', iconSize: 10}} 
+        />
       </div>
 
     </div>
   );
 }
-
-    
