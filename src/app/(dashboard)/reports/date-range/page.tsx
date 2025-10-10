@@ -13,7 +13,7 @@ import LoanTypeChart from '@/components/reports/date-range/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
 import { type Application } from '@/lib/data';
 
-const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
+const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 
@@ -66,16 +66,26 @@ export default function DateRangeReportsPage() {
         return acc;
     }, [] as { name: string; value: number; fill: string }[]);
 
-    const regionData = applications.reduce((acc, app) => {
+    const allLoanRegions = applications.reduce((acc, app) => {
         const name = app.province || 'Unknown';
         const existing = acc.find(item => item.name === name);
         if (existing) {
             existing.value += 1;
         } else {
-            acc.push({ name, value: 1, fill: COLORS[acc.length % COLORS.length] });
+            acc.push({ name, value: 1 });
         }
         return acc;
-    }, [] as { name: string; value: number; fill: string }[]);
+    }, [] as { name: string; value: number }[]).sort((a, b) => b.value - a.value);
+
+    let regionData = allLoanRegions;
+    if (allLoanRegions.length > 10) {
+        const top10 = allLoanRegions.slice(0, 10);
+        const otherCount = allLoanRegions.slice(10).reduce((acc, curr) => acc + curr.value, 0);
+        regionData = [...top10, { name: 'Others', value: otherCount }];
+    }
+    
+    const regionDataWithColors = regionData.map((item, index) => ({...item, fill: COLORS[index % COLORS.length]}));
+
 
     const statusData = [
         { name: '1. Newly Created', 'Total applications': applications.filter(a => a.status === 1).length },
@@ -117,7 +127,7 @@ export default function DateRangeReportsPage() {
         totalCommission,
         averageLoanTerm: Math.round(averageLoanTerm),
         paperData,
-        regionData,
+        regionData: regionDataWithColors,
         statusData,
         typeData,
         sourceData,
@@ -159,4 +169,5 @@ export default function DateRangeReportsPage() {
       </div>
     </div>
   );
-}
+
+    
