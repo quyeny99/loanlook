@@ -23,7 +23,7 @@ export default function MonthlyLoanAmountChart({ data }: MonthlyLoanAmountChartP
             dataKey="Loan Amount"
             xAxisKey="month"
             yAxisFormatter={compactFormatter}
-            yAxisLabel={{ value: 'Loan Amount', angle: -90, position: 'insideLeft' }}
+            yAxisLabel={{ value: 'Loan Amount', angle: -90, position: 'insideLeft', offset: -10 }}
             tooltipFormatter={currencyFormatter}
             className='lg:col-span-1'
             barProps={{ name: "Loan Amount" }}
