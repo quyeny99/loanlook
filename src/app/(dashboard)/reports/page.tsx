@@ -1,19 +1,19 @@
 
 'use client';
 
-import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, RefreshCw, ChevronRight } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { type Application } from '@/lib/data';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, ChevronRight } from 'lucide-react';
+import SummaryCards from '@/components/reports/daily/summary-cards';
+import LegalDocsChart from '@/components/reports/daily/legal-docs-chart';
+import LoanAreasChart from '@/components/reports/daily/loan-areas-chart';
+import StatusChart from '@/components/reports/daily/status-chart';
+import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
+import SourceChart from '@/components/reports/daily/source-chart';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
-const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 export default function ReportsPage() {
   const [date, setDate] = useState<Date>(new Date());
@@ -60,7 +60,7 @@ export default function ReportsPage() {
         acc.push({ name, value: 1 });
       }
       return acc;
-    }, [] as { name: string; value: number }[]).map((item, index) => ({ ...item, fill: COLORS[index % COLORS.length] }));
+    }, [] as { name: string; value: number }[]).map((item, index) => ({ ...item, fill: ['#3b82f6', '#a855f7'][index % 2] }));
 
     const regionData = applications.reduce((acc, app) => {
         const name = app.province || 'Unknown';
@@ -139,189 +139,19 @@ export default function ReportsPage() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Total applications</CardTitle>
-          </CardHeader>
-          <CardContent>
-             <p className="text-2xl font-bold text-blue-600">{reportData.totalApplications}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Total rejected</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-red-600">{reportData.totalRejected}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Loan Amount</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-blue-500 text-white font-bold">{reportData.disbursedCount}</div>
-                <p className="text-2xl font-bold text-blue-600">{currencyFormatter.format(reportData.loanAmount)} ₫</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-                 <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">0</div>
-                <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(0)} ₫</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Average Loan Term</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{Math.round(reportData.averageLoanTerm)} months</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Total Commission</CardTitle>
-          </CardHeader>
-          <CardContent>
-             <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-red-600 text-white font-bold">{applications.filter(a => a.commission).length}</div>
-                <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)} ₫</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-sm font-medium">Select Date</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Popover>
-                    <PopoverTrigger asChild>
-                    <Button
-                        variant={"outline"}
-                        className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                        )}
-                    >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "dd/MM/yyyy") : <span>DD/MM/YYYY</span>}
-                    </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                    <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={(day) => day && setDate(day)}
-                        initialFocus
-                    />
-                    </PopoverContent>
-                </Popover>
-            </CardContent>
-        </Card>
-      </div>
+      <SummaryCards
+        reportData={reportData}
+        applications={applications}
+        date={date}
+        setDate={setDate}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Legal Document Types</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={reportData.paperData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label >
-                  {reportData.paperData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value, name) => [value, name]} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Loan Areas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={reportData.regionData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                    {reportData.regionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                </Pie>
-                <Tooltip />
-                <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{fontSize: '12px'}} />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Loan Application Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={reportData.statusData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" type="category" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Applications" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Loan Type Ratio</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={reportData.typeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                    {reportData.typeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                </Pie>
-                <Tooltip formatter={(value, name) => [value, name]} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Source</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={reportData.sourceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="Applications" fill="#22c55e" />
-                </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
+        <LegalDocsChart paperData={reportData.paperData} />
+        <LoanAreasChart regionData={reportData.regionData} />
+        <StatusChart statusData={reportData.statusData} />
+        <LoanTypeChart typeData={reportData.typeData} />
+        <SourceChart sourceData={reportData.sourceData} />
       </div>
     </div>
   );
