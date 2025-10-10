@@ -54,17 +54,6 @@ export default function Header() {
                 <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost">
-                    <BarChart2 className="mr-2 h-4 w-4" />
-                    Disbursement Report
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                {/* Add disbursement report items here when they are created */}
-            </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>
