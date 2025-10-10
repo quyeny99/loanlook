@@ -53,19 +53,20 @@ export default function DateRangeReportsPage() {
     const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
     const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
     const averageLoanTerm = disbursedApps.length > 0 
-      ? disbursedApps.reduce((acc, app) => acc + app.approve_term, 0) / disbursedApps.length
+      ? disbursedApps.reduce((acc, app) => acc + (app.approve_term || 0), 0) / disbursedApps.length
       : 0;
 
-    const paperData = applications.reduce((acc, app) => {
+    const paperData = [
+        { name: 'Căn cước công dân', value: 0, fill: '#3b82f6' },
+        { name: 'Hộ chiếu', value: 0, fill: '#a855f7' }
+    ];
+    applications.forEach(app => {
         const name = app.legal_type__name || 'Unknown';
-        const existing = acc.find(item => item.name === name);
+        const existing = paperData.find(item => item.name === name);
         if (existing) {
             existing.value += 1;
-        } else {
-            acc.push({ name, value: 1, fill: COLORS[acc.length % COLORS.length] });
         }
-        return acc;
-    }, [] as { name: string; value: number; fill: string }[]);
+    });
 
     const allLoanRegions = applications.reduce((acc, app) => {
         const name = app.province || 'Unknown';

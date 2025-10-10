@@ -78,22 +78,23 @@ export default function ReportsPage() {
     
     const disbursedApps = disbursedApplications.filter(app => app.status === 7);
     const loanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
-    const totalCommission = disbursedApplications.reduce((acc, app) => acc + (app.commission || 0), 0);
+    const totalCommission = createdApplications.reduce((acc, app) => acc + (app.commission || 0), 0);
     const averageLoanTerm = disbursedApps.length > 0
       ? disbursedApps.reduce((acc, app) => acc + (app.approve_term || 0), 0) / disbursedApps.length
       : 0;
-    const commissionCount = disbursedApplications.filter(app => app.commission).length;
+    const commissionCount = createdApplications.filter(app => app.commission).length;
 
-    const paperData = disbursedApplications.reduce((acc, app) => {
-      const name = app.legal_type__name || 'Unknown';
-      const existing = acc.find(item => item.name === name);
-      if (existing) {
-        existing.value += 1;
-      } else {
-        acc.push({ name, value: 1 });
-      }
-      return acc;
-    }, [] as { name: string; value: number }[]).map((item, index) => ({ ...item, fill: ['#3b82f6', '#a855f7'][index % 2] }));
+    const paperData = [
+        { name: 'Căn cước công dân', value: 0, fill: '#3b82f6' },
+        { name: 'Hộ chiếu', value: 0, fill: '#a855f7' }
+    ];
+    disbursedApplications.forEach(app => {
+        const name = app.legal_type__name || 'Unknown';
+        const existing = paperData.find(item => item.name === name);
+        if (existing) {
+            existing.value += 1;
+        }
+    });
 
     const regionData = disbursedApplications.reduce((acc, app) => {
         const name = app.province || 'Unknown';
@@ -190,5 +191,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-
-    
