@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +8,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { type Application } from '@/lib/data';
 
 type SummaryCardsProps = {
     reportData: {
@@ -19,14 +19,17 @@ type SummaryCardsProps = {
         averageLoanTerm: number;
         commissionCount: number;
     };
-    applications: Application[];
+    collectedAmount: {
+        total: number;
+        count: number;
+    };
     date: Date;
     setDate: (date: Date) => void;
 };
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
-export default function SummaryCards({ reportData, applications, date, setDate }: SummaryCardsProps) {
+export default function SummaryCards({ reportData, collectedAmount, date, setDate }: SummaryCardsProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
             <Card>
@@ -62,8 +65,8 @@ export default function SummaryCards({ reportData, applications, date, setDate }
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center gap-2">
-                        <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">0</div>
-                        <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(0)} ₫</p>
+                        <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">{collectedAmount.count}</div>
+                        <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(collectedAmount.total)} ₫</p>
                     </div>
                 </CardContent>
             </Card>

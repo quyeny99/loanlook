@@ -19,6 +19,7 @@ export default function ReportsPage() {
   const [date, setDate] = useState<Date>(subDays(new Date(), 1));
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
+  const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
 
   const fetchApplications = useCallback(async (selectedDate: Date) => {
     setLoading(true);
@@ -37,9 +38,34 @@ export default function ReportsPage() {
     }
   }, []);
 
+  const fetchCollectedAmount = useCallback(async (selectedDate: Date) => {
+    try {
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      const filter = encodeURIComponent(JSON.stringify({
+        "category__code": "loan-payment",
+        "date": formattedDate
+      }));
+      const url = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${filter}&page=-1&login=372`;
+      const response = await fetch(url);
+      const data = await response.json();
+      const total = (data.rows || []).reduce((acc: number, entry: { amount: number }) => acc + entry.amount, 0);
+      const count = (data.rows || []).length;
+      setCollectedAmount({ total, count });
+    } catch (error) {
+      console.error("Failed to fetch collected amount", error);
+      setCollectedAmount({ total: 0, count: 0 });
+    }
+  }, []);
+
   useEffect(() => {
     fetchApplications(date);
-  }, [date, fetchApplications]);
+    fetchCollectedAmount(date);
+  }, [date, fetchApplications, fetchCollectedAmount]);
+  
+  const handleRefresh = useCallback(() => {
+    fetchApplications(date);
+    fetchCollectedAmount(date);
+  }, [date, fetchApplications, fetchCollectedAmount]);
 
   const reportData = useMemo(() => {
     const totalApplications = applications.length;
@@ -50,6 +76,7 @@ export default function ReportsPage() {
     const averageLoanTerm = disbursedApps.length > 0
       ? disbursedApps.reduce((acc, app) => acc + app.approve_term, 0) / disbursedApps.length
       : 0;
+    const commissionCount = applications.filter(app => app.commission).length;
 
     const paperData = applications.reduce((acc, app) => {
       const name = app.legal_type__name || 'Unknown';
@@ -118,7 +145,8 @@ export default function ReportsPage() {
       regionData,
       statusData,
       typeData,
-      sourceData
+      sourceData,
+      commissionCount
     };
   }, [applications]);
 
@@ -133,7 +161,7 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between mt-6 mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Daily Report
-          <Button variant="ghost" size="icon" onClick={() => fetchApplications(date)} disabled={loading}>
+          <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={loading}>
             <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </h1>
@@ -141,7 +169,7 @@ export default function ReportsPage() {
 
       <SummaryCards
         reportData={reportData}
-        applications={applications}
+        collectedAmount={collectedAmount}
         date={date}
         setDate={setDate}
       />
