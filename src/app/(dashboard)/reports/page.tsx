@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { type Application } from '@/lib/data';
 
-const COLORS = ['#3b82f6', '#60a5fa', '#2dd4bf', '#f97316', '#a855f7', '#ec4899', '#84cc16'];
+const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 export default function ReportsPage() {
@@ -43,8 +43,8 @@ export default function ReportsPage() {
 
   const reportData = useMemo(() => {
     const totalApplications = applications.length;
-    const totalRejected = applications.filter(app => app.status === 5).length; // Assuming status 5 is 'Rejected'
-    const disbursedApps = applications.filter(app => app.status === 7); // Assuming status 7 is 'Disbursed'
+    const totalRejected = applications.filter(app => app.status === 4).length; 
+    const disbursedApps = applications.filter(app => app.status === 7); 
     const loanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
     const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
     const averageLoanTerm = disbursedApps.length > 0
@@ -77,14 +77,14 @@ export default function ReportsPage() {
         { name: '1. Newly Created', Applications: applications.filter(a => a.status === 1).length },
         { name: '2. Pending Review', Applications: applications.filter(a => a.status === 2).length },
         { name: '3. Request More Info', Applications: applications.filter(a => a.status === 3).length },
-        { name: '4. Rejected', Applications: applications.filter(a => a.status === 4).length }, // Assuming 4 is another rejected status
-        { name: '5. Approved', Applications: applications.filter(a => a.status === 5).length }, // This seems wrong if 5 is rejected, adjust as per actual status codes
+        { name: '4. Rejected', Applications: applications.filter(a => a.status === 4).length },
+        { name: '5. Approved', Applications: applications.filter(a => a.status === 5).length },
         { name: '6. Contract signed', Applications: applications.filter(a => a.status === 6).length },
         { name: '7. Disbursed', Applications: applications.filter(a => a.status === 7).length },
     ];
     
     const typeData = applications.reduce((acc, app) => {
-        const name = app.product__type__name || 'Unknown';
+        const name = app.product__type__en || 'Unknown';
         const existing = acc.find(item => item.name === name);
         if (existing) {
             existing.value += 1;
@@ -93,6 +93,7 @@ export default function ReportsPage() {
         }
         return acc;
     }, [] as { name: string; value: number }[]).map((item, index) => ({ ...item, fill: COLORS[index % COLORS.length] }));
+
 
     const sourceData = applications.reduce((acc, app) => {
         const name = app.source__name || 'Unknown';
@@ -325,3 +326,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    
