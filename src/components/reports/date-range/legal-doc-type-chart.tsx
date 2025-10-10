@@ -1,16 +1,15 @@
 
 'use client';
 
-import PieChartCard from '@/components/reports/shared/pie-chart';
+import LegalDocTypeChart from '@/components/reports/shared/legal-doc-type-chart';
 
 type LegalDocTypeChartProps = {
     data: { name: string; value: number; fill: string }[];
 };
 
-export default function LegalDocTypeChart({ data }: LegalDocTypeChartProps) {
+export default function LegalDocTypeChartWrapper({ data }: LegalDocTypeChartProps) {
     return (
-        <PieChartCard
-            title="Legal Document Type"
+        <LegalDocTypeChart
             data={data}
         />
     );

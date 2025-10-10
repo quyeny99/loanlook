@@ -6,7 +6,7 @@ import { format, startOfMonth } from 'date-fns';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
-import LegalDocTypeChart from '@/components/reports/date-range/legal-doc-type-chart';
+import LegalDocTypeChart from '@/components/reports/shared/legal-doc-type-chart';
 import LoanRegionsChart from '@/components/reports/date-range/loan-regions-chart';
 import StatusChart from '@/components/reports/date-range/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';

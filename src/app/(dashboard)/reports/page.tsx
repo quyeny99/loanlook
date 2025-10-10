@@ -7,7 +7,7 @@ import { type Application } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import SummaryCards from '@/components/reports/daily/summary-cards';
-import LegalDocsChart from '@/components/reports/daily/legal-docs-chart';
+import LegalDocTypeChart from '@/components/reports/shared/legal-doc-type-chart';
 import LoanAreasChart from '@/components/reports/daily/loan-areas-chart';
 import StatusChart from '@/components/reports/daily/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
@@ -147,7 +147,7 @@ export default function ReportsPage() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <LegalDocsChart paperData={reportData.paperData} />
+        <LegalDocTypeChart data={reportData.paperData} />
         <LoanAreasChart regionData={reportData.regionData} />
         <StatusChart statusData={reportData.statusData} />
         <LoanTypeChart typeData={reportData.typeData} />
