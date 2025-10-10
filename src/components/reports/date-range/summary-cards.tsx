@@ -15,9 +15,15 @@ type SummaryCardsProps = {
     toDate: Date | undefined;
     setToDate: (date: Date | undefined) => void;
     currencyFormatter: Intl.NumberFormat;
+    reportData: {
+        disbursedCount: number;
+        totalLoanAmount: number;
+        averageLoanTerm: number;
+        totalCommission: number;
+    }
 };
 
-export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate, currencyFormatter }: SummaryCardsProps) {
+export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate, currencyFormatter, reportData }: SummaryCardsProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-start">
             <Card>
@@ -25,7 +31,7 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                     <CardTitle className="text-sm font-medium">Approved Loans</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-blue-600">1</p>
+                    <p className="text-2xl font-bold text-blue-600">{reportData.disbursedCount}</p>
                 </CardContent>
             </Card>
             <Card>
@@ -33,7 +39,7 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                     <CardTitle className="text-sm font-medium">Loan Amount</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold">{currencyFormatter.format(5000000)} ₫</p>
+                    <p className="text-2xl font-bold">{currencyFormatter.format(reportData.totalLoanAmount)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
@@ -41,7 +47,7 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                     <CardTitle className="text-sm font-medium">Average Loan Term</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold">6 months</p>
+                    <p className="text-2xl font-bold">{reportData.averageLoanTerm} months</p>
                 </CardContent>
             </Card>
             <Card>
@@ -49,7 +55,7 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                     <CardTitle className="text-sm font-medium">Total Commission</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(0)} ₫</p>
+                    <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
