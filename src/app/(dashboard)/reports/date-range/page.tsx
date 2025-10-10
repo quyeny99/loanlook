@@ -48,6 +48,7 @@ export default function DateRangeReportsPage() {
   }, [fromDate, toDate, fetchApplications]);
 
   const reportData = useMemo(() => {
+    const totalApplications = applications.length;
     const disbursedApps = applications.filter(app => app.status === 7);
     const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
     const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
@@ -122,6 +123,7 @@ export default function DateRangeReportsPage() {
 
 
     return {
+        totalApplications,
         disbursedCount: disbursedApps.length,
         totalLoanAmount,
         totalCommission,

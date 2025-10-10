@@ -16,6 +16,7 @@ type SummaryCardsProps = {
     setToDate: (date: Date | undefined) => void;
     currencyFormatter: Intl.NumberFormat;
     reportData: {
+        totalApplications: number;
         disbursedCount: number;
         totalLoanAmount: number;
         averageLoanTerm: number;
@@ -28,10 +29,10 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-start">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium">Approved Loans</CardTitle>
+                    <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-blue-600">{reportData.disbursedCount}</p>
+                    <p className="text-2xl font-bold text-blue-600">{reportData.totalApplications}</p>
                 </CardContent>
             </Card>
             <Card>
@@ -39,7 +40,10 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                     <CardTitle className="text-sm font-medium">Loan Amount</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold">{currencyFormatter.format(reportData.totalLoanAmount)} ₫</p>
+                     <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center px-2 h-7 rounded-md bg-blue-500 text-white font-bold">{reportData.disbursedCount}</div>
+                        <p className="text-2xl font-bold">{currencyFormatter.format(reportData.totalLoanAmount)} ₫</p>
+                    </div>
                 </CardContent>
             </Card>
             <Card>
