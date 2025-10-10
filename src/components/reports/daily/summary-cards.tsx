@@ -31,7 +31,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 export default function SummaryCards({ reportData, collectedAmount, date, setDate }: SummaryCardsProps) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">Total applications</CardTitle>
@@ -70,7 +70,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     </div>
                 </CardContent>
             </Card>
-            <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">Average Loan Term</CardTitle>
                 </CardHeader>
@@ -89,7 +89,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     </div>
                 </CardContent>
             </Card>
-            <Card>
+            <Card className="lg:col-span-2">
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">Select Date</CardTitle>
                 </CardHeader>
