@@ -73,7 +73,7 @@ export default function MonthlyReportPage() {
     const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
     const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
 
-    const loanRegionsData = applications.reduce((acc, app) => {
+    const allLoanRegions = applications.reduce((acc, app) => {
         const name = app.province || 'Unknown';
         const existing = acc.find(item => item.name === name);
         if (existing) {
@@ -83,6 +83,10 @@ export default function MonthlyReportPage() {
         }
         return acc;
     }, [] as { name: string; value: number }[]);
+
+    const loanRegionsData = allLoanRegions
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 10);
     
     const loanTypeData = applications.reduce((acc, app) => {
         const name = app.product__type__en || 'Unknown';
@@ -233,7 +237,7 @@ export default function MonthlyReportPage() {
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
-                        <Pie data={reportData.loanRegionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}>
+                        <Pie data={reportData.loanRegionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={false}>
                             {reportData.loanRegionsData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
