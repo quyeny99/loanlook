@@ -92,12 +92,16 @@ export default function MonthlyReportPage() {
             acc.push({ name, value: 1 });
         }
         return acc;
-    }, [] as { name: string; value: number }[]);
+    }, [] as { name: string; value: number }[]).sort((a, b) => b.value - a.value);
 
-    const loanRegionsData = allLoanRegions
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 10)
-        .map((item, index) => ({...item, fill: COLORS[index % COLORS.length]}));
+    let loanRegionsData = allLoanRegions;
+    if (allLoanRegions.length > 10) {
+        const top10 = allLoanRegions.slice(0, 10);
+        const otherCount = allLoanRegions.slice(10).reduce((acc, curr) => acc + curr.value, 0);
+        loanRegionsData = [...top10, { name: 'Others', value: otherCount }];
+    }
+    
+    const loanRegionsDataWithColors = loanRegionsData.map((item, index) => ({...item, fill: COLORS[index % COLORS.length]}));
     
     const loanTypeData = disbursedApps.reduce((acc, app) => {
         const name = app.product__type__en || 'Unknown';
@@ -116,7 +120,7 @@ export default function MonthlyReportPage() {
         totalLoanAmount,
         totalCommission,
         monthlyData,
-        loanRegionsData,
+        loanRegionsData: loanRegionsDataWithColors,
         loanTypeData,
     };
   }, [applications]);
