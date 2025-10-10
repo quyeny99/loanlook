@@ -61,6 +61,7 @@ export default function MonthlyReportPage() {
     const months = Array.from({ length: 12 }, (_, i) => i);
     const monthlyData = months.map(month => {
         const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
+        const disbursedMonthApps = monthApps.filter(app => app.status === 7);
         return {
             month: `Month ${month + 1}`,
             apps: monthApps,
@@ -70,8 +71,8 @@ export default function MonthlyReportPage() {
             '4. Rejected': monthApps.filter(a => a.status === 4).length,
             '5. Approved': monthApps.filter(a => a.status === 5).length,
             '6. Contract signed': monthApps.filter(a => a.status === 6).length,
-            '7. Disbursed': monthApps.filter(a => a.status === 7).length,
-            'Loan Amount': monthApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0),
+            '7. Disbursed': disbursedMonthApps.length,
+            'Loan Amount': disbursedMonthApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0),
             'Apps': monthApps.filter(a => a.source__name === 'Apps').length,
             'CTV': monthApps.filter(a => a.source__name === 'CTV').length,
             'Website': monthApps.filter(a => a.source__name === 'Website').length,
