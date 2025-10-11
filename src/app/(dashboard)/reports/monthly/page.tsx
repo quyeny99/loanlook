@@ -82,7 +82,7 @@ export default function MonthlyReportPage() {
     const disbursedApps = applications.filter(app => app.status === 7);
     const totalLoans = disbursedApps.length;
     const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
-    const totalCommission = applications.reduce((acc, app) => acc + (app.commission || 0), 0);
+    const totalCommission = disbursedApps.reduce((acc, app) => acc + (app.commission || 0), 0);
 
     const allLoanRegions = disbursedApps.reduce((acc, app) => {
         const name = app.province || 'Unknown';
