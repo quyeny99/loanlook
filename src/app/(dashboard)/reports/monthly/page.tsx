@@ -64,7 +64,7 @@ export default function MonthlyReportPage() {
         const disbursedMonthApps = monthApps.filter(app => app.status === 7);
         return {
             month: `Month ${month + 1}`,
-            apps: monthApps,
+            total: monthApps.length,
             '1. Newly Created': monthApps.filter(a => a.status === 1).length,
             '2. Pending Review': monthApps.filter(a => a.status === 2).length,
             '3. Request More Info': monthApps.filter(a => a.status === 3).length,
