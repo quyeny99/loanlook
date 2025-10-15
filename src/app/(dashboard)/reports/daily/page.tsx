@@ -25,7 +25,6 @@ type LoanSchedule = {
   paid_amount: number;
   remain_amount: number;
   ovd_amount: number;
-  amount: number;
   itr_income: number;
 };
 
@@ -153,7 +152,8 @@ export default function ReportsPage() {
         { name: 'Website', Applications: 0 },
     ];
     createdApplications.forEach(app => {
-        const source = sourceData.find(s => s.name === app.source__name);
+        const sourceName = app.source__name || 'Unknown';
+        const source = sourceData.find(s => s.name === sourceName);
         if (source) {
             source.Applications += 1;
         }
@@ -170,10 +170,14 @@ export default function ReportsPage() {
     const potentialInterest = loanSchedules
       .filter(s => s.type === 2 && s.status === 1)
       .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+      
+    const potentialFees = loanSchedules
+      .filter(s => s.type === 3 && s.status === 1)
+      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const overdueDebt = loanSchedules.reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
     
-    const estimatedProfit = loanSchedules.reduce((acc, s) => acc + (s.itr_income || 0), 0);
+    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
 
 
     return {
