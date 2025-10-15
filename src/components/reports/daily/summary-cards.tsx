@@ -30,6 +30,15 @@ type SummaryCardsProps = {
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 export default function SummaryCards({ reportData, collectedAmount, date, setDate }: SummaryCardsProps) {
+    const dummyData = {
+        disbursedLoansCount: 12,
+        collectedFees: 5200000,
+        collectedInterest: 15000000,
+        potentialInterest: 25000000,
+        overdueDebt: 7500000,
+        estimatedProfit: 12000000,
+    }
+    
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
@@ -89,7 +98,51 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     </div>
                 </CardContent>
             </Card>
-            <Card className="lg:col-span-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Disbursed Loans</CardTitle>
+                </CardHeader>
+                <CardContent>
+                     <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center px-2 h-7 rounded-md bg-green-500 text-white font-bold">{dummyData.disbursedLoansCount}</div>
+                        <p className="text-2xl font-bold">{currencyFormatter.format(reportData.loanAmount)} ₫</p>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold text-indigo-500">{currencyFormatter.format(dummyData.collectedFees)} ₫</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Collected & Potential Interest</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(dummyData.collectedInterest)} ₫</p>
+                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(dummyData.potentialInterest)} ₫</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Overdue Debt</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold text-red-500">{currencyFormatter.format(dummyData.overdueDebt)} ₫</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Estimated Profit</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(dummyData.estimatedProfit)} ₫</p>
+                </CardContent>
+            </Card>
+            <Card>
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">Select Date</CardTitle>
                 </CardHeader>

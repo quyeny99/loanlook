@@ -161,7 +161,7 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
        <div className="flex items-center text-sm text-muted-foreground">
-        <span>Reports</span>
+        <span className='cursor-pointer' onClick={() => window.location.href = '/reports'}>Reports</span>
         <ChevronRight className="h-4 w-4" />
         <span className="font-semibold text-foreground">1. Daily</span>
       </div>
