@@ -19,53 +19,76 @@ const API_BASE_URL = 'https://api.y99.vn/data/Application/';
 const API_VALUES = 'id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date';
 const LOGIN_PARAM = 'login=372';
 
+type LoanSchedule = {
+  id: number;
+  type: number;
+  status: number;
+  paid_amount: number;
+  remain_amount: number;
+  ovd_amount: number;
+  itr_income: number;
+};
+
 
 export default function DateRangeReportsPage() {
   const [fromDate, setFromDate] = useState<Date | undefined>(startOfMonth(new Date()));
   const [toDate, setToDate] = useState<Date | undefined>(new Date());
   const [createdApplications, setCreatedApplications] = useState<Application[]>([]);
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
+  const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchApplications = useCallback(async (start?: Date, end?: Date) => {
+  const fetchData = useCallback(async (start?: Date, end?: Date) => {
     if (!start || !end) return;
     setLoading(true);
     try {
+      const formattedFromDate = format(start, 'yyyy-MM-dd');
+      const formattedToDate = format(end, 'yyyy-MM-dd');
+
       const disbursementFilter = encodeURIComponent(JSON.stringify({ 
-        "loanapp__dbm_entry__date__gte": format(start, 'yyyy-MM-dd'),
-        "loanapp__dbm_entry__date__lte": format(end, 'yyyy-MM-dd')
+        "loanapp__dbm_entry__date__gte": formattedFromDate,
+        "loanapp__dbm_entry__date__lte": formattedToDate
       }));
       const creationFilter = encodeURIComponent(JSON.stringify({ 
-        "create_time__date__gte": format(start, 'yyyy-MM-dd'),
-        "create_time__date__lte": format(end, 'yyyy-MM-dd')
+        "create_time__date__gte": formattedFromDate,
+        "create_time__date__lte": formattedToDate
+      }));
+      const loanScheduleFilter = encodeURIComponent(JSON.stringify({ 
+        "to_date__gte": formattedFromDate,
+        "to_date__lte": formattedToDate
       }));
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&${LOGIN_PARAM}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&${LOGIN_PARAM}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=372&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${loanScheduleFilter}`;
 
-      const [disbursedResponse, createdResponse] = await Promise.all([
+      const [disbursedResponse, createdResponse, loanScheduleResponse] = await Promise.all([
         fetch(disbursedUrl),
-        fetch(createdUrl)
+        fetch(createdUrl),
+        fetch(loanScheduleUrl)
       ]);
 
       const disbursedData = await disbursedResponse.json();
       const createdData = await createdResponse.json();
+      const loanScheduleData = await loanScheduleResponse.json();
 
       setDisbursedApplications(disbursedData.rows || []);
       setCreatedApplications(createdData.rows || []);
+      setLoanSchedules(loanScheduleData.rows || []);
 
     } catch (error) {
       console.error("Failed to fetch applications", error);
       setDisbursedApplications([]);
       setCreatedApplications([]);
+      setLoanSchedules([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchApplications(fromDate, toDate);
-  }, [fromDate, toDate, fetchApplications]);
+    fetchData(fromDate, toDate);
+  }, [fromDate, toDate, fetchData]);
 
   const reportData = useMemo(() => {
     const totalApplications = createdApplications.length;
@@ -137,11 +160,33 @@ export default function DateRangeReportsPage() {
         { name: 'Website', 'Total applications': 0 },
     ];
     createdApplications.forEach(app => {
-        const source = sourceData.find(s => s.name === app.source__name);
+        const sourceName = app.source__name || 'Unknown';
+        const source = sourceData.find(s => s.name === sourceName);
         if (source) {
             source['Total applications'] += 1;
         }
     });
+
+    const collectedInterest = loanSchedules
+      .filter(s => s.type === 2 && (s.paid_amount ?? 0) > 0)
+      .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
+
+    const collectedFees = loanSchedules
+      .filter(s => s.type === 3 && (s.paid_amount ?? 0) > 0)
+      .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
+
+    const potentialInterest = loanSchedules
+      .filter(s => s.type === 2)
+      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+    
+    const potentialFees = loanSchedules
+        .filter(s => s.type === 3)
+        .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+
+    const overdueDebt = loanSchedules
+      .reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
+
+    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
 
 
     return {
@@ -155,8 +200,13 @@ export default function DateRangeReportsPage() {
         statusData,
         typeData,
         sourceData,
+        collectedFees,
+        collectedInterest,
+        potentialInterest,
+        overdueDebt,
+        estimatedProfit
     }
-  }, [createdApplications, disbursedApplications]);
+  }, [createdApplications, disbursedApplications, loanSchedules]);
 
   return (
     <div className="space-y-6">
@@ -169,7 +219,7 @@ export default function DateRangeReportsPage() {
       <div className="flex items-center justify-between mt-6 mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Loan Report by Date Range
-          <Button variant="ghost" size="icon" onClick={() => fetchApplications(fromDate, toDate)} disabled={loading}>
+          <Button variant="ghost" size="icon" onClick={() => fetchData(fromDate, toDate)} disabled={loading}>
             <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </h1>
