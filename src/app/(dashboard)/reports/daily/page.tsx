@@ -20,7 +20,8 @@ const LOGIN_PARAM = 'login=372';
 
 type LoanSchedule = {
   id: number;
-  type__en: string;
+  type: number;
+  status: number;
   paid_amount: number;
   remain_amount: number;
   ovd_amount: number;
@@ -48,7 +49,7 @@ export default function ReportsPage() {
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&${LOGIN_PARAM}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&${LOGIN_PARAM}`;
       const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"category__code": "loan-payment","date": formattedDate}))}&page=-1&${LOGIN_PARAM}`;
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=372&sort=to_date,-type&values=id,type__en,reduce_amount,ovd_days,remain_amount,detail,paid_amount,paid_date,entry,entry__code,pay_amount,itr_income,days_income,penalty_ratio,batch_date,ovd_amount,penalty_ratio,penalty_amount,code,from_date,to_date,cycle,amount,loan,type,type__code,type__name,updater,create_time,update_time,principal,cycle_days,ratio,status,status__code,status__name&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=372&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
 
       const [createdResponse, disbursedResponse, collectedAmountResponse, loanScheduleResponse] = await Promise.all([
         fetch(createdUrl),
@@ -159,15 +160,15 @@ export default function ReportsPage() {
     });
     
     const collectedFees = loanSchedules
-      .filter(s => s.type__en === 'Fee')
+      .filter(s => s.type === 3)
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
       
     const collectedInterest = loanSchedules
-      .filter(s => s.type__en === 'Interest')
+      .filter(s => s.type === 2)
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
     const potentialInterest = loanSchedules
-      .filter(s => s.type__en === 'Interest')
+      .filter(s => s.type === 2 && s.status === 1)
       .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const overdueDebt = loanSchedules.reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
