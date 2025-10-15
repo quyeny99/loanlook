@@ -160,11 +160,11 @@ export default function ReportsPage() {
     });
     
     const collectedFees = loanSchedules
-      .filter(s => s.type === 3)
+      .filter(s => s.type === 3 && s.status === 2)
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
       
     const collectedInterest = loanSchedules
-      .filter(s => s.type === 2)
+      .filter(s => s.type === 2 && s.status === 2)
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
     const potentialInterest = loanSchedules
