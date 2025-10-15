@@ -18,6 +18,11 @@ type SummaryCardsProps = {
         totalCommission: number;
         averageLoanTerm: number;
         commissionCount: number;
+        collectedFees: number;
+        collectedInterest: number;
+        potentialInterest: number;
+        overdueDebt: number;
+        estimatedProfit: number;
     };
     collectedAmount: {
         total: number;
@@ -30,14 +35,6 @@ type SummaryCardsProps = {
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 export default function SummaryCards({ reportData, collectedAmount, date, setDate }: SummaryCardsProps) {
-    const dummyData = {
-        disbursedLoansCount: 12,
-        collectedFees: 5200000,
-        collectedInterest: 15000000,
-        potentialInterest: 25000000,
-        overdueDebt: 7500000,
-        estimatedProfit: 12000000,
-    }
     
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -103,7 +100,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-indigo-500">{currencyFormatter.format(dummyData.collectedFees)} ₫</p>
+                    <p className="text-2xl font-bold text-indigo-500">{currencyFormatter.format(reportData.collectedFees)} ₫</p>
                 </CardContent>
             </Card>
              <Card>
@@ -111,8 +108,8 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     <CardTitle className="text-sm font-medium">Collected & Potential Interest</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(dummyData.collectedInterest)} ₫</p>
-                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(dummyData.potentialInterest)} ₫</p>
+                    <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.collectedInterest)} ₫</p>
+                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.potentialInterest)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
@@ -120,7 +117,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     <CardTitle className="text-sm font-medium">Overdue Debt</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-red-500">{currencyFormatter.format(dummyData.overdueDebt)} ₫</p>
+                    <p className="text-2xl font-bold text-red-500">{currencyFormatter.format(reportData.overdueDebt)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
@@ -128,7 +125,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     <CardTitle className="text-sm font-medium">Estimated Profit</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(dummyData.estimatedProfit)} ₫</p>
+                    <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.estimatedProfit)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
