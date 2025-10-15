@@ -4,9 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type SummaryCardsProps = {
-    totalLoans: number;
-    totalLoanAmount: number;
-    totalCommission: number;
+    reportData: {
+        totalLoans: number;
+        totalLoanAmount: number;
+        totalCommission: number;
+        collectedFees: number;
+        collectedInterest: number;
+        potentialInterest: number;
+        overdueDebt: number;
+        estimatedProfit: number;
+    }
     year: string;
     setYear: (year: string) => void;
     years: string[];
@@ -19,27 +26,60 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {
 });
 
 
-export default function SummaryCards({ totalLoans, totalLoanAmount, totalCommission, year, setYear, years }: SummaryCardsProps) {
+export default function SummaryCards({ reportData, year, setYear, years }: SummaryCardsProps) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             <Card>
                 <CardHeader><CardTitle className='text-sm font-medium'>Total Number of Loans</CardTitle></CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-blue-600">{totalLoans}</p>
-                    <p className='text-xs text-muted-foreground'>(Average { (totalLoans / 12).toFixed(1) } loans/month)</p>
+                    <p className="text-2xl font-bold text-blue-600">{reportData.totalLoans}</p>
+                    <p className='text-xs text-muted-foreground'>(Average { (reportData.totalLoans / 12).toFixed(1) } loans/month)</p>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="p-6"><CardTitle className='text-sm font-medium'>Total Loan Amount</CardTitle></CardHeader>
                 <CardContent className="p-6 pt-0">
-                    <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(totalLoanAmount)}</p>
-                    <p className="text-xs text-muted-foreground">Avg {currencyFormatter.format(totalLoanAmount / 12)} /month</p>
+                    <p className="text-2xl font-bold text-green-600">{currencyFormatter.format(reportData.totalLoanAmount)}</p>
+                    <p className="text-xs text-muted-foreground">Avg {currencyFormatter.format(reportData.totalLoanAmount / 12)} /month</p>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader><CardTitle className='text-sm font-medium'>Total Commission</CardTitle></CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(totalCommission)}</p>
+                    <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)}</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold text-indigo-500">{currencyFormatter.format(reportData.collectedFees)} ₫</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Collected & Potential Interest</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.collectedInterest)} ₫</p>
+                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.potentialInterest)} ₫</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Overdue Debt</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold text-red-500">{currencyFormatter.format(reportData.overdueDebt)} ₫</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Estimated Profit</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.estimatedProfit)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
