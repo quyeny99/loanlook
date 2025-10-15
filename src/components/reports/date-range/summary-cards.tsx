@@ -31,7 +31,7 @@ type SummaryCardsProps = {
 
 export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate, currencyFormatter, reportData }: SummaryCardsProps) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
