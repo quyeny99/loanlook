@@ -11,6 +11,7 @@ import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
 import MonthlyLoanAmountChart from '@/components/reports/monthly/monthly-loan-amount-chart';
 import MonthlySourceChart from '@/components/reports/monthly/monthly-source-chart';
+import MonthlyFinancialsTable from '@/components/reports/monthly/monthly-financials-table';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 
@@ -35,12 +36,13 @@ type LoanSchedule = {
   remain_amount: number;
   ovd_amount: number;
   itr_income: number;
+  to_date: string;
 };
 
 
 export default function MonthlyReportPage() {
   const currentYear = new Date().getFullYear();
-  const startYear = 2025;
+  const startYear = 2024;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => String(startYear + i));
   
   const [year, setYear] = useState(String(currentYear));
@@ -58,7 +60,7 @@ export default function MonthlyReportPage() {
         "to_date__gte": `${selectedYear}-01-01`,
         "to_date__lte": `${selectedYear}-12-31`
       }));
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=372&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${loanScheduleFilter}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=372&sort=to_date,-type&values=id,to_date,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${loanScheduleFilter}`;
 
       const [appResponse, loanScheduleResponse] = await Promise.all([
         fetch(appUrl),
@@ -88,6 +90,30 @@ export default function MonthlyReportPage() {
     const monthlyData = months.map(month => {
         const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
         const disbursedMonthApps = monthApps.filter(app => app.status === 7);
+
+        const monthSchedules = loanSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month);
+
+        const collectedInterest = monthSchedules
+          .filter(s => s.type === 2 && (s.paid_amount ?? 0) > 0)
+          .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
+
+        const collectedFees = monthSchedules
+          .filter(s => s.type === 3 && (s.paid_amount ?? 0) > 0)
+          .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
+
+        const potentialInterest = monthSchedules
+          .filter(s => s.type === 2)
+          .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+        
+        const potentialFees = monthSchedules
+            .filter(s => s.type === 3)
+            .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+
+        const overdueDebt = monthSchedules
+          .reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
+
+        const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
+
         return {
             month: `Month ${month + 1}`,
             total: monthApps.length,
@@ -102,6 +128,11 @@ export default function MonthlyReportPage() {
             'Apps': monthApps.filter(a => a.source__name === 'Apps').length,
             'CTV': monthApps.filter(a => a.source__name === 'CTV').length,
             'Website': monthApps.filter(a => a.source__name === 'Website').length,
+            collectedFees,
+            collectedInterest,
+            potentialInterest,
+            overdueDebt,
+            estimatedProfit,
         }
     });
 
@@ -109,6 +140,7 @@ export default function MonthlyReportPage() {
     const totalLoans = disbursedApps.length;
     const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
     const totalCommission = disbursedApps.reduce((acc, app) => acc + (app.commission || 0), 0);
+    
 
     const allLoanRegions = disbursedApps.reduce((acc, app) => {
         const name = app.province || 'Unknown';
@@ -141,28 +173,6 @@ export default function MonthlyReportPage() {
         return acc;
     }, [] as { name: string; value: number; fill: string }[]);
 
-    const collectedInterest = loanSchedules
-      .filter(s => s.type === 2 && (s.paid_amount ?? 0) > 0)
-      .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
-
-    const collectedFees = loanSchedules
-      .filter(s => s.type === 3 && (s.paid_amount ?? 0) > 0)
-      .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
-
-    const potentialInterest = loanSchedules
-      .filter(s => s.type === 2)
-      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
-    
-    const potentialFees = loanSchedules
-        .filter(s => s.type === 3)
-        .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
-
-    const overdueDebt = loanSchedules
-      .reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
-
-    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
-
-
     return {
         totalLoans,
         totalLoanAmount,
@@ -170,11 +180,6 @@ export default function MonthlyReportPage() {
         monthlyData,
         loanRegionsData: loanRegionsDataWithColors,
         loanTypeData,
-        collectedFees,
-        collectedInterest,
-        potentialInterest,
-        overdueDebt,
-        estimatedProfit,
     };
   }, [applications, loanSchedules]);
 
@@ -202,6 +207,8 @@ export default function MonthlyReportPage() {
         setYear={setYear}
         years={years}
       />
+      
+      <MonthlyFinancialsTable data={reportData.monthlyData} />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyStatusChart data={reportData.monthlyData} />
