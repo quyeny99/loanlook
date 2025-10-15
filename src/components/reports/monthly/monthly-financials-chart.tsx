@@ -11,6 +11,7 @@ type MonthlyFinancialsChartProps = {
     collectedInterest: number;
     potentialInterest: number;
     overdueDebt: number;
+    estimatedProfit: number;
   }[];
 };
 
@@ -50,6 +51,7 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
             <Bar dataKey="collectedInterest" name="Collected Interest" fill="#14b8a6" />
             <Bar dataKey="potentialInterest" name="Potential Interest" fill="#6b7280" />
             <Bar dataKey="overdueDebt" name="Overdue Debt" fill="#ef4444" />
+            <Bar dataKey="estimatedProfit" name="Estimated Profit" fill="#a855f7" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
