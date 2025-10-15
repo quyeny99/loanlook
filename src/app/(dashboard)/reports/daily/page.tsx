@@ -159,25 +159,27 @@ export default function ReportsPage() {
         }
     });
     
-    const collectedFees = loanSchedules
-      .filter(s => s.type === 3 && s.status === 2)
-      .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
-      
     const collectedInterest = loanSchedules
-      .filter(s => s.type === 2 && s.status === 2)
+      .filter(s => s.type === 2 && (s.paid_amount ?? 0) > 0)
+      .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
+
+    const collectedFees = loanSchedules
+      .filter(s => s.type === 3 && (s.paid_amount ?? 0) > 0)
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
     const potentialInterest = loanSchedules
-      .filter(s => s.type === 2 && s.status === 1)
-      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
-      
-    const potentialFees = loanSchedules
-      .filter(s => s.type === 3 && s.status === 1)
+      .filter(s => s.type === 2)
       .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
-    const overdueDebt = loanSchedules.reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
-    
-    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
+    const potentialFees = loanSchedules
+      .filter(s => s.type === 3)
+      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+
+    const overdueDebt = loanSchedules
+      .reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
+
+    const estimatedProfit =
+      collectedInterest + collectedFees + potentialInterest + potentialFees;
 
 
     return {
