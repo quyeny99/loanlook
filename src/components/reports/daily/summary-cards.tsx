@@ -100,17 +100,6 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium">Disbursed Loans</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <div className="flex items-center gap-2">
-                        <div className="flex items-center justify-center px-2 h-7 rounded-md bg-green-500 text-white font-bold">{dummyData.disbursedLoansCount}</div>
-                        <p className="text-2xl font-bold">{currencyFormatter.format(reportData.loanAmount)} ₫</p>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
                     <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
                 </CardHeader>
                 <CardContent>
