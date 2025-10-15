@@ -11,7 +11,7 @@ import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
 import MonthlyLoanAmountChart from '@/components/reports/monthly/monthly-loan-amount-chart';
 import MonthlySourceChart from '@/components/reports/monthly/monthly-source-chart';
-import MonthlyFinancialsTable from '@/components/reports/monthly/monthly-financials-table';
+import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 
@@ -35,7 +35,6 @@ type LoanSchedule = {
   paid_amount: number;
   remain_amount: number;
   ovd_amount: number;
-  itr_income: number;
   to_date: string;
 };
 
@@ -208,7 +207,7 @@ export default function MonthlyReportPage() {
         years={years}
       />
       
-      <MonthlyFinancialsTable data={reportData.monthlyData} />
+      <MonthlyFinancialsChart data={reportData.monthlyData} />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyStatusChart data={reportData.monthlyData} />
