@@ -48,9 +48,9 @@ export default function LoginPage() {
 
       const response = await fetch(url);
       
-      const text = await response.text();
+      const data = await response.json();
 
-      if (response.status !== 200 || !text) {
+      if (!response.ok || !data.rows || !data.rows.id) {
         form.setError('password', {
           type: 'manual',
           message: 'Invalid email or password.',
@@ -59,6 +59,7 @@ export default function LoginPage() {
       }
       
       localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userId', data.rows.id);
 
       toast({
         title: 'Success',

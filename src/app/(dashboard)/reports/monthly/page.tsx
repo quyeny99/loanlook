@@ -48,18 +48,25 @@ export default function MonthlyReportPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loginId, setLoginId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = localStorage.getItem('userId');
+    setLoginId(id);
+  }, []);
 
   const fetchData = useCallback(async (selectedYear: string) => {
+    if (!loginId) return;
     setLoading(true);
     try {
       const appFilter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
-      const appUrl = `https://api.y99.vn/data/Application/?sort=-id&values=id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__disbursement&filter=${appFilter}&page=-1&login=372`;
+      const appUrl = `https://api.y99.vn/data/Application/?sort=-id&values=id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__disbursement&filter=${appFilter}&page=-1&login=${loginId}`;
       
       const loanScheduleFilter = encodeURIComponent(JSON.stringify({ 
         "to_date__gte": `${selectedYear}-01-01`,
         "to_date__lte": `${selectedYear}-12-31`
       }));
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=372&sort=to_date,-type&values=id,to_date,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${loanScheduleFilter}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,to_date,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${loanScheduleFilter}`;
 
       const [appResponse, loanScheduleResponse] = await Promise.all([
         fetch(appUrl),
@@ -78,11 +85,13 @@ export default function MonthlyReportPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loginId]);
 
   useEffect(() => {
-    fetchData(year);
-  }, [year, fetchData]);
+    if (loginId) {
+      fetchData(year);
+    }
+  }, [year, fetchData, loginId]);
 
   const reportData = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => i);

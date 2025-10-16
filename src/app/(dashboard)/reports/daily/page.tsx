@@ -16,7 +16,6 @@ import SourceChart from '@/components/reports/daily/source-chart';
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
 const API_VALUES = 'id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date';
-const LOGIN_PARAM = 'login=372';
 
 type LoanSchedule = {
   id: number;
@@ -36,8 +35,15 @@ export default function ReportsPage() {
   const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
+  const [loginId, setLoginId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = localStorage.getItem('userId');
+    setLoginId(id);
+  }, []);
 
   const fetchData = useCallback(async (selectedDate: Date) => {
+    if (!loginId) return;
     setLoading(true);
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
@@ -45,10 +51,10 @@ export default function ReportsPage() {
       const createTimeFilter = encodeURIComponent(JSON.stringify({ "create_time__date": formattedDate }));
       const disbursementDateFilter = encodeURIComponent(JSON.stringify({ "loanapp__dbm_entry__date": formattedDate }));
       
-      const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&${LOGIN_PARAM}`;
-      const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&${LOGIN_PARAM}`;
-      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"category__code": "loan-payment","date": formattedDate}))}&page=-1&${LOGIN_PARAM}`;
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=372&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
+      const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
+      const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
+      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"category__code": "loan-payment","date": formattedDate}))}&page=-1&login=${loginId}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
 
       const [createdResponse, disbursedResponse, collectedAmountResponse, loanScheduleResponse] = await Promise.all([
         fetch(createdUrl),
@@ -79,11 +85,13 @@ export default function ReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loginId]);
 
   useEffect(() => {
-    fetchData(date);
-  }, [date, fetchData]);
+    if (loginId) {
+      fetchData(date);
+    }
+  }, [date, fetchData, loginId]);
   
   const handleRefresh = useCallback(() => {
     fetchData(date);

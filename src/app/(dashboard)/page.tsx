@@ -13,8 +13,8 @@ export default function Home() {
   useEffect(() => {
     // In a real app, you'd verify a token stored in localStorage or a cookie.
     // For this example, we'll use a simple flag in localStorage.
-    const loggedIn = localStorage.getItem('isAuthenticated') === 'true';
-    if (loggedIn) {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
       setIsAuthenticated(true);
     } else {
       router.push('/login');

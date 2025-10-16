@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { LogOut, BarChart2 } from 'lucide-react';
@@ -16,6 +14,7 @@ export default function Header() {
 
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userId');
 
     toast({
       title: 'Signed Out',
