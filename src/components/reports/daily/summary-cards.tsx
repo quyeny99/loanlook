@@ -95,7 +95,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     </div>
                 </CardContent>
             </Card>
-            <Card>
+            {/* <Card>
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
                 </CardHeader>
@@ -127,7 +127,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                 <CardContent>
                     <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.estimatedProfit)} ₫</p>
                 </CardContent>
-            </Card>
+            </Card> */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">Select Date</CardTitle>
