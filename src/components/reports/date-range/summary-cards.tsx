@@ -22,6 +22,7 @@ type SummaryCardsProps = {
         averageLoanTerm: number;
         totalCommission: number;
         collectedFees: number;
+        potentialFees: number;
         collectedInterest: number;
         potentialInterest: number;
         overdueDebt: number;
@@ -69,10 +70,11 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
+                    <CardTitle className="text-sm font-medium">Collected & Potential Fees</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-indigo-500">{currencyFormatter.format(reportData.collectedFees)} ₫</p>
+                    <p className="text-lg font-bold text-indigo-500">{currencyFormatter.format(reportData.collectedFees)} ₫</p>
+                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.potentialFees)} ₫</p>
                 </CardContent>
             </Card>
              <Card>
