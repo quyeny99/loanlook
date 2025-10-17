@@ -208,6 +208,7 @@ export default function DateRangeReportsPage() {
         typeData,
         sourceData,
         collectedFees,
+        potentialFees,
         collectedInterest,
         potentialInterest,
         overdueDebt,
