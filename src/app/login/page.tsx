@@ -61,6 +61,20 @@ export default function LoginPage() {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userId', data.rows.id);
 
+      // Fetch user details after successful login
+      const userFilter = JSON.stringify({ username: values.email });
+      const userValues = 'id,avatar,username,fullname,type__code,type__name,is_admin';
+      const userUrl = `https://api.y99.vn/data/User/?filter=${encodeURIComponent(userFilter)}&values=${userValues}`;
+
+      const userResponse = await fetch(userUrl);
+      const userData = await userResponse.json();
+
+      if (userResponse.ok && userData.rows && userData.rows.length > 0) {
+        localStorage.setItem('userInfo', JSON.stringify(userData.rows[0]));
+      } else {
+        console.error('Failed to fetch user info');
+      }
+
       toast({
         title: 'Success',
         description: 'You have successfully logged in.',
