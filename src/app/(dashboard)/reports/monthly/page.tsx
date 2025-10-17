@@ -49,10 +49,22 @@ export default function MonthlyReportPage() {
   const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [loginId, setLoginId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const id = localStorage.getItem('userId');
     setLoginId(id);
+    const userInfoString = localStorage.getItem('userInfo');
+    if (userInfoString) {
+      try {
+        const userInfo = JSON.parse(userInfoString);
+        if (userInfo && userInfo.is_admin) {
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error("Failed to parse user info", error)
+      }
+    }
   }, []);
 
   const fetchData = useCallback(async (selectedYear: string) => {
@@ -228,9 +240,10 @@ export default function MonthlyReportPage() {
         year={year}
         setYear={setYear}
         years={years}
+        isAdmin={isAdmin}
       />
       
-      <MonthlyFinancialsChart data={reportData.monthlyData} />
+      {isAdmin && <MonthlyFinancialsChart data={reportData.monthlyData} />}
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyStatusChart data={reportData.monthlyData} />

@@ -37,10 +37,22 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
   const [loginId, setLoginId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const id = localStorage.getItem('userId');
     setLoginId(id);
+    const userInfoString = localStorage.getItem('userInfo');
+    if (userInfoString) {
+      try {
+        const userInfo = JSON.parse(userInfoString);
+        if (userInfo && userInfo.is_admin) {
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error("Failed to parse user info", error)
+      }
+    }
   }, []);
 
   const fetchData = useCallback(async (selectedDate: Date) => {
@@ -235,6 +247,7 @@ export default function ReportsPage() {
         collectedAmount={collectedAmount}
         date={date}
         setDate={setDate}
+        isAdmin={isAdmin}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
