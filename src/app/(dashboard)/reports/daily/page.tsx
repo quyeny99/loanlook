@@ -12,6 +12,7 @@ import LoanAreasChart from '@/components/reports/daily/loan-areas-chart';
 import StatusChart from '@/components/reports/daily/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/daily/source-chart';
+import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -204,6 +205,7 @@ export default function ReportsPage() {
       sourceData,
       commissionCount,
       collectedFees,
+      potentialFees,
       collectedInterest,
       potentialInterest,
       overdueDebt,
