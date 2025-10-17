@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,8 +101,8 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     <CardTitle className="text-sm font-medium">Collected & Potential Fees</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-lg font-bold text-indigo-500">{currencyFormatter.format(reportData.collectedFees)} ₫</p>
-                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.potentialFees)} ₫</p>
+                    <p className="text-lg font-bold text-indigo-500">{currencyFormatter.format(reportData.collectedFees || 0)} ₫</p>
+                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.potentialFees || 0)} ₫</p>
                 </CardContent>
             </Card>
              <Card>
@@ -109,8 +110,8 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     <CardTitle className="text-sm font-medium">Collected & Potential Interest</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.collectedInterest)} ₫</p>
-                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.potentialInterest)} ₫</p>
+                    <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.collectedInterest || 0)} ₫</p>
+                    <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.potentialInterest || 0)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
@@ -118,7 +119,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     <CardTitle className="text-sm font-medium">Overdue Debt</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-red-500">{currencyFormatter.format(reportData.overdueDebt)} ₫</p>
+                    <p className="text-2xl font-bold text-red-500">{currencyFormatter.format(reportData.overdueDebt || 0)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
@@ -126,7 +127,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     <CardTitle className="text-sm font-medium">Estimated Profit</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.estimatedProfit)} ₫</p>
+                    <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.estimatedProfit || 0)} ₫</p>
                 </CardContent>
             </Card>
             <Card>
