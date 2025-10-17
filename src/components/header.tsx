@@ -15,6 +15,7 @@ export default function Header() {
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userInfo');
 
     toast({
       title: 'Signed Out',
