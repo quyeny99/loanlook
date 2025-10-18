@@ -102,7 +102,7 @@ export default function DateRangeReportsPage() {
       setLoanSchedules(loanScheduleData.rows || []);
 
       const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
-        const appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.amount || 0), 0);
+        const appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
         return acc + appFees;
       }, 0);
       setCollectedServiceFees(totalServiceFees);
@@ -288,6 +288,8 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
+
+    
 
     
 
