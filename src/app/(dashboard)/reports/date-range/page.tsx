@@ -36,6 +36,7 @@ export default function DateRangeReportsPage() {
   const [createdApplications, setCreatedApplications] = useState<Application[]>([]);
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
   const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
+  const [collectedServiceFees, setCollectedServiceFees] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loginId, setLoginId] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -72,29 +73,47 @@ export default function DateRangeReportsPage() {
         "create_time__date__lte": formattedToDate
       }));
 
+      const serviceFeesFilter = encodeURIComponent(JSON.stringify({ 
+        "status": 7,
+        "loanapp__dbm_entry__date__gte": formattedFromDate,
+        "loanapp__dbm_entry__date__lte": formattedToDate
+      }));
+
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
       const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date`;
+      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
 
-      const [disbursedResponse, createdResponse, loanScheduleResponse] = await Promise.all([
+
+      const [disbursedResponse, createdResponse, loanScheduleResponse, serviceFeesResponse] = await Promise.all([
         fetch(disbursedUrl),
         fetch(createdUrl),
-        fetch(loanScheduleUrl)
+        fetch(loanScheduleUrl),
+        fetch(serviceFeesUrl)
       ]);
 
       const disbursedData = await disbursedResponse.json();
       const createdData = await createdResponse.json();
       const loanScheduleData = await loanScheduleResponse.json();
+      const serviceFeesData = await serviceFeesResponse.json();
 
       setDisbursedApplications(disbursedData.rows || []);
       setCreatedApplications(createdData.rows || []);
       setLoanSchedules(loanScheduleData.rows || []);
+
+      const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
+        const appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.amount || 0), 0);
+        return acc + appFees;
+      }, 0);
+      setCollectedServiceFees(totalServiceFees);
+
 
     } catch (error) {
       console.error("Failed to fetch applications", error);
       setDisbursedApplications([]);
       setCreatedApplications([]);
       setLoanSchedules([]);
+      setCollectedServiceFees(0);
     } finally {
       setLoading(false);
     }
@@ -256,6 +275,7 @@ export default function DateRangeReportsPage() {
         currencyFormatter={currencyFormatter}
         reportData={reportData}
         isAdmin={isAdmin}
+        collectedServiceFees={collectedServiceFees}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -268,5 +288,7 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
+
+    
 
     
