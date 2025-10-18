@@ -70,14 +70,10 @@ export default function DateRangeReportsPage() {
         "create_time__date__gte": formattedFromDate,
         "create_time__date__lte": formattedToDate
       }));
-      const loanScheduleFilter = encodeURIComponent(JSON.stringify({ 
-        "to_date__gte": formattedFromDate,
-        "to_date__lte": formattedToDate
-      }));
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${loanScheduleFilter}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income`;
 
       const [disbursedResponse, createdResponse, loanScheduleResponse] = await Promise.all([
         fetch(disbursedUrl),
@@ -265,3 +261,5 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
+
+    
