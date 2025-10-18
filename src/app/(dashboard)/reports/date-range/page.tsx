@@ -27,6 +27,7 @@ type LoanSchedule = {
   ovd_amount: number;
   itr_income: number;
   to_date: string;
+  pay_amount: number;
 };
 
 
@@ -81,7 +82,7 @@ export default function DateRangeReportsPage() {
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date,pay_amount`;
       const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
 
 
@@ -215,12 +216,12 @@ export default function DateRangeReportsPage() {
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
     const potentialInterest = loanSchedules
-      .filter(s => s.type === 2)
-      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+        .filter(s => s.type === 2)
+        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
     
     const potentialFees = loanSchedules
         .filter(s => s.type === 3)
-        .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
     const currentDate = new Date();
     const overdueDebt = loanSchedules

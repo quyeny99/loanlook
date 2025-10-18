@@ -36,6 +36,7 @@ type LoanSchedule = {
   remain_amount: number;
   ovd_amount: number;
   to_date: string;
+  pay_amount: number;
 };
 
 
@@ -78,7 +79,7 @@ export default function MonthlyReportPage() {
         "to_date__gte": `${selectedYear}-01-01`,
         "to_date__lte": `${selectedYear}-12-31`
       }));
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,to_date,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date&filter=${loanScheduleFilter}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,to_date,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date,pay_amount&filter=${loanScheduleFilter}`;
 
       const [appResponse, loanScheduleResponse] = await Promise.all([
         fetch(appUrl),
@@ -124,11 +125,11 @@ export default function MonthlyReportPage() {
 
         const potentialInterest = monthSchedules
           .filter(s => s.type === 2)
-          .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+          .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
         
         const potentialFees = monthSchedules
             .filter(s => s.type === 3)
-            .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+            .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
         const overdueDebt = monthSchedules
           .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
@@ -197,9 +198,13 @@ export default function MonthlyReportPage() {
     }, [] as { name: string; value: number; fill: string }[]);
 
     const totalCollectedFees = loanSchedules.filter(s => s.type === 3 && s.paid_amount > 0).reduce((acc, s) => acc + s.paid_amount, 0);
-    const totalPotentialFees = loanSchedules.filter(s => s.type === 3).reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+    const totalPotentialFees = loanSchedules
+        .filter(s => s.type === 3)
+        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
     const totalCollectedInterest = loanSchedules.filter(s => s.type === 2 && s.paid_amount > 0).reduce((acc, s) => acc + s.paid_amount, 0);
-    const totalPotentialInterest = loanSchedules.filter(s => s.type === 2).reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+    const totalPotentialInterest = loanSchedules
+        .filter(s => s.type === 2)
+        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
     const totalOverdueDebt = loanSchedules
         .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
         .reduce((acc, s) => acc + (s.remain_amount || 0), 0);

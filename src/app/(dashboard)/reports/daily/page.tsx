@@ -27,6 +27,7 @@ type LoanSchedule = {
   ovd_amount: number;
   itr_income: number;
   to_date: string;
+  pay_amount: number;
 };
 
 
@@ -68,7 +69,7 @@ export default function ReportsPage() {
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
       const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"category__code": "loan-payment","date": formattedDate}))}&page=-1&login=${loginId}`;
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date,pay_amount&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
 
       const [createdResponse, disbursedResponse, collectedAmountResponse, loanScheduleResponse] = await Promise.all([
         fetch(createdUrl),
@@ -190,12 +191,12 @@ export default function ReportsPage() {
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
     const potentialInterest = loanSchedules
-      .filter(s => s.type === 2)
-      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+        .filter(s => s.type === 2)
+        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
     const potentialFees = loanSchedules
-      .filter(s => s.type === 3)
-      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+        .filter(s => s.type === 3)
+        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
     const currentDate = new Date();
     const overdueDebt = loanSchedules
