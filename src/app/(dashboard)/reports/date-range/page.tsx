@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, startOfMonth, isBefore } from 'date-fns';
+import { format, startOfMonth, isBefore, isWithinInterval, parseISO } from 'date-fns';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
@@ -183,11 +183,15 @@ export default function DateRangeReportsPage() {
         }
     });
 
-    const collectedInterest = loanSchedules
+    const schedulesInDateRange = fromDate && toDate 
+      ? loanSchedules.filter(s => s.to_date && isWithinInterval(parseISO(s.to_date), { start: fromDate, end: toDate }))
+      : [];
+
+    const collectedInterest = schedulesInDateRange
       .filter(s => s.type === 2 && (s.paid_amount ?? 0) > 0)
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-    const collectedFees = loanSchedules
+    const collectedFees = schedulesInDateRange
       .filter(s => s.type === 3 && (s.paid_amount ?? 0) > 0)
       .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
@@ -225,7 +229,7 @@ export default function DateRangeReportsPage() {
         overdueDebt,
         estimatedProfit
     }
-  }, [createdApplications, disbursedApplications, loanSchedules]);
+  }, [createdApplications, disbursedApplications, loanSchedules, fromDate, toDate]);
 
   return (
     <div className="space-y-6">
