@@ -197,9 +197,9 @@ export default function MonthlyReportPage() {
     }, [] as { name: string; value: number; fill: string }[]);
 
     const totalCollectedFees = loanSchedules.filter(s => s.type === 3 && s.paid_amount > 0).reduce((acc, s) => acc + s.paid_amount, 0);
-    const totalPotentialFees = loanSchedules.filter(s => s.type === 3).reduce((acc, s) => acc + s.remain_amount, 0);
+    const totalPotentialFees = loanSchedules.filter(s => s.type === 3).reduce((acc, s) => acc + (s.remain_amount || 0), 0);
     const totalCollectedInterest = loanSchedules.filter(s => s.type === 2 && s.paid_amount > 0).reduce((acc, s) => acc + s.paid_amount, 0);
-    const totalPotentialInterest = loanSchedules.filter(s => s.type === 2).reduce((acc, s) => acc + s.remain_amount, 0);
+    const totalPotentialInterest = loanSchedules.filter(s => s.type === 2).reduce((acc, s) => acc + (s.remain_amount || 0), 0);
     const totalOverdueDebt = loanSchedules
         .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
         .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
