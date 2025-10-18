@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, startOfMonth } from 'date-fns';
+import { format, startOfMonth, isBefore } from 'date-fns';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
@@ -26,6 +26,7 @@ type LoanSchedule = {
   remain_amount: number;
   ovd_amount: number;
   itr_income: number;
+  to_date: string;
 };
 
 
@@ -73,7 +74,7 @@ export default function DateRangeReportsPage() {
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date`;
 
       const [disbursedResponse, createdResponse, loanScheduleResponse] = await Promise.all([
         fetch(disbursedUrl),
@@ -198,8 +199,10 @@ export default function DateRangeReportsPage() {
         .filter(s => s.type === 3)
         .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
+    const currentDate = new Date();
     const overdueDebt = loanSchedules
-      .reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
+      .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
+      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
 

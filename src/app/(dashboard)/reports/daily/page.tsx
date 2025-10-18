@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, subDays } from 'date-fns';
+import { format, subDays, isBefore } from 'date-fns';
 import { type Application } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
@@ -26,6 +26,7 @@ type LoanSchedule = {
   remain_amount: number;
   ovd_amount: number;
   itr_income: number;
+  to_date: string;
 };
 
 
@@ -67,7 +68,7 @@ export default function ReportsPage() {
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
       const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"category__code": "loan-payment","date": formattedDate}))}&page=-1&login=${loginId}`;
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
 
       const [createdResponse, disbursedResponse, collectedAmountResponse, loanScheduleResponse] = await Promise.all([
         fetch(createdUrl),
@@ -196,8 +197,10 @@ export default function ReportsPage() {
       .filter(s => s.type === 3)
       .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
+    const currentDate = new Date();
     const overdueDebt = loanSchedules
-      .reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
+      .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
+      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const estimatedProfit =
       collectedInterest + collectedFees + potentialInterest + potentialFees;

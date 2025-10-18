@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { type Application } from '@/lib/data';
-import { getMonth } from 'date-fns';
+import { getMonth, isBefore } from 'date-fns';
 import PieChartCard from '@/components/reports/shared/pie-chart';
 import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
@@ -78,7 +78,7 @@ export default function MonthlyReportPage() {
         "to_date__gte": `${selectedYear}-01-01`,
         "to_date__lte": `${selectedYear}-12-31`
       }));
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,to_date,type,status,paid_amount,remain_amount,ovd_amount,itr_income&filter=${loanScheduleFilter}`;
+      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,to_date,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date&filter=${loanScheduleFilter}`;
 
       const [appResponse, loanScheduleResponse] = await Promise.all([
         fetch(appUrl),
@@ -107,6 +107,7 @@ export default function MonthlyReportPage() {
 
   const reportData = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => i);
+    const currentDate = new Date();
     const monthlyData = months.map(month => {
         const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
         const disbursedMonthApps = monthApps.filter(app => app.status === 7);
@@ -130,7 +131,8 @@ export default function MonthlyReportPage() {
             .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
         const overdueDebt = monthSchedules
-          .reduce((acc, s) => acc + (s.ovd_amount || 0), 0);
+          .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
+          .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
         const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
 
@@ -198,7 +200,9 @@ export default function MonthlyReportPage() {
     const totalPotentialFees = loanSchedules.filter(s => s.type === 3).reduce((acc, s) => acc + s.remain_amount, 0);
     const totalCollectedInterest = loanSchedules.filter(s => s.type === 2 && s.paid_amount > 0).reduce((acc, s) => acc + s.paid_amount, 0);
     const totalPotentialInterest = loanSchedules.filter(s => s.type === 2).reduce((acc, s) => acc + s.remain_amount, 0);
-    const totalOverdueDebt = loanSchedules.reduce((acc, s) => acc + s.ovd_amount, 0);
+    const totalOverdueDebt = loanSchedules
+        .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
+        .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
     const totalEstimatedProfit = totalCollectedFees + totalPotentialFees + totalCollectedInterest + totalPotentialInterest;
 
     return {
