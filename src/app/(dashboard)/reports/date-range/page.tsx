@@ -12,6 +12,7 @@ import StatusChart from '@/components/reports/date-range/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
 import { type Application } from '@/lib/data';
+import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
@@ -83,7 +84,7 @@ export default function DateRangeReportsPage() {
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
       const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date,pay_amount`;
-      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
+      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,fees,status__code,code&login=${loginId}&filter=${serviceFeesFilter}`;
 
 
       const [disbursedResponse, createdResponse, loanScheduleResponse, serviceFeesResponse] = await Promise.all([
@@ -103,7 +104,11 @@ export default function DateRangeReportsPage() {
       setLoanSchedules(loanScheduleData.rows || []);
 
       const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
-        const appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
+        let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
+        const adjustment = adjustments.find(adj => adj.code === app.code);
+        if (adjustment) {
+          appFees += adjustment.amount;
+        }
         return acc + appFees;
       }, 0);
       setCollectedServiceFees(totalServiceFees);
@@ -289,6 +294,8 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
+
+    
 
     
 
