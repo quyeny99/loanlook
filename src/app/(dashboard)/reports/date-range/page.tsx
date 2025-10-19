@@ -220,21 +220,24 @@ export default function DateRangeReportsPage() {
         }
     });
 
-    const schedulesInDateRange = fromDate && toDate
-      ? loanSchedules.filter(s => {
-          if (!s.detail || s.detail.length === 0) return false;
-          const paymentTime = parseISO(s.detail[0].time);
-          return isWithinInterval(paymentTime, { start: fromDate, end: toDate });
+    const interestSchedulesInDateRange = fromDate && toDate
+        ? loanSchedules.filter(s => {
+            if (s.type !== 2 || !s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
+            const paymentTime = parseISO(s.detail[0].time);
+            return isWithinInterval(paymentTime, { start: fromDate, end: toDate });
         })
-      : [];
+        : [];
+    
+    const feeSchedulesInDateRange = fromDate && toDate
+        ? loanSchedules.filter(s => {
+            if (s.type !== 3 || !s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
+            const paymentTime = parseISO(s.detail[0].time);
+            return isWithinInterval(paymentTime, { start: fromDate, end: toDate });
+        })
+        : [];
 
-    const collectedInterest = schedulesInDateRange
-      .filter(s => s.type === 2 && (s.paid_amount ?? 0) > 0)
-      .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
-
-    const collectedFees = schedulesInDateRange
-      .filter(s => s.type === 3 && (s.paid_amount ?? 0) > 0)
-      .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
+    const collectedInterest = interestSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
+    const collectedFees = feeSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
     const potentialInterest = loanSchedules
         .filter(s => s.type === 2)
