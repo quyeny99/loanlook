@@ -43,7 +43,8 @@ export default function DateRangeReportsPage() {
   const [toDate, setToDate] = useState<Date | undefined>(new Date());
   const [createdApplications, setCreatedApplications] = useState<Application[]>([]);
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
-  const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
+  const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
+  const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
   const [collectedServiceFees, setCollectedServiceFees] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loginId, setLoginId] = useState<string | null>(null);
@@ -109,8 +110,8 @@ export default function DateRangeReportsPage() {
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
       
-      const combinedSchedules = [...(interestScheduleData.rows || []), ...(feeScheduleData.rows || [])];
-      setLoanSchedules(combinedSchedules);
+      setInterestSchedules(interestScheduleData.rows || []);
+      setFeeSchedules(feeScheduleData.rows || []);
 
       setDisbursedApplications(disbursedData.rows || []);
       setCreatedApplications(createdData.rows || []);
@@ -130,7 +131,8 @@ export default function DateRangeReportsPage() {
       console.error("Failed to fetch applications", error);
       setDisbursedApplications([]);
       setCreatedApplications([]);
-      setLoanSchedules([]);
+      setInterestSchedules([]);
+      setFeeSchedules([]);
       setCollectedServiceFees(0);
     } finally {
       setLoading(false);
@@ -221,16 +223,16 @@ export default function DateRangeReportsPage() {
     });
 
     const interestSchedulesInDateRange = fromDate && toDate
-        ? loanSchedules.filter(s => {
-            if (s.type !== 2 || !s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
+        ? interestSchedules.filter(s => {
+            if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
             const paymentTime = parseISO(s.detail[0].time);
             return isWithinInterval(paymentTime, { start: fromDate, end: toDate });
         })
         : [];
     
     const feeSchedulesInDateRange = fromDate && toDate
-        ? loanSchedules.filter(s => {
-            if (s.type !== 3 || !s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
+        ? feeSchedules.filter(s => {
+            if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
             const paymentTime = parseISO(s.detail[0].time);
             return isWithinInterval(paymentTime, { start: fromDate, end: toDate });
         })
@@ -239,15 +241,12 @@ export default function DateRangeReportsPage() {
     const collectedInterest = interestSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
     const collectedFees = feeSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-    const potentialInterest = loanSchedules
-        .filter(s => s.type === 2)
-        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
+    const potentialInterest = interestSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
     
-    const potentialFees = loanSchedules
-        .filter(s => s.type === 3)
-        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
+    const potentialFees = feeSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
     const currentDate = new Date();
+    const loanSchedules = [...interestSchedules, ...feeSchedules];
     const overdueDebt = loanSchedules
       .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
       .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
@@ -273,7 +272,7 @@ export default function DateRangeReportsPage() {
         overdueDebt,
         estimatedProfit
     }
-  }, [createdApplications, disbursedApplications, loanSchedules, fromDate, toDate]);
+  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate]);
 
   return (
     <div className="space-y-6">
@@ -313,3 +312,5 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
+
+    
