@@ -89,26 +89,32 @@ export default function DateRangeReportsPage() {
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}`;
       const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,fees,status__code,code&login=${loginId}&filter=${serviceFeesFilter}`;
+      
+      const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
+      const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
 
 
-      const [disbursedResponse, createdResponse, loanScheduleResponse, serviceFeesResponse] = await Promise.all([
+      const [disbursedResponse, createdResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse] = await Promise.all([
         fetch(disbursedUrl),
         fetch(createdUrl),
-        fetch(loanScheduleUrl),
-        fetch(serviceFeesUrl)
+        fetch(serviceFeesUrl),
+        fetch(loanScheduleInterestUrl),
+        fetch(loanScheduleFeesUrl)
       ]);
 
       const disbursedData = await disbursedResponse.json();
       const createdData = await createdResponse.json();
-      const loanScheduleData = await loanScheduleResponse.json();
       const serviceFeesData = await serviceFeesResponse.json();
+      const interestScheduleData = await interestScheduleResponse.json();
+      const feeScheduleData = await feeScheduleResponse.json();
+      
+      const combinedSchedules = [...(interestScheduleData.rows || []), ...(feeScheduleData.rows || [])];
+      setLoanSchedules(combinedSchedules);
 
       setDisbursedApplications(disbursedData.rows || []);
       setCreatedApplications(createdData.rows || []);
-      setLoanSchedules(loanScheduleData.rows || []);
-
+      
       const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
         let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
         const adjustment = adjustments.find(adj => adj.code === app.code);
