@@ -57,6 +57,7 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
             <Bar dataKey="collectedServiceFees" name="Collected Service Fees" fill="#22d3ee" />
             <Bar dataKey="collectedFees" name="Collected Fees" fill="#8b5cf6" />
             <Bar dataKey="collectedInterest" name="Collected Interest" fill="#14b8a6" />
+            <Bar dataKey="totalCollectedAmount" name="Total Collected Amount" fill="#f97316" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
