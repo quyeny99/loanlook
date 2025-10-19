@@ -51,7 +51,8 @@ export default function MonthlyReportPage() {
   
   const [year, setYear] = useState(String(currentYear));
   const [applications, setApplications] = useState<Application[]>([]);
-  const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
+  const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
+  const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async (selectedYear: string) => {
@@ -76,11 +77,13 @@ export default function MonthlyReportPage() {
       const loanScheduleData = await loanScheduleResponse.json();
 
       setApplications(appData.rows || []);
-      setLoanSchedules(loanScheduleData.rows || []);
+      setInterestSchedules((loanScheduleData.rows || []).filter((s: LoanSchedule) => s.type === 2));
+      setFeeSchedules((loanScheduleData.rows || []).filter((s: LoanSchedule) => s.type === 3));
     } catch (error) {
       console.error("Failed to fetch data", error);
       setApplications([]);
-      setLoanSchedules([]);
+      setInterestSchedules([]);
+      setFeeSchedules([]);
     } finally {
       setLoading(false);
     }
@@ -108,25 +111,26 @@ export default function MonthlyReportPage() {
             return acc + appFees;
         }, 0);
 
-        const monthSchedules = loanSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month);
+        const monthInterestSchedules = interestSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month);
+        const monthFeeSchedules = feeSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month);
 
-        const collectedInterest = monthSchedules
-          .filter(s => s.type === 2 && (s.paid_amount ?? 0) > 0)
+
+        const collectedInterest = monthInterestSchedules
+          .filter(s => (s.paid_amount ?? 0) > 0)
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-        const collectedFees = monthSchedules
-          .filter(s => s.type === 3 && (s.paid_amount ?? 0) > 0)
+        const collectedFees = monthFeeSchedules
+          .filter(s => (s.paid_amount ?? 0) > 0)
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-        const potentialInterest = monthSchedules
-          .filter(s => s.type === 2)
+        const potentialInterest = monthInterestSchedules
           .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
         
-        const potentialFees = monthSchedules
-            .filter(s => s.type === 3)
+        const potentialFees = monthFeeSchedules
             .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
-        const overdueDebt = monthSchedules
+        const allSchedulesForMonth = [...monthInterestSchedules, ...monthFeeSchedules];
+        const overdueDebt = allSchedulesForMonth
           .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
           .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
@@ -193,20 +197,14 @@ export default function MonthlyReportPage() {
         return acc;
     }, [] as { name: string; value: number; fill: string }[]);
 
-    const totalCollectedFees = loanSchedules.filter(s => s.type === 3 && s.paid_amount > 0).reduce((acc, s) => acc + s.paid_amount, 0);
-    const totalPotentialFees = loanSchedules
-        .filter(s => s.type === 3)
-        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
-    const totalCollectedInterest = loanSchedules.filter(s => s.type === 2 && s.paid_amount > 0).reduce((acc, s) => acc + s.paid_amount, 0);
-    const totalPotentialInterest = loanSchedules
-        .filter(s => s.type === 2)
-        .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
-    const totalOverdueDebt = loanSchedules
-        .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
-        .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+    const totalCollectedFees = monthlyData.reduce((acc, month) => acc + month.collectedFees, 0);
+    const totalPotentialFees = monthlyData.reduce((acc, month) => acc + month.potentialFees, 0);
+    const totalCollectedInterest = monthlyData.reduce((acc, month) => acc + month.collectedInterest, 0);
+    const totalPotentialInterest = monthlyData.reduce((acc, month) => acc + month.potentialInterest, 0);
+    const totalOverdueDebt = monthlyData.reduce((acc, month) => acc + month.overdueDebt, 0);
 
     const totalCollectedServiceFees = monthlyData.reduce((acc, month) => acc + month.collectedServiceFees, 0);
-    const totalEstimatedProfit = totalCollectedFees + totalPotentialFees + totalCollectedInterest + totalPotentialInterest + totalCollectedServiceFees;
+    const totalEstimatedProfit = monthlyData.reduce((acc, month) => acc + month.estimatedProfit, 0);
 
     return {
         totalLoans,
@@ -223,7 +221,7 @@ export default function MonthlyReportPage() {
         totalEstimatedProfit,
         totalCollectedServiceFees,
     };
-  }, [applications, loanSchedules, year]);
+  }, [applications, interestSchedules, feeSchedules, year]);
 
 
   return (
@@ -278,3 +276,5 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    
