@@ -30,7 +30,11 @@ type LoanSchedule = {
   itr_income: number;
   to_date: string;
   pay_amount: number;
-  detail: string;
+  detail: {
+      paid: number;
+      time: string;
+      pay_amount: number;
+  }[];
 };
 
 
@@ -211,7 +215,11 @@ export default function DateRangeReportsPage() {
     });
 
     const schedulesInDateRange = fromDate && toDate 
-      ? loanSchedules.filter(s => s.to_date && isWithinInterval(parseISO(s.to_date), { start: fromDate, end: toDate }))
+      ? loanSchedules.filter(s => {
+          if (!s.detail || s.detail.length === 0) return false;
+          const paymentTime = parseISO(s.detail[0].time);
+          return isWithinInterval(paymentTime, { start: fromDate, end: toDate });
+        })
       : [];
 
     const collectedInterest = schedulesInDateRange
@@ -296,3 +304,5 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
+
+    
