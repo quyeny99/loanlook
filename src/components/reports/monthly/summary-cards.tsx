@@ -10,11 +10,8 @@ type SummaryCardsProps = {
         totalLoanAmount: number;
         totalCommission: number;
         totalCollectedFees: number;
-        totalPotentialFees: number;
         totalCollectedInterest: number;
-        totalPotentialInterest: number;
         totalOverdueDebt: number;
-        totalEstimatedProfit: number;
         totalCollectedServiceFees: number;
     }
     year: string;
@@ -69,7 +66,6 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                         </CardHeader>
                         <CardContent>
                             <p className="text-lg font-bold text-indigo-500">{currencyFormatter.format(reportData.totalCollectedFees || 0)}</p>
-                            <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.totalPotentialFees || 0)}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -78,7 +74,6 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                         </CardHeader>
                         <CardContent>
                             <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.totalCollectedInterest || 0)}</p>
-                            <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.totalPotentialInterest || 0)}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -87,14 +82,6 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                         </CardHeader>
                         <CardContent>
                             <p className="text-2xl font-bold text-red-500">{currencyFormatter.format(reportData.totalOverdueDebt || 0)}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">Estimated Profit</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.totalEstimatedProfit || 0)}</p>
                         </CardContent>
                     </Card>
                 </>
@@ -117,3 +104,5 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
       </div>
     );
 }
+
+    

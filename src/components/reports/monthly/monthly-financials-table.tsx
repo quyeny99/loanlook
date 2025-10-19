@@ -16,11 +16,8 @@ type MonthlyFinancialsTableProps = {
   data: {
     month: string;
     collectedFees: number;
-    potentialFees: number;
     collectedInterest: number;
-    potentialInterest: number;
     overdueDebt: number;
-    estimatedProfit: number;
   }[];
 };
 
@@ -42,9 +39,7 @@ export default function MonthlyFinancialsTable({ data }: MonthlyFinancialsTableP
             <TableRow>
               <TableHead>Month</TableHead>
               <TableHead className="text-right">Collected Fees</TableHead>
-              <TableHead className="text-right">Potential Fees</TableHead>
               <TableHead className="text-right">Collected Interest</TableHead>
-              <TableHead className="text-right">Potential Interest</TableHead>
               <TableHead className="text-right">Overdue Debt</TableHead>
             </TableRow>
           </TableHeader>
@@ -53,9 +48,7 @@ export default function MonthlyFinancialsTable({ data }: MonthlyFinancialsTableP
               <TableRow key={monthData.month}>
                 <TableCell className="font-medium">{monthData.month}</TableCell>
                 <TableCell className="text-right text-indigo-500">{currencyFormatter.format(monthData.collectedFees)}</TableCell>
-                 <TableCell className="text-right text-indigo-300">{currencyFormatter.format(monthData.potentialFees)}</TableCell>
                 <TableCell className="text-right text-teal-500">{currencyFormatter.format(monthData.collectedInterest)}</TableCell>
-                <TableCell className="text-right text-gray-500">{currencyFormatter.format(monthData.potentialInterest)}</TableCell>
                 <TableCell className="text-right text-red-500">{currencyFormatter.format(monthData.overdueDebt)}</TableCell>
               </TableRow>
             ))}
@@ -65,3 +58,5 @@ export default function MonthlyFinancialsTable({ data }: MonthlyFinancialsTableP
     </Card>
   );
 }
+
+    

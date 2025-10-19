@@ -183,9 +183,7 @@ export default function MonthlyReportPage() {
             'CTV': monthApps.filter(a => a.source__name === 'CTV').length,
             'Website': monthApps.filter(a => a.source__name === 'Website').length,
             collectedFees: collectedFeesForMonth,
-            potentialFees,
             collectedInterest: collectedInterestForMonth,
-            potentialInterest,
             overdueDebt,
             collectedServiceFees: serviceFeesForMonth,
         }
@@ -229,9 +227,7 @@ export default function MonthlyReportPage() {
     }, [] as { name: string; value: number; fill: string }[]);
 
     const totalCollectedFees = monthlyData.reduce((acc, month) => acc + month.collectedFees, 0);
-    const totalPotentialFees = monthlyData.reduce((acc, month) => acc + month.potentialFees, 0);
     const totalCollectedInterest = monthlyData.reduce((acc, month) => acc + month.collectedInterest, 0);
-    const totalPotentialInterest = monthlyData.reduce((acc, month) => acc + month.potentialInterest, 0);
     const totalOverdueDebt = overdueDebtSchedules
         .filter(s => s.remain_amount > 0)
         .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
@@ -246,9 +242,7 @@ export default function MonthlyReportPage() {
         loanRegionsData: loanRegionsDataWithColors,
         loanTypeData,
         totalCollectedFees,
-        totalPotentialFees,
         totalCollectedInterest,
-        totalPotentialInterest,
         totalOverdueDebt,
         totalCollectedServiceFees,
     };
@@ -307,5 +301,7 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    
 
     
