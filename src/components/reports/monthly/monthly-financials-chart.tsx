@@ -47,7 +47,6 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
               }}
             />
             <Legend wrapperStyle={{fontSize: '12px'}} iconSize={10} />
-            <Bar dataKey="totalCollectedAmount" name="Collected Amount" fill="#f97316" />
             <Bar dataKey="collectedServiceFees" name="Collected Service Fees" fill="#22d3ee" />
             <Bar dataKey="collectedFees" name="Collected Fees" fill="#8b5cf6" />
             <Bar dataKey="collectedInterest" name="Collected Interest" fill="#14b8a6" />
