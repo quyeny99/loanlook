@@ -83,7 +83,7 @@ export default function MonthlyReportPage() {
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
       
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
-        "to_date__gte": "2025-08-01",
+        "to_date__gte": `${selectedYear}-01-01`,
         "to_date__lte": `${selectedYear}-12-31`
       }));
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
