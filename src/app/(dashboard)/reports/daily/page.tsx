@@ -218,6 +218,8 @@ export default function ReportsPage() {
     const collectedInterest = interestSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
     const collectedFees = feeSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
+    const totalRevenue = collectedInterest + collectedFees + collectedServiceFees;
+
     return {
       totalApplications,
       totalRejected,
@@ -233,6 +235,7 @@ export default function ReportsPage() {
       commissionCount,
       collectedFees,
       collectedInterest,
+      totalRevenue,
     };
   }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, date, collectedServiceFees]);
 

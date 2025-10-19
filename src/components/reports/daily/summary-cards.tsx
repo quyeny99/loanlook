@@ -20,6 +20,7 @@ type SummaryCardsProps = {
         commissionCount: number;
         collectedFees: number;
         collectedInterest: number;
+        totalRevenue: number;
     };
     collectedAmount: {
         total: number;
@@ -118,6 +119,14 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                         </CardHeader>
                         <CardContent>
                             <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.collectedInterest || 0)} ₫</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Total Revenue ( Fees &amp; Interest )</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalRevenue || 0)} ₫</p>
                         </CardContent>
                     </Card>
                 </>
