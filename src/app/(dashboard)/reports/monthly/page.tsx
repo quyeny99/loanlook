@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { type Application } from '@/lib/data';
-import { getMonth, isBefore, isSameMonth, parseISO, subDays, format, endOfMonth } from 'date-fns';
+import { getMonth, isBefore, isSameMonth, parseISO, subDays, format, endOfMonth, isFuture, isSameYear } from 'date-fns';
 import PieChartCard from '@/components/reports/shared/pie-chart';
 import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
@@ -129,6 +129,8 @@ export default function MonthlyReportPage() {
     const currentDate = new Date();
     const monthlyData = months.map(month => {
         const monthDate = new Date(parseInt(year), month, 1);
+        const isPastMonth = isBefore(monthDate, currentDate) && !isSameMonth(monthDate, currentDate);
+        
         const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
         const disbursedMonthApps = applications.filter(app => {
           return app.status === 7 && app.loanapp__dbm_entry__date && isSameMonth(parseISO(app.loanapp__dbm_entry__date), monthDate)
@@ -143,8 +145,8 @@ export default function MonthlyReportPage() {
             return acc + appFees;
         }, 0);
 
-        const monthInterestSchedules = interestSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month);
-        const monthFeeSchedules = feeSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month);
+        const monthInterestSchedules = interestSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month && isSameYear(new Date(s.to_date), monthDate));
+        const monthFeeSchedules = feeSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month && isSameYear(new Date(s.to_date), monthDate));
 
 
         const collectedInterest = monthInterestSchedules
@@ -155,10 +157,10 @@ export default function MonthlyReportPage() {
           .filter(s => (s.paid_amount ?? 0) > 0)
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-        const potentialInterest = monthInterestSchedules
+        const potentialInterest = isPastMonth ? 0 : monthInterestSchedules
           .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
         
-        const potentialFees = monthFeeSchedules
+        const potentialFees = isPastMonth ? 0 : monthFeeSchedules
             .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
         const endOfMonthDate = endOfMonth(monthDate);
@@ -233,7 +235,9 @@ export default function MonthlyReportPage() {
     const totalPotentialFees = monthlyData.reduce((acc, month) => acc + month.potentialFees, 0);
     const totalCollectedInterest = monthlyData.reduce((acc, month) => acc + month.collectedInterest, 0);
     const totalPotentialInterest = monthlyData.reduce((acc, month) => acc + month.potentialInterest, 0);
-    const totalOverdueDebt = monthlyData.reduce((acc, month) => acc + month.overdueDebt, 0);
+    const totalOverdueDebt = overdueDebtSchedules
+        .filter(s => s.remain_amount > 0)
+        .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const totalCollectedServiceFees = monthlyData.reduce((acc, month) => acc + month.collectedServiceFees, 0);
     const totalEstimatedProfit = monthlyData.reduce((acc, month) => acc + month.estimatedProfit, 0);
