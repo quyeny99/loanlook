@@ -245,7 +245,7 @@ export default function DateRangeReportsPage() {
       .filter(s => s.remain_amount > 0)
       .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
-    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
+    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + collectedServiceFees;
 
 
     return {
@@ -266,7 +266,7 @@ export default function DateRangeReportsPage() {
         overdueDebt,
         estimatedProfit
     }
-  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules]);
+  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, collectedServiceFees]);
 
   return (
     <div className="space-y-6">

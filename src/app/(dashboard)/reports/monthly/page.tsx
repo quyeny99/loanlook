@@ -14,6 +14,7 @@ import MonthlySourceChart from '@/components/reports/monthly/monthly-source-char
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
 import MonthlyFinancialsTable from '@/components/reports/monthly/monthly-financials-table';
+import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 
@@ -58,7 +59,7 @@ export default function MonthlyReportPage() {
     setLoading(true);
     try {
       const appFilter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
-      const appUrl = `https://api.y99.vn/data/Application/?sort=-id&values=id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__disbursement&filter=${appFilter}&page=-1&login=${loginId}`;
+      const appUrl = `https://api.y99.vn/data/Application/?sort=-id&values=id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__disbursement,loanapp__dbm_entry__date&filter=${appFilter}&page=-1&login=${loginId}`;
       
       const loanScheduleFilter = encodeURIComponent(JSON.stringify({ 
         "to_date__gte": `${selectedYear}-01-01`,
@@ -97,6 +98,15 @@ export default function MonthlyReportPage() {
     const monthlyData = months.map(month => {
         const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
         const disbursedMonthApps = monthApps.filter(app => app.status === 7);
+        
+        const serviceFeesForMonth = disbursedMonthApps.reduce((acc, app) => {
+            let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
+            const adjustment = adjustments.find(adj => adj.code === app.code);
+            if (adjustment) {
+                appFees += adjustment.amount;
+            }
+            return acc + appFees;
+        }, 0);
 
         const monthSchedules = loanSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month);
 
@@ -120,7 +130,7 @@ export default function MonthlyReportPage() {
           .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
           .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
-        const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
+        const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + serviceFeesForMonth;
 
         return {
             month: `Month ${month + 1}`,
@@ -142,6 +152,7 @@ export default function MonthlyReportPage() {
             potentialInterest,
             overdueDebt,
             estimatedProfit,
+            collectedServiceFees: serviceFeesForMonth,
         }
     });
 
@@ -193,7 +204,9 @@ export default function MonthlyReportPage() {
     const totalOverdueDebt = loanSchedules
         .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
         .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
-    const totalEstimatedProfit = totalCollectedFees + totalPotentialFees + totalCollectedInterest + totalPotentialInterest;
+
+    const totalCollectedServiceFees = monthlyData.reduce((acc, month) => acc + month.collectedServiceFees, 0);
+    const totalEstimatedProfit = totalCollectedFees + totalPotentialFees + totalCollectedInterest + totalPotentialInterest + totalCollectedServiceFees;
 
     return {
         totalLoans,
@@ -208,8 +221,9 @@ export default function MonthlyReportPage() {
         totalPotentialInterest,
         totalOverdueDebt,
         totalEstimatedProfit,
+        totalCollectedServiceFees,
     };
-  }, [applications, loanSchedules]);
+  }, [applications, loanSchedules, year]);
 
 
   return (

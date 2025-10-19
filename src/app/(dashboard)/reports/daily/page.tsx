@@ -236,7 +236,7 @@ export default function ReportsPage() {
       .filter(s => s.remain_amount > 0)
       .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
-    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees;
+    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + collectedServiceFees;
 
 
     return {
@@ -259,7 +259,7 @@ export default function ReportsPage() {
       overdueDebt,
       estimatedProfit
     };
-  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, overdueDebtSchedules, date]);
+  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, overdueDebtSchedules, date, collectedServiceFees]);
 
   return (
     <div className="space-y-6">
