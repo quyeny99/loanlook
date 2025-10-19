@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { type Application } from '@/lib/data';
-import { getMonth, isBefore, isSameMonth, parseISO, subDays, format } from 'date-fns';
+import { getMonth, isBefore, isSameMonth, parseISO, subDays, format, endOfMonth } from 'date-fns';
 import PieChartCard from '@/components/reports/shared/pie-chart';
 import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
@@ -69,7 +69,6 @@ export default function MonthlyReportPage() {
     if (!loginId) return;
     setLoading(true);
     try {
-      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
       const appFilter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
       const appUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${appFilter}&page=-1&login=${loginId}`;
 
@@ -85,7 +84,7 @@ export default function MonthlyReportPage() {
       
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
         "to_date__gte": "2025-08-01",
-        "to_date__lte": yesterday
+        "to_date__lte": `${selectedYear}-12-31`
       }));
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
 
@@ -162,8 +161,9 @@ export default function MonthlyReportPage() {
         const potentialFees = monthFeeSchedules
             .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
+        const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules
-          .filter(s => s.remain_amount > 0 && s.to_date && getMonth(new Date(s.to_date)) === month)
+          .filter(s => s.remain_amount > 0 && s.to_date && isBefore(parseISO(s.to_date), endOfMonthDate))
           .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
         const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + serviceFeesForMonth;
