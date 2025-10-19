@@ -55,6 +55,14 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                 <>
                     <Card>
                         <CardHeader>
+                            <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalCollectedAmount || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
                             <CardTitle className="text-sm font-medium">Collected Service Fees</CardTitle>
                         </CardHeader>
                         <CardContent>
