@@ -73,6 +73,7 @@ export default function DateRangeReportsPage() {
     try {
       const formattedFromDate = format(start, 'yyyy-MM-dd');
       const formattedToDate = format(end, 'yyyy-MM-dd');
+      const today = format(new Date(), 'yyyy-MM-dd');
 
       const disbursementFilter = encodeURIComponent(JSON.stringify({ 
         "loanapp__dbm_entry__date__gte": formattedFromDate,
@@ -88,6 +89,11 @@ export default function DateRangeReportsPage() {
         "loanapp__dbm_entry__date__gte": formattedFromDate,
         "loanapp__dbm_entry__date__lte": formattedToDate
       }));
+      
+      const overdueDebtFilter = encodeURIComponent(JSON.stringify({
+        "to_date__gte": "2025-08-01",
+        "to_date__lte": today
+      }));
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
@@ -95,14 +101,16 @@ export default function DateRangeReportsPage() {
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
+      const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
 
 
-      const [disbursedResponse, createdResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse] = await Promise.all([
+      const [disbursedResponse, createdResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
         fetch(disbursedUrl),
         fetch(createdUrl),
         fetch(serviceFeesUrl),
         fetch(loanScheduleInterestUrl),
-        fetch(loanScheduleFeesUrl)
+        fetch(loanScheduleFeesUrl),
+        fetch(overdueDebtUrl)
       ]);
 
       const disbursedData = await disbursedResponse.json();
@@ -110,9 +118,11 @@ export default function DateRangeReportsPage() {
       const serviceFeesData = await serviceFeesResponse.json();
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
+      const overdueDebtData = await overdueDebtResponse.json();
       
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
+      setOverdueDebtSchedules(overdueDebtData.rows || []);
 
       setDisbursedApplications(disbursedData.rows || []);
       setCreatedApplications(createdData.rows || []);
@@ -134,6 +144,7 @@ export default function DateRangeReportsPage() {
       setCreatedApplications([]);
       setInterestSchedules([]);
       setFeeSchedules([]);
+      setOverdueDebtSchedules([]);
       setCollectedServiceFees(0);
     } finally {
       setLoading(false);
@@ -313,7 +324,3 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
-
-    
-
-    
