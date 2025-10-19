@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { type Application } from '@/lib/data';
-import { getMonth, isBefore, isSameMonth, parseISO } from 'date-fns';
+import { getMonth, isBefore, isSameMonth, parseISO, subDays, format } from 'date-fns';
 import PieChartCard from '@/components/reports/shared/pie-chart';
 import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
@@ -17,6 +17,10 @@ import MonthlyFinancialsTable from '@/components/reports/monthly/monthly-financi
 import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
+const API_BASE_URL = 'https://api.y99.vn/data/Application/';
+const API_VALUES = 'id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__disbursement,loanapp__dbm_entry__date';
+const LOAN_SCHEDULE_API_VALUES = ['id','type','status','paid_amount','remain_amount','ovd_amount','itr_income','to_date','pay_amount', 'detail'];
+
 
 const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
@@ -40,6 +44,11 @@ type LoanSchedule = {
   ovd_amount: number;
   to_date: string;
   pay_amount: number;
+  detail: {
+      paid: number;
+      time: string;
+      pay_amount: number;
+  }[];
 };
 
 
@@ -53,37 +62,59 @@ export default function MonthlyReportPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
   const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
+  const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async (selectedYear: string) => {
     if (!loginId) return;
     setLoading(true);
     try {
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
       const appFilter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
-      const appUrl = `https://api.y99.vn/data/Application/?sort=-id&values=id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__disbursement,loanapp__dbm_entry__date&filter=${appFilter}&page=-1&login=${loginId}`;
-      
-      const loanScheduleFilter = encodeURIComponent(JSON.stringify({ 
-        "to_date__gte": `${selectedYear}-01-01`,
-        "to_date__lte": `${selectedYear}-12-31`
-      }));
-      const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,to_date,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date,pay_amount&filter=${loanScheduleFilter}`;
+      const appUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${appFilter}&page=-1&login=${loginId}`;
 
-      const [appResponse, loanScheduleResponse] = await Promise.all([
+      const serviceFeesFilter = encodeURIComponent(JSON.stringify({ 
+        "status": 7,
+        "loanapp__dbm_entry__date__gte": `${selectedYear}-01-01`,
+        "loanapp__dbm_entry__date__lte": `${selectedYear}-12-31`
+      }));
+      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
+      
+      const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
+      const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
+      
+      const overdueDebtFilter = encodeURIComponent(JSON.stringify({
+        "to_date__gte": "2025-08-01",
+        "to_date__lte": yesterday,
+        "remain_amount__gt": 0,
+      }));
+      const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
+
+
+      const [appResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
         fetch(appUrl),
-        fetch(loanScheduleUrl)
+        fetch(serviceFeesUrl),
+        fetch(loanScheduleInterestUrl),
+        fetch(loanScheduleFeesUrl),
+        fetch(overdueDebtUrl),
       ]);
 
       const appData = await appResponse.json();
-      const loanScheduleData = await loanScheduleResponse.json();
+      const serviceFeesData = await serviceFeesResponse.json();
+      const interestScheduleData = await interestScheduleResponse.json();
+      const feeScheduleData = await feeScheduleResponse.json();
+      const overdueDebtData = await overdueDebtResponse.json();
 
       setApplications(appData.rows || []);
-      setInterestSchedules((loanScheduleData.rows || []).filter((s: LoanSchedule) => s.type === 2));
-      setFeeSchedules((loanScheduleData.rows || []).filter((s: LoanSchedule) => s.type === 3));
+      setInterestSchedules(interestScheduleData.rows || []);
+      setFeeSchedules(feeScheduleData.rows || []);
+      setOverdueDebtSchedules(overdueDebtData.rows || []);
     } catch (error) {
       console.error("Failed to fetch data", error);
       setApplications([]);
       setInterestSchedules([]);
       setFeeSchedules([]);
+      setOverdueDebtSchedules([]);
     } finally {
       setLoading(false);
     }
@@ -132,9 +163,8 @@ export default function MonthlyReportPage() {
         const potentialFees = monthFeeSchedules
             .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
-        const allSchedulesForMonth = [...monthInterestSchedules, ...monthFeeSchedules];
-        const overdueDebt = allSchedulesForMonth
-          .filter(s => s.to_date && isBefore(new Date(s.to_date), currentDate) && s.remain_amount > 0)
+        const overdueDebt = overdueDebtSchedules
+          .filter(s => s.remain_amount > 0 && s.to_date && getMonth(new Date(s.to_date)) === month)
           .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
         const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + serviceFeesForMonth;
@@ -224,7 +254,7 @@ export default function MonthlyReportPage() {
         totalEstimatedProfit,
         totalCollectedServiceFees,
     };
-  }, [applications, interestSchedules, feeSchedules, year]);
+  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules]);
 
 
   return (
@@ -279,5 +309,7 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    
 
     
