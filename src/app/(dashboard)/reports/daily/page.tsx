@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, subDays, isBefore, isWithinInterval, parseISO } from 'date-fns';
+import { format, subDays, isWithinInterval, parseISO, isSameDay } from 'date-fns';
 import { type Application } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
@@ -70,7 +70,7 @@ export default function ReportsPage() {
       const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"category__code": "loan-payment","date": formattedDate}))}&page=-1&login=${loginId}`;
       const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
       
-      const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2, "to_date": formattedDate }))}`;
+      const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3, "to_date": formattedDate }))}`;
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
         "to_date__gte": "2025-08-01",
@@ -216,13 +216,13 @@ export default function ReportsPage() {
     const interestSchedulesInDateRange = interestSchedules.filter(s => {
         if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
         const paymentTime = parseISO(s.detail[0].time);
-        return isWithinInterval(paymentTime, { start: date, end: date });
+        return isSameDay(paymentTime, date);
       });
       
     const feeSchedulesInDateRange = feeSchedules.filter(s => {
       if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
       const paymentTime = parseISO(s.detail[0].time);
-      return isWithinInterval(paymentTime, { start: date, end: date });
+      return isSameDay(paymentTime, date);
     });
 
     const collectedInterest = interestSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
