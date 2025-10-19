@@ -18,6 +18,7 @@ type MonthlyFinancialsTableProps = {
     collectedFees: number;
     collectedInterest: number;
     overdueDebt: number;
+    totalCollectedAmount: number;
   }[];
 };
 
@@ -38,6 +39,7 @@ export default function MonthlyFinancialsTable({ data }: MonthlyFinancialsTableP
           <TableHeader>
             <TableRow>
               <TableHead>Month</TableHead>
+              <TableHead className="text-right">Collected Amount</TableHead>
               <TableHead className="text-right">Collected Fees</TableHead>
               <TableHead className="text-right">Collected Interest</TableHead>
               <TableHead className="text-right">Overdue Debt</TableHead>
@@ -47,6 +49,7 @@ export default function MonthlyFinancialsTable({ data }: MonthlyFinancialsTableP
             {data.map((monthData) => (
               <TableRow key={monthData.month}>
                 <TableCell className="font-medium">{monthData.month}</TableCell>
+                <TableCell className="text-right text-orange-500">{currencyFormatter.format(monthData.totalCollectedAmount)}</TableCell>
                 <TableCell className="text-right text-indigo-500">{currencyFormatter.format(monthData.collectedFees)}</TableCell>
                 <TableCell className="text-right text-teal-500">{currencyFormatter.format(monthData.collectedInterest)}</TableCell>
                 <TableCell className="text-right text-red-500">{currencyFormatter.format(monthData.overdueDebt)}</TableCell>

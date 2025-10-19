@@ -13,6 +13,7 @@ type SummaryCardsProps = {
         totalCollectedInterest: number;
         totalOverdueDebt: number;
         totalCollectedServiceFees: number;
+        totalCollectedAmount: number;
     }
     year: string;
     setYear: (year: string) => void;
@@ -74,6 +75,14 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                         </CardHeader>
                         <CardContent>
                             <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.totalCollectedInterest || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalCollectedAmount || 0)}</p>
                         </CardContent>
                     </Card>
                     <Card>
