@@ -110,7 +110,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Collected & Potential Fees</CardTitle>
+                            <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="text-lg font-bold text-indigo-500">{currencyFormatter.format(reportData.collectedFees || 0)} ₫</p>
@@ -119,7 +119,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Collected & Potential Interest</CardTitle>
+                            <CardTitle className="text-sm font-medium">Collected Interest</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.collectedInterest || 0)} ₫</p>
