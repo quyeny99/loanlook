@@ -12,6 +12,7 @@ import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-char
 import MonthlyLoanAmountChart from '@/components/reports/monthly/monthly-loan-amount-chart';
 import MonthlySourceChart from '@/components/reports/monthly/monthly-source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
+import { useAuth } from '@/context/AuthContext';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 
@@ -41,6 +42,7 @@ type LoanSchedule = {
 
 
 export default function MonthlyReportPage() {
+  const { loginId, isAdmin } = useAuth();
   const currentYear = new Date().getFullYear();
   const startYear = 2024;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => String(startYear + i));
@@ -49,24 +51,6 @@ export default function MonthlyReportPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loginId, setLoginId] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const id = localStorage.getItem('userId');
-    setLoginId(id);
-    const userInfoString = localStorage.getItem('userInfo');
-    if (userInfoString) {
-      try {
-        const userInfo = JSON.parse(userInfoString);
-        if (userInfo && userInfo.is_admin) {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error("Failed to parse user info", error)
-      }
-    }
-  }, []);
 
   const fetchData = useCallback(async (selectedYear: string) => {
     if (!loginId) return;

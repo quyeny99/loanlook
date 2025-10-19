@@ -13,6 +13,7 @@ import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
 import { type Application } from '@/lib/data';
 import { adjustments } from '@/lib/constants';
+import { useAuth } from '@/context/AuthContext';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
@@ -39,6 +40,7 @@ type LoanSchedule = {
 
 
 export default function DateRangeReportsPage() {
+  const { loginId, isAdmin } = useAuth();
   const [fromDate, setFromDate] = useState<Date | undefined>(startOfMonth(new Date()));
   const [toDate, setToDate] = useState<Date | undefined>(new Date());
   const [createdApplications, setCreatedApplications] = useState<Application[]>([]);
@@ -48,24 +50,6 @@ export default function DateRangeReportsPage() {
   const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
   const [collectedServiceFees, setCollectedServiceFees] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [loginId, setLoginId] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const id = localStorage.getItem('userId');
-    setLoginId(id);
-    const userInfoString = localStorage.getItem('userInfo');
-    if (userInfoString) {
-      try {
-        const userInfo = JSON.parse(userInfoString);
-        if (userInfo && userInfo.is_admin) {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error("Failed to parse user info", error)
-      }
-    }
-  }, []);
 
   const fetchData = useCallback(async (start?: Date, end?: Date) => {
     if (!start || !end || !loginId) return;
@@ -97,7 +81,7 @@ export default function DateRangeReportsPage() {
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
-      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,fees,status__code,code&login=${loginId}&filter=${serviceFeesFilter}`;
+      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;

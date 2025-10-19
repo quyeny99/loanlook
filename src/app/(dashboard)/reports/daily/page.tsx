@@ -13,6 +13,7 @@ import StatusChart from '@/components/reports/daily/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/daily/source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
+import { useAuth } from '@/context/AuthContext';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -32,30 +33,13 @@ type LoanSchedule = {
 
 
 export default function ReportsPage() {
+  const { loginId, isAdmin } = useAuth();
   const [date, setDate] = useState<Date>(subDays(new Date(), 1));
   const [createdApplications, setCreatedApplications] = useState<Application[]>([]);
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
   const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
-  const [loginId, setLoginId] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const id = localStorage.getItem('userId');
-    setLoginId(id);
-    const userInfoString = localStorage.getItem('userInfo');
-    if (userInfoString) {
-      try {
-        const userInfo = JSON.parse(userInfoString);
-        if (userInfo && userInfo.is_admin) {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error("Failed to parse user info", error)
-      }
-    }
-  }, []);
 
   const fetchData = useCallback(async (selectedDate: Date) => {
     if (!loginId) return;
