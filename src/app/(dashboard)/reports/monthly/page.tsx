@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { type Application } from '@/lib/data';
-import { getMonth, isBefore } from 'date-fns';
+import { getMonth, isBefore, isSameMonth, parseISO } from 'date-fns';
 import PieChartCard from '@/components/reports/shared/pie-chart';
 import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
@@ -99,8 +99,11 @@ export default function MonthlyReportPage() {
     const months = Array.from({ length: 12 }, (_, i) => i);
     const currentDate = new Date();
     const monthlyData = months.map(month => {
+        const monthDate = new Date(parseInt(year), month, 1);
         const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
-        const disbursedMonthApps = monthApps.filter(app => app.status === 7);
+        const disbursedMonthApps = applications.filter(app => {
+          return app.status === 7 && app.loanapp__dbm_entry__date && isSameMonth(parseISO(app.loanapp__dbm_entry__date), monthDate)
+        });
         
         const serviceFeesForMonth = disbursedMonthApps.reduce((acc, app) => {
             let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
