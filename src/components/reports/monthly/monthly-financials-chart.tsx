@@ -9,7 +9,6 @@ type MonthlyFinancialsChartProps = {
     month: string;
     collectedFees: number;
     collectedInterest: number;
-    overdueDebt: number;
     collectedServiceFees: number;
     totalCollectedAmount: number;
   }[];
@@ -58,7 +57,7 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
             <Bar dataKey="collectedServiceFees" name="Collected Service Fees" stackId="a" fill="#22d3ee" />
             <Bar dataKey="collectedFees" name="Collected Fees" stackId="a" fill="#8b5cf6" />
             <Bar dataKey="collectedInterest" name="Collected Interest" stackId="a" fill="#14b8a6" />
-            <Bar dataKey="totalCollectedAmount" name="Total Collected Amount" fill="transparent" />
+            <Bar dataKey="totalCollectedAmount" name="Total Collected Amount" fill="#ff7300" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
