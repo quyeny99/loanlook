@@ -220,7 +220,7 @@ export default function DateRangeReportsPage() {
         }
     });
 
-    const schedulesInDateRange = fromDate && toDate 
+    const schedulesInDateRange = fromDate && toDate
       ? loanSchedules.filter(s => {
           if (!s.detail || s.detail.length === 0) return false;
           const paymentTime = parseISO(s.detail[0].time);
@@ -310,5 +310,3 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
-
-    
