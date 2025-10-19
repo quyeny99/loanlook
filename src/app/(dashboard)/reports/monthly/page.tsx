@@ -83,7 +83,7 @@ export default function MonthlyReportPage() {
 
       const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
         fetch(appUrl),
-        fetch(interestScheduleResponse),
+        fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
         fetch(overdueDebtUrl),
       ]);
