@@ -19,7 +19,7 @@ const compactFormatter = (value: number) => new Intl.NumberFormat('en-US', { not
 const currencyFormatter = (value: number, name: string) => {
   const formattedValue = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(value) + ' ₫';
   if (name === 'totalCollectedAmount') {
-    return [formattedValue, 'Total Collected Amount'];
+    return [formattedValue, 'Total Revenue ( Fees & Interest )'];
   }
   return formattedValue;
 };
@@ -57,7 +57,7 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
             <Bar dataKey="collectedServiceFees" name="Collected Service Fees" fill="#22d3ee" />
             <Bar dataKey="collectedFees" name="Collected Fees" fill="#8b5cf6" />
             <Bar dataKey="collectedInterest" name="Collected Interest" fill="#14b8a6" />
-            <Bar dataKey="totalCollectedAmount" name="Total Collected Amount" fill="#f97316" />
+            <Bar dataKey="totalCollectedAmount" name="Total Revenue ( Fees & Interest )" fill="#f97316" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
