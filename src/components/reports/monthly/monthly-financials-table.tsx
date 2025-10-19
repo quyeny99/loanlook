@@ -46,7 +46,6 @@ export default function MonthlyFinancialsTable({ data }: MonthlyFinancialsTableP
               <TableHead className="text-right">Collected Interest</TableHead>
               <TableHead className="text-right">Potential Interest</TableHead>
               <TableHead className="text-right">Overdue Debt</TableHead>
-              <TableHead className="text-right">Estimated Profit</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -58,7 +57,6 @@ export default function MonthlyFinancialsTable({ data }: MonthlyFinancialsTableP
                 <TableCell className="text-right text-teal-500">{currencyFormatter.format(monthData.collectedInterest)}</TableCell>
                 <TableCell className="text-right text-gray-500">{currencyFormatter.format(monthData.potentialInterest)}</TableCell>
                 <TableCell className="text-right text-red-500">{currencyFormatter.format(monthData.overdueDebt)}</TableCell>
-                <TableCell className="text-right text-purple-500 font-semibold">{currencyFormatter.format(monthData.estimatedProfit)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
