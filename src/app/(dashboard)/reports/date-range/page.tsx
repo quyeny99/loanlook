@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, startOfMonth, isBefore, isWithinInterval, parseISO } from 'date-fns';
+import { format, startOfMonth, isBefore, isWithinInterval, parseISO, subDays } from 'date-fns';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
@@ -57,7 +57,7 @@ export default function DateRangeReportsPage() {
     try {
       const formattedFromDate = format(start, 'yyyy-MM-dd');
       const formattedToDate = format(end, 'yyyy-MM-dd');
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
 
       const disbursementFilter = encodeURIComponent(JSON.stringify({ 
         "loanapp__dbm_entry__date__gte": formattedFromDate,
@@ -76,7 +76,7 @@ export default function DateRangeReportsPage() {
       
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
         "to_date__gte": "2025-08-01",
-        "to_date__lte": today
+        "to_date__lte": yesterday
       }));
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
@@ -306,3 +306,5 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
+
+    
