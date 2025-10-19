@@ -16,7 +16,15 @@ type MonthlyFinancialsChartProps = {
 };
 
 const compactFormatter = (value: number) => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(value);
-const currencyFormatter = (value: number) => new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(value) + ' ₫';
+
+const currencyFormatter = (value: number, name: string) => {
+  const formattedValue = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(value) + ' ₫';
+  if (name === 'totalCollectedAmount') {
+    return [formattedValue, 'Total Collected Amount'];
+  }
+  return formattedValue;
+};
+
 
 export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartProps) {
   return (
@@ -47,14 +55,13 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
               }}
             />
             <Legend wrapperStyle={{fontSize: '12px'}} iconSize={10} />
-            <Bar dataKey="collectedServiceFees" name="Collected Service Fees" fill="#22d3ee" />
-            <Bar dataKey="collectedFees" name="Collected Fees" fill="#8b5cf6" />
-            <Bar dataKey="collectedInterest" name="Collected Interest" fill="#14b8a6" />
+            <Bar dataKey="collectedServiceFees" name="Collected Service Fees" stackId="a" fill="#22d3ee" />
+            <Bar dataKey="collectedFees" name="Collected Fees" stackId="a" fill="#8b5cf6" />
+            <Bar dataKey="collectedInterest" name="Collected Interest" stackId="a" fill="#14b8a6" />
+            <Bar dataKey="totalCollectedAmount" name="Total Collected Amount" fill="transparent" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-
-    

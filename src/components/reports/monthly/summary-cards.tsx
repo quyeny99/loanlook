@@ -113,5 +113,3 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
       </div>
     );
 }
-
-    
