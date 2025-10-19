@@ -46,7 +46,6 @@ export default function ReportsPage() {
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
   const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
   const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
-  const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
   const [collectedServiceFees, setCollectedServiceFees] = useState(0);
@@ -56,7 +55,6 @@ export default function ReportsPage() {
     setLoading(true);
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
       
       const createTimeFilter = encodeURIComponent(JSON.stringify({ "create_time__date": formattedDate }));
       const disbursementDateFilter = encodeURIComponent(JSON.stringify({ "loanapp__dbm_entry__date": formattedDate }));
@@ -72,21 +70,16 @@ export default function ReportsPage() {
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
-      const overdueDebtFilter = encodeURIComponent(JSON.stringify({
-        "to_date__gte": "2025-08-01",
-        "to_date__lte": yesterday,
-      }));
-      const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
+      
 
 
-      const [createdResponse, disbursedResponse, collectedAmountResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
+      const [createdResponse, disbursedResponse, collectedAmountResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse] = await Promise.all([
         fetch(createdUrl),
         fetch(disbursedUrl),
         fetch(collectedAmountUrl),
         fetch(serviceFeesUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
-        fetch(overdueDebtUrl),
       ]);
 
       const createdData = await createdResponse.json();
@@ -95,13 +88,11 @@ export default function ReportsPage() {
       const serviceFeesData = await serviceFeesResponse.json();
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
-      const overdueDebtData = await overdueDebtResponse.json();
 
       setCreatedApplications(createdData.rows || []);
       setDisbursedApplications(disbursedData.rows || []);
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
-      setOverdueDebtSchedules(overdueDebtData.rows || []);
 
       
       const totalCollected = (collectedAmountData.rows || []).reduce((acc: number, entry: { amount: number }) => acc + entry.amount, 0);
@@ -125,7 +116,6 @@ export default function ReportsPage() {
       setDisbursedApplications([]);
       setInterestSchedules([]);
       setFeeSchedules([]);
-      setOverdueDebtSchedules([]);
       setCollectedAmount({ total: 0, count: 0 });
       setCollectedServiceFees(0);
     } finally {
@@ -231,12 +221,6 @@ export default function ReportsPage() {
     const potentialInterest = interestSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
     
     const potentialFees = feeSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
-    
-    const overdueDebt = overdueDebtSchedules
-      .filter(s => s.remain_amount > 0)
-      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
-
-    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + collectedServiceFees;
 
 
     return {
@@ -256,10 +240,8 @@ export default function ReportsPage() {
       potentialFees,
       collectedInterest,
       potentialInterest,
-      overdueDebt,
-      estimatedProfit
     };
-  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, overdueDebtSchedules, date, collectedServiceFees]);
+  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, date, collectedServiceFees]);
 
   return (
     <div className="space-y-6">

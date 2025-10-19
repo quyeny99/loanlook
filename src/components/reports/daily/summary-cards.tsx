@@ -22,8 +22,6 @@ type SummaryCardsProps = {
         potentialFees: number;
         collectedInterest: number;
         potentialInterest: number;
-        overdueDebt: number;
-        estimatedProfit: number;
     };
     collectedAmount: {
         total: number;
@@ -124,22 +122,6 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                         <CardContent>
                             <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.collectedInterest || 0)} ₫</p>
                             <p className="text-sm text-muted-foreground">Potential: {currencyFormatter.format(reportData.potentialInterest || 0)} ₫</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">Overdue Debt</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-red-500">{currencyFormatter.format(reportData.overdueDebt || 0)} ₫</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">Estimated Profit</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.estimatedProfit || 0)} ₫</p>
                         </CardContent>
                     </Card>
                 </>
