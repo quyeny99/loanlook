@@ -12,6 +12,7 @@ import LoanAreasChart from '@/components/reports/daily/loan-areas-chart';
 import StatusChart from '@/components/reports/daily/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/daily/source-chart';
+import { useAuth } from '@/context/AuthContext';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -23,12 +24,8 @@ export default function ReportsPage() {
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
-  const [loginId, setLoginId] = useState<string | null>(null);
+  const { loginId } = useAuth();
 
-  useEffect(() => {
-    const id = localStorage.getItem('userId');
-    setLoginId(id);
-  }, []);
 
   const fetchData = useCallback(async (selectedDate: Date) => {
     if (!loginId) return;
@@ -143,7 +140,8 @@ export default function ReportsPage() {
         { name: 'Website', Applications: 0 },
     ];
     createdApplications.forEach(app => {
-        const source = sourceData.find(s => s.name === app.source__name);
+        const sourceName = app.source__name || 'Unknown';
+        const source = sourceData.find(s => s.name === sourceName);
         if (source) {
             source.Applications += 1;
         }
@@ -164,6 +162,7 @@ export default function ReportsPage() {
       sourceData,
       commissionCount,
       collectedFees: 0,
+      potentialFees: 0,
       collectedInterest: 0,
       potentialInterest: 0,
       overdueDebt: 0,
@@ -193,6 +192,7 @@ export default function ReportsPage() {
         collectedAmount={collectedAmount}
         date={date}
         setDate={setDate}
+        isAdmin={false}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

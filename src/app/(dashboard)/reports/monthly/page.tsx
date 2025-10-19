@@ -13,6 +13,7 @@ import MonthlyLoanAmountChart from '@/components/reports/monthly/monthly-loan-am
 import MonthlySourceChart from '@/components/reports/monthly/monthly-source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
+import MonthlyFinancialsTable from '@/components/reports/monthly/monthly-financials-table';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 
@@ -237,6 +238,7 @@ export default function MonthlyReportPage() {
       />
       
       {isAdmin && <MonthlyFinancialsChart data={reportData.monthlyData} />}
+      {isAdmin && <MonthlyFinancialsTable data={reportData.monthlyData} />}
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyStatusChart data={reportData.monthlyData} />
