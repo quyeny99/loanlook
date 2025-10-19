@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { type Application } from '@/lib/data';
-import { getMonth, isBefore, isSameMonth, parseISO, subDays, format, endOfMonth, isFuture, isSameYear } from 'date-fns';
+import { getMonth, isBefore, isSameMonth, parseISO, subDays, format, endOfMonth, isFuture, isSameYear, startOfMonth } from 'date-fns';
 import PieChartCard from '@/components/reports/shared/pie-chart';
 import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
@@ -127,9 +127,11 @@ export default function MonthlyReportPage() {
   const reportData = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => i);
     const currentDate = new Date();
+    const currentMonthDate = startOfMonth(currentDate);
+
     const monthlyData = months.map(month => {
         const monthDate = new Date(parseInt(year), month, 1);
-        const isPastMonth = isBefore(monthDate, currentDate) && !isSameMonth(monthDate, currentDate);
+        const isPastMonth = isBefore(monthDate, currentMonthDate);
         
         const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
         const disbursedMonthApps = applications.filter(app => {
@@ -148,13 +150,20 @@ export default function MonthlyReportPage() {
         const monthInterestSchedules = interestSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month && isSameYear(new Date(s.to_date), monthDate));
         const monthFeeSchedules = feeSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month && isSameYear(new Date(s.to_date), monthDate));
 
-
-        const collectedInterest = monthInterestSchedules
-          .filter(s => (s.paid_amount ?? 0) > 0)
+        const collectedInterestForMonth = interestSchedules
+          .filter(s => {
+            if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
+            const paymentTime = parseISO(s.detail[0].time);
+            return isSameMonth(paymentTime, monthDate);
+          })
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-        const collectedFees = monthFeeSchedules
-          .filter(s => (s.paid_amount ?? 0) > 0)
+        const collectedFeesForMonth = feeSchedules
+          .filter(s => {
+            if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
+            const paymentTime = parseISO(s.detail[0].time);
+            return isSameMonth(paymentTime, monthDate);
+          })
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
         const potentialInterest = isPastMonth ? 0 : monthInterestSchedules
@@ -168,7 +177,7 @@ export default function MonthlyReportPage() {
           .filter(s => s.remain_amount > 0 && s.to_date && isBefore(parseISO(s.to_date), endOfMonthDate))
           .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
-        const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + serviceFeesForMonth;
+        const estimatedProfit = collectedInterestForMonth + collectedFeesForMonth + potentialInterest + potentialFees + serviceFeesForMonth;
 
         return {
             month: `Month ${month + 1}`,
@@ -184,9 +193,9 @@ export default function MonthlyReportPage() {
             'Apps': monthApps.filter(a => a.source__name === 'Apps').length,
             'CTV': monthApps.filter(a => a.source__name === 'CTV').length,
             'Website': monthApps.filter(a => a.source__name === 'Website').length,
-            collectedFees,
+            collectedFees: collectedFeesForMonth,
             potentialFees,
-            collectedInterest,
+            collectedInterest: collectedInterestForMonth,
             potentialInterest,
             overdueDebt,
             estimatedProfit,
