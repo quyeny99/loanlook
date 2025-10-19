@@ -13,7 +13,6 @@ import MonthlyLoanAmountChart from '@/components/reports/monthly/monthly-loan-am
 import MonthlySourceChart from '@/components/reports/monthly/monthly-source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
-import MonthlyFinancialsTable from '@/components/reports/monthly/monthly-financials-table';
 import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
@@ -77,13 +76,14 @@ export default function MonthlyReportPage() {
       
       const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
+        "to_date__gte": "2025-08-01",
         "to_date__lte": yesterday
       }));
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
 
       const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
         fetch(appUrl),
-        fetch(loanScheduleInterestUrl),
+        fetch(interestScheduleResponse),
         fetch(loanScheduleFeesUrl),
         fetch(overdueDebtUrl),
       ]);
@@ -269,7 +269,6 @@ export default function MonthlyReportPage() {
       />
       
       {isAdmin && <MonthlyFinancialsChart data={reportData.monthlyData} />}
-      {isAdmin && <MonthlyFinancialsTable data={reportData.monthlyData} />}
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyStatusChart data={reportData.monthlyData} />
@@ -295,5 +294,3 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
-
-    
