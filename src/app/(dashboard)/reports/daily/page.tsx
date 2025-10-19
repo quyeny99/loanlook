@@ -13,6 +13,7 @@ import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/daily/source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
+import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -39,6 +40,7 @@ export default function ReportsPage() {
   const [loanSchedules, setLoanSchedules] = useState<LoanSchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
+  const [collectedServiceFees, setCollectedServiceFees] = useState(0);
 
   const fetchData = useCallback(async (selectedDate: Date) => {
     if (!loginId) return;
@@ -48,23 +50,31 @@ export default function ReportsPage() {
       
       const createTimeFilter = encodeURIComponent(JSON.stringify({ "create_time__date": formattedDate }));
       const disbursementDateFilter = encodeURIComponent(JSON.stringify({ "loanapp__dbm_entry__date": formattedDate }));
+      const serviceFeesFilter = encodeURIComponent(JSON.stringify({
+        "loanapp__dbm_entry__date": formattedDate,
+        "status": 7
+      }));
       
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
       const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"category__code": "loan-payment","date": formattedDate}))}&page=-1&login=${loginId}`;
       const loanScheduleUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=id,type,status,paid_amount,remain_amount,ovd_amount,itr_income,to_date,pay_amount&filter=${encodeURIComponent(JSON.stringify({"to_date": formattedDate}))}`;
+      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
 
-      const [createdResponse, disbursedResponse, collectedAmountResponse, loanScheduleResponse] = await Promise.all([
+
+      const [createdResponse, disbursedResponse, collectedAmountResponse, loanScheduleResponse, serviceFeesResponse] = await Promise.all([
         fetch(createdUrl),
         fetch(disbursedUrl),
         fetch(collectedAmountUrl),
-        fetch(loanScheduleUrl)
+        fetch(loanScheduleUrl),
+        fetch(serviceFeesUrl),
       ]);
 
       const createdData = await createdResponse.json();
       const disbursedData = await disbursedResponse.json();
       const collectedAmountData = await collectedAmountResponse.json();
       const loanScheduleData = await loanScheduleResponse.json();
+      const serviceFeesData = await serviceFeesResponse.json();
 
       setCreatedApplications(createdData.rows || []);
       setDisbursedApplications(disbursedData.rows || []);
@@ -74,12 +84,24 @@ export default function ReportsPage() {
       const collectedCount = (collectedAmountData.rows || []).length;
       setCollectedAmount({ total: totalCollected, count: collectedCount });
 
+      const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
+        let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
+        const adjustment = adjustments.find(adj => adj.code === app.code);
+        if (adjustment) {
+          appFees += adjustment.amount;
+        }
+        return acc + appFees;
+      }, 0);
+      setCollectedServiceFees(totalServiceFees);
+
+
     } catch (error) {
       console.error("Failed to fetch data", error);
       setCreatedApplications([]);
       setDisbursedApplications([]);
       setLoanSchedules([]);
       setCollectedAmount({ total: 0, count: 0 });
+      setCollectedServiceFees(0);
     } finally {
       setLoading(false);
     }
@@ -235,6 +257,7 @@ export default function ReportsPage() {
         date={date}
         setDate={setDate}
         isAdmin={isAdmin}
+        collectedServiceFees={collectedServiceFees}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

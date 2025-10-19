@@ -32,11 +32,12 @@ type SummaryCardsProps = {
     date: Date;
     setDate: (date: Date) => void;
     isAdmin: boolean;
+    collectedServiceFees: number;
 };
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
-export default function SummaryCards({ reportData, collectedAmount, date, setDate, isAdmin }: SummaryCardsProps) {
+export default function SummaryCards({ reportData, collectedAmount, date, setDate, isAdmin, collectedServiceFees }: SummaryCardsProps) {
     
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -99,6 +100,14 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
             </Card>
             {isAdmin && (
                 <>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Collected Service Fees</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-cyan-500">{currencyFormatter.format(collectedServiceFees || 0)} ₫</p>
+                        </CardContent>
+                    </Card>
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Collected & Potential Fees</CardTitle>
