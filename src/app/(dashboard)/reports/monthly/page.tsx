@@ -71,14 +71,13 @@ export default function MonthlyReportPage() {
     try {
       const appFilter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
       const appUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${appFilter}&page=-1&login=${loginId}`;
-      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
       
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
         "to_date__gte": `${selectedYear}-01-01`,
-        "to_date__lte": yesterday
+        "to_date__lte": `${selectedYear}-12-31`
       }));
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
 
@@ -140,8 +139,8 @@ export default function MonthlyReportPage() {
             return acc + appFees;
         }, 0);
 
-        const monthInterestSchedules = interestSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month && isSameYear(new Date(s.to_date), monthDate));
-        const monthFeeSchedules = feeSchedules.filter(s => s.to_date && getMonth(new Date(s.to_date)) === month && isSameYear(new Date(s.to_date), monthDate));
+        const monthInterestSchedules = interestSchedules.filter(s => s.to_date && isSameMonth(parseISO(s.to_date), monthDate));
+        const monthFeeSchedules = feeSchedules.filter(s => s.to_date && isSameMonth(parseISO(s.to_date), monthDate));
 
         const collectedInterestForMonth = interestSchedules
           .filter(s => {
