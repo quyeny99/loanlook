@@ -139,9 +139,6 @@ export default function MonthlyReportPage() {
             return acc + appFees;
         }, 0);
 
-        const monthInterestSchedules = interestSchedules.filter(s => s.to_date && isSameMonth(parseISO(s.to_date), monthDate));
-        const monthFeeSchedules = feeSchedules.filter(s => s.to_date && isSameMonth(parseISO(s.to_date), monthDate));
-
         const collectedInterestForMonth = interestSchedules
           .filter(s => {
             if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
@@ -160,18 +157,16 @@ export default function MonthlyReportPage() {
 
         const potentialInterest = isPastMonth
           ? 0
-          : monthInterestSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
+          : interestSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
         
         const potentialFees = isPastMonth
             ? 0
-            : monthFeeSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
+            : feeSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
         const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules
           .filter(s => s.remain_amount > 0 && s.to_date && isBefore(parseISO(s.to_date), endOfMonthDate))
           .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
-
-        const estimatedProfit = collectedInterestForMonth + collectedFeesForMonth + potentialInterest + potentialFees + serviceFeesForMonth;
 
         return {
             month: `Month ${month + 1}`,
@@ -192,7 +187,6 @@ export default function MonthlyReportPage() {
             collectedInterest: collectedInterestForMonth,
             potentialInterest,
             overdueDebt,
-            estimatedProfit,
             collectedServiceFees: serviceFeesForMonth,
         }
     });
@@ -243,7 +237,6 @@ export default function MonthlyReportPage() {
         .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const totalCollectedServiceFees = monthlyData.reduce((acc, month) => acc + month.collectedServiceFees, 0);
-    const totalEstimatedProfit = monthlyData.reduce((acc, month) => acc + month.estimatedProfit, 0);
 
     return {
         totalLoans,
@@ -257,7 +250,6 @@ export default function MonthlyReportPage() {
         totalCollectedInterest,
         totalPotentialInterest,
         totalOverdueDebt,
-        totalEstimatedProfit,
         totalCollectedServiceFees,
     };
   }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules]);
@@ -315,3 +307,5 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    
