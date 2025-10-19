@@ -71,34 +71,26 @@ export default function MonthlyReportPage() {
     try {
       const appFilter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
       const appUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${appFilter}&page=-1&login=${loginId}`;
-
-      const serviceFeesFilter = encodeURIComponent(JSON.stringify({ 
-        "status": 7,
-        "loanapp__dbm_entry__date__gte": `${selectedYear}-01-01`,
-        "loanapp__dbm_entry__date__lte": `${selectedYear}-12-31`
-      }));
-      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
       
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
         "to_date__gte": `${selectedYear}-01-01`,
-        "to_date__lte": `${selectedYear}-12-31`
+        "to_date__lte": yesterday
       }));
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
 
 
-      const [appResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
+      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
         fetch(appUrl),
-        fetch(serviceFeesUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
         fetch(overdueDebtUrl),
       ]);
 
       const appData = await appResponse.json();
-      const serviceFeesData = await serviceFeesResponse.json();
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
       const overdueDebtData = await overdueDebtResponse.json();
@@ -132,6 +124,7 @@ export default function MonthlyReportPage() {
     const monthlyData = months.map(month => {
         const monthDate = new Date(parseInt(year), month, 1);
         const isPastMonth = isBefore(monthDate, currentMonthDate);
+        const isCurrentOrFutureMonth = !isPastMonth;
         
         const monthApps = applications.filter(app => app.create_time && getMonth(new Date(app.create_time)) === month);
         const disbursedMonthApps = applications.filter(app => {
@@ -166,11 +159,13 @@ export default function MonthlyReportPage() {
           })
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-        const potentialInterest = isPastMonth ? 0 : monthInterestSchedules
-          .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
+        const potentialInterest = isCurrentOrFutureMonth 
+          ? monthInterestSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0)
+          : 0;
         
-        const potentialFees = isPastMonth ? 0 : monthFeeSchedules
-            .reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
+        const potentialFees = isCurrentOrFutureMonth
+            ? monthFeeSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0)
+            : 0;
 
         const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules
@@ -321,3 +316,5 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    
