@@ -13,6 +13,7 @@ type MonthlyFinancialsChartProps = {
     potentialInterest: number;
     overdueDebt: number;
     estimatedProfit: number;
+    collectedServiceFees: number;
   }[];
 };
 
@@ -48,11 +49,11 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
               }}
             />
             <Legend wrapperStyle={{fontSize: '12px'}} iconSize={10} />
+            <Bar dataKey="collectedServiceFees" name="Collected Service Fees" fill="#22d3ee" />
             <Bar dataKey="collectedFees" name="Collected Fees" stackId="fees" fill="#8b5cf6" />
             <Bar dataKey="potentialFees" name="Potential Fees" stackId="fees" fill="#c4b5fd" />
             <Bar dataKey="collectedInterest" name="Collected Interest" fill="#14b8a6" />
             <Bar dataKey="potentialInterest" name="Potential Interest" fill="#6b7280" />
-            <Bar dataKey="overdueDebt" name="Overdue Debt" fill="#ef4444" />
             <Bar dataKey="estimatedProfit" name="Estimated Profit" fill="#a855f7" />
           </BarChart>
         </ResponsiveContainer>
