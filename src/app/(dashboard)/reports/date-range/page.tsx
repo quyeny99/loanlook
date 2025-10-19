@@ -45,6 +45,7 @@ export default function DateRangeReportsPage() {
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
   const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
   const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
+  const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
   const [collectedServiceFees, setCollectedServiceFees] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loginId, setLoginId] = useState<string | null>(null);
@@ -312,5 +313,7 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
+
+    
 
     
