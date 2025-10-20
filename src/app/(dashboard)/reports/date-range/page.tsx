@@ -50,6 +50,7 @@ export default function DateRangeReportsPage() {
   const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
   const [collectedServiceFees, setCollectedServiceFees] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
 
   const fetchData = useCallback(async (start?: Date, end?: Date) => {
     if (!start || !end || !loginId) return;
@@ -79,6 +80,12 @@ export default function DateRangeReportsPage() {
         "to_date__lte": yesterday
       }));
 
+      const collectedAmountFilter = encodeURIComponent(JSON.stringify({
+        "date__gte": formattedFromDate,
+        "date__lte": formattedToDate,
+        "account__code": "HOAC02VND"
+      }));
+
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
       const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
@@ -86,15 +93,17 @@ export default function DateRangeReportsPage() {
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
+      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${collectedAmountFilter}&page=-1&login=${loginId}`;
 
 
-      const [disbursedResponse, createdResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
+      const [disbursedResponse, createdResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, collectedAmountResponse] = await Promise.all([
         fetch(disbursedUrl),
         fetch(createdUrl),
         fetch(serviceFeesUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
-        fetch(overdueDebtUrl)
+        fetch(overdueDebtUrl),
+        fetch(collectedAmountUrl)
       ]);
 
       const disbursedData = await disbursedResponse.json();
@@ -103,6 +112,7 @@ export default function DateRangeReportsPage() {
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
       const overdueDebtData = await overdueDebtResponse.json();
+      const collectedAmountData = await collectedAmountResponse.json();
       
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
@@ -110,6 +120,17 @@ export default function DateRangeReportsPage() {
 
       setDisbursedApplications(disbursedData.rows || []);
       setCreatedApplications(createdData.rows || []);
+
+      const totalCollected = (collectedAmountData.rows || []).reduce((acc: number, entry: { amount: number, type: number }) => {
+        if (entry.type === 1) {
+          return acc + entry.amount;
+        } else if (entry.type === 2) {
+          return acc - entry.amount;
+        }
+        return acc;
+      }, 0);
+      const collectedCount = (collectedAmountData.rows || []).length;
+      setCollectedAmount({ total: totalCollected, count: collectedCount });
       
       const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
         let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
@@ -130,6 +151,7 @@ export default function DateRangeReportsPage() {
       setFeeSchedules([]);
       setOverdueDebtSchedules([]);
       setCollectedServiceFees(0);
+      setCollectedAmount({ total: 0, count: 0 });
     } finally {
       setLoading(false);
     }
@@ -294,6 +316,7 @@ export default function DateRangeReportsPage() {
         reportData={reportData}
         isAdmin={isAdmin}
         collectedServiceFees={collectedServiceFees}
+        collectedAmount={collectedAmount}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -306,5 +329,3 @@ export default function DateRangeReportsPage() {
     </div>
   );
 }
-
-    

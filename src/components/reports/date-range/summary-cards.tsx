@@ -30,9 +30,13 @@ type SummaryCardsProps = {
     }
     isAdmin: boolean;
     collectedServiceFees: number;
+    collectedAmount: {
+        total: number;
+        count: number;
+    };
 };
 
-export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate, currencyFormatter, reportData, isAdmin, collectedServiceFees }: SummaryCardsProps) {
+export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate, currencyFormatter, reportData, isAdmin, collectedServiceFees, collectedAmount }: SummaryCardsProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
             <Card>
@@ -68,6 +72,17 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                 </CardHeader>
                 <CardContent>
                     <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)} ₫</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">{collectedAmount.count}</div>
+                        <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(collectedAmount.total)} ₫</p>
+                    </div>
                 </CardContent>
             </Card>
             {isAdmin && (
