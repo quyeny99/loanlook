@@ -269,7 +269,8 @@ export default function DateRangeReportsPage() {
 
     const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + collectedServiceFees;
     
-    const totalRepaymentAmount = collectedInterest + collectedFees;
+    const totalRepaymentAmount = collectedAmount.total;
+    const totalCollectedAmount = totalRepaymentAmount + collectedServiceFees;
 
 
     return {
@@ -289,9 +290,10 @@ export default function DateRangeReportsPage() {
         potentialInterest,
         overdueDebt,
         estimatedProfit,
-        totalRepaymentAmount
+        totalRepaymentAmount,
+        totalCollectedAmount
     }
-  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, collectedServiceFees]);
+  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, collectedServiceFees, collectedAmount]);
 
   return (
     <div className="space-y-6">
