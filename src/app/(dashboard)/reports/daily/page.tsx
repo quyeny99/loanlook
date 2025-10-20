@@ -66,7 +66,7 @@ export default function ReportsPage() {
       
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
-      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"date": formattedDate, "account__code":"HOAC02VND"}))}&page=-1&login=${loginId}`;
+      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${encodeURIComponent(JSON.stringify({"date": formattedDate, "account__code":"HOAC02VND"}))}&page=-1&login=${loginId}`;
       const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
@@ -96,7 +96,14 @@ export default function ReportsPage() {
       setFeeSchedules(feeScheduleData.rows || []);
 
       
-      const totalCollected = (collectedAmountData.rows || []).reduce((acc: number, entry: { amount: number }) => acc + entry.amount, 0);
+      const totalCollected = (collectedAmountData.rows || []).reduce((acc: number, entry: { amount: number, type: number }) => {
+        if (entry.type === 1) {
+          return acc + entry.amount;
+        } else if (entry.type === 2) {
+          return acc - entry.amount;
+        }
+        return acc;
+      }, 0);
       const collectedCount = (collectedAmountData.rows || []).length;
       setCollectedAmount({ total: totalCollected, count: collectedCount });
 
