@@ -177,13 +177,15 @@ export default function MonthlyReportPage() {
         
         const totalRevenue = serviceFeesForMonth + collectedFeesForMonth + collectedInterestForMonth;
         
-        const collectedAmountForMonth = collectedAmounts
+        const repaymentAmountForMonth = collectedAmounts
             .filter(entry => entry.date && isSameMonth(parseISO(entry.date), monthDate))
             .reduce((acc, entry) => {
                 if (entry.type === 1) return acc + entry.amount;
                 if (entry.type === 2) return acc - entry.amount;
                 return acc;
             }, 0);
+        
+        const totalCollectedAmountForMonth = repaymentAmountForMonth + serviceFeesForMonth;
 
         const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules
@@ -209,7 +211,8 @@ export default function MonthlyReportPage() {
             overdueDebt,
             collectedServiceFees: serviceFeesForMonth,
             totalRevenue,
-            totalCollectedAmount: collectedAmountForMonth
+            totalRepaymentAmount: repaymentAmountForMonth,
+            totalCollectedAmount: totalCollectedAmountForMonth,
         }
     });
 
