@@ -65,7 +65,7 @@ export default function ReportsPage() {
       
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
-      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"category__code": "loan-payment","date": formattedDate}))}&page=-1&login=${loginId}`;
+      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount&filter=${encodeURIComponent(JSON.stringify({"date": formattedDate}))}&page=-1&login=${loginId}`;
       const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
