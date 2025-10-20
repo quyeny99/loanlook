@@ -228,6 +228,9 @@ export default function ReportsPage() {
 
     const totalRevenue = collectedInterest + collectedFees + collectedServiceFees;
 
+    const totalRepaymentAmount = collectedAmount.total;
+    const totalCollectedAmount = totalRepaymentAmount + collectedServiceFees;
+
     return {
       totalApplications,
       totalRejected,
@@ -244,8 +247,10 @@ export default function ReportsPage() {
       collectedFees,
       collectedInterest,
       totalRevenue,
+      totalRepaymentAmount,
+      totalCollectedAmount
     };
-  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, date, collectedServiceFees]);
+  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, date, collectedServiceFees, collectedAmount]);
 
   return (
     <div className="space-y-6">
