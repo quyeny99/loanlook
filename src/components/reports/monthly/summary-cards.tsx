@@ -15,6 +15,7 @@ type SummaryCardsProps = {
         totalCollectedServiceFees: number;
         totalRevenue: number;
         totalCollectedAmount: number;
+        totalRepaymentAmount: number;
     }
     year: string;
     setYear: (year: string) => void;
@@ -60,6 +61,10 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                         </CardHeader>
                         <CardContent>
                             <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.totalCollectedAmount || 0)}</p>
+                             <div className="text-xs mt-2 space-y-1">
+                                <p>Total Repayment Amount: <span className="font-semibold">{currencyFormatter.format(reportData.totalRepaymentAmount)}</span></p>
+                                <p>Total Collected Service Fees: <span className="font-semibold">{currencyFormatter.format(reportData.totalCollectedServiceFees)}</span></p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
