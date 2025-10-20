@@ -92,14 +92,7 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
             </Card>
             {isAdmin && (
                 <>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">Collected Service Fees</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-cyan-500">{currencyFormatter.format(collectedServiceFees || 0)} ₫</p>
-                        </CardContent>
-                    </Card>
+                    
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
