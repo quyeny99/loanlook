@@ -50,6 +50,13 @@ type LoanSchedule = {
   }[];
 };
 
+type CollectedAmountEntry = {
+    id: number;
+    amount: number;
+    type: number;
+    date: string;
+};
+
 
 export default function MonthlyReportPage() {
   const { loginId, isAdmin } = useAuth();
@@ -62,12 +69,16 @@ export default function MonthlyReportPage() {
   const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
   const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
   const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
+  const [collectedAmounts, setCollectedAmounts] = useState<CollectedAmountEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async (selectedYear: string) => {
     if (!loginId) return;
     setLoading(true);
     try {
+      const fromDate = `${selectedYear}-01-01`;
+      const toDate = `${selectedYear}-12-31`;
+
       const appFilter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
       const appUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${appFilter}&page=-1&login=${loginId}`;
       
@@ -80,29 +91,41 @@ export default function MonthlyReportPage() {
         "to_date__lte": yesterday
       }));
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
+      
+      const collectedAmountFilter = encodeURIComponent(JSON.stringify({
+        "date__gte": fromDate,
+        "date__lte": toDate,
+        "account__code": "HOAC02VND"
+      }));
+      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type,date&filter=${collectedAmountFilter}&page=-1&login=${loginId}`;
 
-      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse] = await Promise.all([
+
+      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, collectedAmountResponse] = await Promise.all([
         fetch(appUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
         fetch(overdueDebtUrl),
+        fetch(collectedAmountUrl),
       ]);
 
       const appData = await appResponse.json();
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
       const overdueDebtData = await overdueDebtResponse.json();
+      const collectedAmountData = await collectedAmountResponse.json();
 
       setApplications(appData.rows || []);
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
       setOverdueDebtSchedules(overdueDebtData.rows || []);
+      setCollectedAmounts(collectedAmountData.rows || []);
     } catch (error) {
       console.error("Failed to fetch data", error);
       setApplications([]);
       setInterestSchedules([]);
       setFeeSchedules([]);
       setOverdueDebtSchedules([]);
+      setCollectedAmounts([]);
     } finally {
       setLoading(false);
     }
@@ -152,7 +175,15 @@ export default function MonthlyReportPage() {
           })
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
         
-        const totalCollectedAmount = serviceFeesForMonth + collectedFeesForMonth + collectedInterestForMonth;
+        const totalRevenue = serviceFeesForMonth + collectedFeesForMonth + collectedInterestForMonth;
+        
+        const collectedAmountForMonth = collectedAmounts
+            .filter(entry => entry.date && isSameMonth(parseISO(entry.date), monthDate))
+            .reduce((acc, entry) => {
+                if (entry.type === 1) return acc + entry.amount;
+                if (entry.type === 2) return acc - entry.amount;
+                return acc;
+            }, 0);
 
         const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules
@@ -177,7 +208,8 @@ export default function MonthlyReportPage() {
             collectedInterest: collectedInterestForMonth,
             overdueDebt,
             collectedServiceFees: serviceFeesForMonth,
-            totalCollectedAmount,
+            totalRevenue,
+            totalCollectedAmount: collectedAmountForMonth
         }
     });
 
@@ -225,6 +257,7 @@ export default function MonthlyReportPage() {
         .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const totalCollectedServiceFees = monthlyData.reduce((acc, month) => acc + month.collectedServiceFees, 0);
+    const totalRevenue = monthlyData.reduce((acc, month) => acc + month.totalRevenue, 0);
     const totalCollectedAmount = monthlyData.reduce((acc, month) => acc + month.totalCollectedAmount, 0);
 
     return {
@@ -238,9 +271,10 @@ export default function MonthlyReportPage() {
         totalCollectedInterest,
         totalOverdueDebt,
         totalCollectedServiceFees,
+        totalRevenue,
         totalCollectedAmount,
     };
-  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules]);
+  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, collectedAmounts]);
 
 
   return (
@@ -294,3 +328,5 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    

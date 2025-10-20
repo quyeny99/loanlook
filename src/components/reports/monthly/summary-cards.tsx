@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ type SummaryCardsProps = {
         totalCollectedInterest: number;
         totalOverdueDebt: number;
         totalCollectedServiceFees: number;
+        totalRevenue: number;
         totalCollectedAmount: number;
     }
     year: string;
@@ -54,10 +56,18 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                 <>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Total Revenue ( Fees & Interest )</CardTitle>
+                            <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalCollectedAmount || 0)}</p>
+                            <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.totalCollectedAmount || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Total Revenue ( Fees &amp; Interest )</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalRevenue || 0)}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -112,3 +122,5 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
       </div>
     );
 }
+
+    
