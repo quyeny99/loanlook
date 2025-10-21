@@ -228,8 +228,8 @@ export default function ReportsPage() {
 
     const totalRevenue = collectedInterest + collectedFees + collectedServiceFees;
 
-    const totalRepaymentAmount = collectedAmount.total;
-    const totalCollectedAmount = totalRepaymentAmount + collectedServiceFees;
+    const totalCollectedAmount = collectedAmount.total;
+    const totalGrossRevenue = totalCollectedAmount + collectedServiceFees;
 
     return {
       totalApplications,
@@ -247,8 +247,8 @@ export default function ReportsPage() {
       collectedFees,
       collectedInterest,
       totalRevenue,
-      totalRepaymentAmount,
-      totalCollectedAmount
+      totalCollectedAmount,
+      totalGrossRevenue
     };
   }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, date, collectedServiceFees, collectedAmount]);
 
