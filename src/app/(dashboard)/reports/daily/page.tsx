@@ -59,14 +59,14 @@ export default function ReportsPage() {
       const createTimeFilter = encodeURIComponent(JSON.stringify({ "create_time__date": formattedDate }));
       const disbursementDateFilter = encodeURIComponent(JSON.stringify({ "loanapp__dbm_entry__date": formattedDate }));
       const serviceFeesFilter = encodeURIComponent(JSON.stringify({
-        "loanapp__dbm_entry__date": formattedDate,
-        "status": 7
+        "account__code": "HOAC03VND",
+        "date": formattedDate,
       }));
       
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
       const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${encodeURIComponent(JSON.stringify({"date": formattedDate, "account__code":"HOAC02VND"}))}&page=-1&login=${loginId}`;
-      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
+      const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${serviceFeesFilter}&login=372`;
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
@@ -106,9 +106,13 @@ export default function ReportsPage() {
       const collectedCount = (collectedAmountData.rows || []).length;
       setCollectedAmount({ total: totalCollected, count: collectedCount });
 
-      const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
-        let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
-        return acc + appFees;
+      const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, entry: { amount: number; type: number }) => {
+        if (entry.type === 1) {
+            return acc + entry.amount;
+        } else if (entry.type === 2) {
+            return acc - entry.amount;
+        }
+        return acc;
       }, 0);
       setCollectedServiceFees(totalServiceFees);
 
