@@ -88,7 +88,8 @@ export default function MonthlyReportPage() {
       const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
         "to_date__gte": "2025-08-01",
-        "to_date__lte": yesterday
+        "to_date__lte": yesterday,
+        "remain_amount__gt": 0
       }));
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
       
@@ -189,7 +190,7 @@ export default function MonthlyReportPage() {
 
         const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules
-          .filter(s => s.remain_amount > 0 && s.to_date && isBefore(parseISO(s.to_date), endOfMonthDate))
+          .filter(s => s.to_date && isBefore(parseISO(s.to_date), endOfMonthDate))
           .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
         
         return {
@@ -255,9 +256,7 @@ export default function MonthlyReportPage() {
 
     const totalCollectedFees = monthlyData.reduce((acc, month) => acc + month.collectedFees, 0);
     const totalCollectedInterest = monthlyData.reduce((acc, month) => acc + month.collectedInterest, 0);
-    const totalOverdueDebt = overdueDebtSchedules
-        .filter(s => s.remain_amount > 0)
-        .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+    const totalOverdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const totalCollectedServiceFees = monthlyData.reduce((acc, month) => acc + month.collectedServiceFees, 0);
     const totalRevenue = monthlyData.reduce((acc, month) => acc + month.totalRevenue, 0);

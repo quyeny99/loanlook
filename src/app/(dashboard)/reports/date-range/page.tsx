@@ -77,7 +77,8 @@ export default function DateRangeReportsPage() {
       
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
         "to_date__gte": "2025-08-01",
-        "to_date__lte": yesterday
+        "to_date__lte": yesterday,
+        "remain_amount__gt": 0
       }));
 
       const collectedAmountFilter = encodeURIComponent(JSON.stringify({
@@ -263,9 +264,7 @@ export default function DateRangeReportsPage() {
     
     const potentialFees = feeSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
 
-    const overdueDebt = overdueDebtSchedules
-      .filter(s => s.remain_amount > 0)
-      .reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+    const overdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
     const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + collectedServiceFees;
     
