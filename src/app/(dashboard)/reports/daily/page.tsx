@@ -14,7 +14,6 @@ import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/daily/source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
-import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -109,10 +108,6 @@ export default function ReportsPage() {
 
       const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
         let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
-        const adjustment = adjustments.find(adj => app.code.includes(adj.code));
-        if (adjustment) {
-          appFees += adjustment.amount;
-        }
         return acc + appFees;
       }, 0);
       setCollectedServiceFees(totalServiceFees);

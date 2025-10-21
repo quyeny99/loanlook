@@ -13,7 +13,6 @@ import MonthlyLoanAmountChart from '@/components/reports/monthly/monthly-loan-am
 import MonthlySourceChart from '@/components/reports/monthly/monthly-source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
-import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -155,10 +154,6 @@ export default function MonthlyReportPage() {
         
         const serviceFeesForMonth = disbursedMonthApps.reduce((acc, app) => {
             let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
-            const adjustment = adjustments.find(adj => app.code.includes(adj.code));
-            if (adjustment) {
-                appFees += adjustment.amount;
-            }
             return acc + appFees;
         }, 0);
 
@@ -337,9 +332,3 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    

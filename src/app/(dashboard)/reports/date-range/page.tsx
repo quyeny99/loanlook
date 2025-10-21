@@ -12,7 +12,6 @@ import StatusChart from '@/components/reports/date-range/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
 import { type Application } from '@/lib/data';
-import { adjustments } from '@/lib/constants';
 import { useAuth } from '@/context/AuthContext';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -135,10 +134,6 @@ export default function DateRangeReportsPage() {
       
       const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
         let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
-        const adjustment = adjustments.find(adj => app.code.includes(adj.code));
-        if (adjustment) {
-          appFees += adjustment.amount;
-        }
         return acc + appFees;
       }, 0);
       setCollectedServiceFees(totalServiceFees);
