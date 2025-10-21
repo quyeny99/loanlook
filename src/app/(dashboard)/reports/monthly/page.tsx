@@ -82,8 +82,10 @@ export default function MonthlyReportPage() {
       const appFilter = encodeURIComponent(JSON.stringify({ "create_time__year": parseInt(selectedYear) }));
       const appUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${appFilter}&page=-1&login=${loginId}`;
       
-      const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
-      const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
+      const loanScheduleInterestFilter = encodeURIComponent(JSON.stringify({ type: 2 }));
+      const loanScheduleFeesFilter = encodeURIComponent(JSON.stringify({ type: 3 }));
+      const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${loanScheduleInterestFilter}`;
+      const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${loanScheduleFeesFilter}`;
       
       const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
@@ -263,7 +265,7 @@ export default function MonthlyReportPage() {
     const totalRevenue = monthlyData.reduce((acc, month) => acc + month.totalRevenue, 0);
     const totalRepaymentAmount = monthlyData.reduce((acc, month) => acc + month.totalRepaymentAmount, 0);
     const totalRepaymentCount = monthlyData.reduce((acc, month) => acc + month.totalRepaymentCount, 0);
-    const totalCollectedAmount = monthlyData.reduce((acc, month) => acc + month.totalCollectedAmount, 0);
+    const totalCollectedAmount = totalRepaymentAmount + totalCollectedServiceFees;
 
     return {
         totalLoans,
