@@ -178,7 +178,7 @@ export default function MonthlyReportPage() {
           })
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
         
-        const totalRevenue = serviceFeesForMonth + collectedFeesForMonth + collectedInterestForMonth;
+        const totalRevenue = collectedFeesForMonth + collectedInterestForMonth;
         
         const collectedAmountsForMonth = collectedAmounts
             .filter(entry => entry.date && isSameMonth(parseISO(entry.date), monthDate));
@@ -337,5 +337,7 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    
 
     
