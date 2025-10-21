@@ -66,7 +66,7 @@ export default function ReportsPage() {
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
       const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${encodeURIComponent(JSON.stringify({"date": formattedDate, "account__code":"HOAC02VND"}))}&page=-1&login=${loginId}`;
-      const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${serviceFeesFilter}&login=372`;
+      const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${serviceFeesFilter}&login=${loginId}`;
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
