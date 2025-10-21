@@ -109,7 +109,7 @@ export default function ReportsPage() {
 
       const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
         let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
-        const adjustment = adjustments.find(adj => adj.code === app.code);
+        const adjustment = adjustments.find(adj => app.code.includes(adj.code));
         if (adjustment) {
           appFees += adjustment.amount;
         }

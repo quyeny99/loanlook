@@ -155,7 +155,7 @@ export default function MonthlyReportPage() {
         
         const serviceFeesForMonth = disbursedMonthApps.reduce((acc, app) => {
             let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
-            const adjustment = adjustments.find(adj => adj.code === app.code);
+            const adjustment = adjustments.find(adj => app.code.includes(adj.code));
             if (adjustment) {
                 appFees += adjustment.amount;
             }
