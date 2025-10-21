@@ -77,28 +77,26 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                 </CardContent>
             </Card>
             {isAdmin && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex items-center gap-2">
-                            <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalCollectedAmount)} ₫</p>
-                        </div>
-                        <div className="text-xs mt-2 space-y-1">
-                            <div className="flex items-center gap-2">
-                                Total Repayment Amount: 
-                                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">{collectedAmount.count}</div>
-                                <span className="font-semibold">{currencyFormatter.format(reportData.totalRepaymentAmount)} ₫</span>
-                            </div>
-                            <p>Total Collected Service Fees: <span className="font-semibold">{currencyFormatter.format(collectedServiceFees)} ₫</span></p>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-            {isAdmin && (
                 <>
-                    
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Total Repayment Amount</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <div className="flex items-center gap-2">
+                                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">{collectedAmount.count}</div>
+                                <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalRepaymentAmount)} ₫</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Total Collected Service Fees</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-green-500">{currencyFormatter.format(collectedServiceFees)} ₫</p>
+                        </CardContent>
+                    </Card>
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>

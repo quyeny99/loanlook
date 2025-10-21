@@ -57,14 +57,18 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                 <>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
+                            <CardTitle className="text-sm font-medium">Total Repayment Amount</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.totalCollectedAmount || 0)}</p>
-                             <div className="text-xs mt-2 space-y-1">
-                                <p>Total Repayment Amount: <span className="font-semibold">{currencyFormatter.format(reportData.totalRepaymentAmount)}</span></p>
-                                <p>Total Collected Service Fees: <span className="font-semibold">{currencyFormatter.format(reportData.totalCollectedServiceFees)}</span></p>
-                            </div>
+                            <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.totalRepaymentAmount || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Total Collected Service Fees</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-cyan-500">{currencyFormatter.format(reportData.totalCollectedServiceFees || 0)}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -73,14 +77,6 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                         </CardHeader>
                         <CardContent>
                             <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalRevenue || 0)}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">Collected Service Fees</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-cyan-500">{currencyFormatter.format(reportData.totalCollectedServiceFees || 0)}</p>
                         </CardContent>
                     </Card>
                     <Card>
