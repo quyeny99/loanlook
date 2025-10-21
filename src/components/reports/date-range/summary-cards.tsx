@@ -29,16 +29,16 @@ type SummaryCardsProps = {
         estimatedProfit: number;
         totalCollectedAmount: number;
         totalGrossRevenue: number;
+        collectedServiceFees: number;
     }
     isAdmin: boolean;
-    collectedServiceFees: number;
     collectedAmount: {
         total: number;
         count: number;
     };
 };
 
-export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate, currencyFormatter, reportData, isAdmin, collectedServiceFees, collectedAmount }: SummaryCardsProps) {
+export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate, currencyFormatter, reportData, isAdmin, collectedAmount }: SummaryCardsProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
             <Card>
@@ -94,7 +94,7 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                             <CardTitle className="text-sm font-medium">Total Collected Service Fees</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-green-500">{currencyFormatter.format(collectedServiceFees)} ₫</p>
+                            <p className="text-2xl font-bold text-green-500">{currencyFormatter.format(reportData.collectedServiceFees)} ₫</p>
                         </CardContent>
                     </Card>
                     <Card>

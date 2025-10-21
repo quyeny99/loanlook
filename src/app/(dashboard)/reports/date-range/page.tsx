@@ -11,7 +11,7 @@ import LoanRegionsChart from '@/components/reports/date-range/loan-regions-chart
 import StatusChart from '@/components/reports/date-range/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
-import { type Application } from '@/lib/data';
+import { type Application, type InternalEntry } from '@/lib/data';
 import { useAuth } from '@/context/AuthContext';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -47,7 +47,7 @@ export default function DateRangeReportsPage() {
   const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
   const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
   const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
-  const [collectedServiceFees, setCollectedServiceFees] = useState(0);
+  const [serviceFeeEntries, setServiceFeeEntries] = useState<InternalEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
 
@@ -69,9 +69,9 @@ export default function DateRangeReportsPage() {
       }));
 
       const serviceFeesFilter = encodeURIComponent(JSON.stringify({ 
-        "status": 7,
-        "loanapp__dbm_entry__date__gte": formattedFromDate,
-        "loanapp__dbm_entry__date__lte": formattedToDate
+        "account__code":"HOAC03VND",
+        "date__gte": formattedFromDate,
+        "date__lte": formattedToDate
       }));
       
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
@@ -88,7 +88,7 @@ export default function DateRangeReportsPage() {
 
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
-      const serviceFeesUrl = `https://api.y99.vn/data/Application/?sort=id&values=id,code,fees,status__code&login=${loginId}&filter=${serviceFeesFilter}`;
+      const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${serviceFeesFilter}&login=${loginId}`;
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
@@ -117,6 +117,7 @@ export default function DateRangeReportsPage() {
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
       setOverdueDebtSchedules(overdueDebtData.rows || []);
+      setServiceFeeEntries(serviceFeesData.rows || []);
 
       setDisbursedApplications(disbursedData.rows || []);
       setCreatedApplications(createdData.rows || []);
@@ -132,12 +133,6 @@ export default function DateRangeReportsPage() {
       const collectedCount = (collectedAmountData.rows || []).length;
       setCollectedAmount({ total: totalCollected, count: collectedCount });
       
-      const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, app: Application) => {
-        let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
-        return acc + appFees;
-      }, 0);
-      setCollectedServiceFees(totalServiceFees);
-
 
     } catch (error) {
       console.error("Failed to fetch applications", error);
@@ -146,7 +141,7 @@ export default function DateRangeReportsPage() {
       setInterestSchedules([]);
       setFeeSchedules([]);
       setOverdueDebtSchedules([]);
-      setCollectedServiceFees(0);
+      setServiceFeeEntries([]);
       setCollectedAmount({ total: 0, count: 0 });
     } finally {
       setLoading(false);
@@ -261,6 +256,16 @@ export default function DateRangeReportsPage() {
 
     const overdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
+    const collectedServiceFees = serviceFeeEntries.reduce((acc: number, entry: InternalEntry) => {
+        if (entry.type === 1) {
+            return acc + entry.amount;
+        } else if (entry.type === 2) {
+            return acc - entry.amount;
+        }
+        return acc;
+    }, 0);
+
+
     const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + collectedServiceFees;
     
     const totalCollectedAmount = collectedAmount.total;
@@ -285,9 +290,10 @@ export default function DateRangeReportsPage() {
         overdueDebt,
         estimatedProfit,
         totalCollectedAmount,
-        totalGrossRevenue
+        totalGrossRevenue,
+        collectedServiceFees
     }
-  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, collectedServiceFees, collectedAmount]);
+  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, serviceFeeEntries, collectedAmount]);
 
   return (
     <div className="space-y-6">
@@ -314,7 +320,6 @@ export default function DateRangeReportsPage() {
         currencyFormatter={currencyFormatter}
         reportData={reportData}
         isAdmin={isAdmin}
-        collectedServiceFees={collectedServiceFees}
         collectedAmount={collectedAmount}
       />
 
