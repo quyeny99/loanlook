@@ -90,7 +90,7 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                 <>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Total Repayment Amount</CardTitle>
+                            <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center gap-2">
