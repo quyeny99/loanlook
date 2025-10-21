@@ -14,9 +14,9 @@ type SummaryCardsProps = {
         totalOverdueDebt: number;
         totalCollectedServiceFees: number;
         totalRevenue: number;
+        totalGrossRevenue: number;
         totalCollectedAmount: number;
-        totalRepaymentAmount: number;
-        totalRepaymentCount: number;
+        totalCollectedCount: number;
     }
     year: string;
     setYear: (year: string) => void;
@@ -62,8 +62,8 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center gap-2">
-                                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-purple-500 text-white font-bold">{reportData.totalRepaymentCount}</div>
-                                <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.totalRepaymentAmount || 0)}</p>
+                                <div className="flex items-center justify-center px-2 h-7 rounded-md bg-purple-500 text-white font-bold">{reportData.totalCollectedCount}</div>
+                                <p className="text-2xl font-bold text-purple-500">{currencyFormatter.format(reportData.totalCollectedAmount || 0)}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -127,5 +127,7 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
       </div>
     );
 }
+
+    
 
     

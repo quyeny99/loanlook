@@ -183,14 +183,14 @@ export default function MonthlyReportPage() {
         const collectedAmountsForMonth = collectedAmounts
             .filter(entry => entry.date && isSameMonth(parseISO(entry.date), monthDate));
 
-        const repaymentAmountForMonth = collectedAmountsForMonth
+        const collectedAmountForMonth = collectedAmountsForMonth
             .reduce((acc, entry) => {
                 if (entry.type === 1) return acc + entry.amount;
                 if (entry.type === 2) return acc - entry.amount;
                 return acc;
             }, 0);
         
-        const totalCollectedAmountForMonth = repaymentAmountForMonth + serviceFeesForMonth;
+        const totalGrossRevenueForMonth = collectedAmountForMonth + serviceFeesForMonth;
 
         const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
@@ -214,9 +214,9 @@ export default function MonthlyReportPage() {
             overdueDebt,
             collectedServiceFees: serviceFeesForMonth,
             totalRevenue,
-            totalRepaymentAmount: repaymentAmountForMonth,
-            totalRepaymentCount: collectedAmountsForMonth.length,
-            totalCollectedAmount: totalCollectedAmountForMonth,
+            totalCollectedAmount: collectedAmountForMonth,
+            totalCollectedCount: collectedAmountsForMonth.length,
+            totalGrossRevenue: totalGrossRevenueForMonth,
         }
     });
 
@@ -263,9 +263,9 @@ export default function MonthlyReportPage() {
 
     const totalCollectedServiceFees = monthlyData.reduce((acc, month) => acc + month.collectedServiceFees, 0);
     const totalRevenue = monthlyData.reduce((acc, month) => acc + month.totalRevenue, 0);
-    const totalRepaymentAmount = monthlyData.reduce((acc, month) => acc + month.totalRepaymentAmount, 0);
-    const totalRepaymentCount = monthlyData.reduce((acc, month) => acc + month.totalRepaymentCount, 0);
-    const totalCollectedAmount = totalRepaymentAmount + totalCollectedServiceFees;
+    const totalCollectedAmount = monthlyData.reduce((acc, month) => acc + month.totalCollectedAmount, 0);
+    const totalCollectedCount = monthlyData.reduce((acc, month) => acc + month.totalCollectedCount, 0);
+    const totalGrossRevenue = totalCollectedAmount + totalCollectedServiceFees;
 
     return {
         totalLoans,
@@ -279,9 +279,9 @@ export default function MonthlyReportPage() {
         totalOverdueDebt,
         totalCollectedServiceFees,
         totalRevenue,
+        totalGrossRevenue,
         totalCollectedAmount,
-        totalRepaymentAmount,
-        totalRepaymentCount
+        totalCollectedCount
     };
   }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, collectedAmounts]);
 
@@ -337,6 +337,8 @@ export default function MonthlyReportPage() {
     </div>
   );
 }
+
+    
 
     
 
