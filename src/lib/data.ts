@@ -1,4 +1,5 @@
 
+
 export type Loan = {
   id: number;
   beneficiary_account: string;
@@ -220,6 +221,13 @@ export type Application = {
   purpose__en: string;
   purpose__index: number;
   loanapp__dbm_entry__date: string;
+};
+
+export type InternalEntry = {
+    id: number;
+    amount: number;
+    type: number;
+    date: string;
 };
 
 

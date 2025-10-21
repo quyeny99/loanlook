@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { type Application } from '@/lib/data';
+import { type Application, type InternalEntry } from '@/lib/data';
 import { getMonth, isBefore, isSameMonth, parseISO, subDays, format, endOfMonth, isFuture, isSameYear, startOfMonth } from 'date-fns';
 import PieChartCard from '@/components/reports/shared/pie-chart';
 import SummaryCards from '@/components/reports/monthly/summary-cards';
@@ -69,6 +69,7 @@ export default function MonthlyReportPage() {
   const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
   const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
   const [collectedAmounts, setCollectedAmounts] = useState<CollectedAmountEntry[]>([]);
+  const [serviceFeeEntries, setServiceFeeEntries] = useState<InternalEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async (selectedYear: string) => {
@@ -101,13 +102,21 @@ export default function MonthlyReportPage() {
       }));
       const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type,date&filter=${collectedAmountFilter}&page=-1&login=${loginId}`;
 
+      const serviceFeesFilter = encodeURIComponent(JSON.stringify({
+        "account__code": "HOAC03VND",
+        "date__gte": fromDate,
+        "date__lte": toDate
+      }));
+      const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type,date&filter=${serviceFeesFilter}&page=-1&login=${loginId}`;
 
-      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, collectedAmountResponse] = await Promise.all([
+
+      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, collectedAmountResponse, serviceFeesResponse] = await Promise.all([
         fetch(appUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
         fetch(overdueDebtUrl),
         fetch(collectedAmountUrl),
+        fetch(serviceFeesUrl),
       ]);
 
       const appData = await appResponse.json();
@@ -115,12 +124,14 @@ export default function MonthlyReportPage() {
       const feeScheduleData = await feeScheduleResponse.json();
       const overdueDebtData = await overdueDebtResponse.json();
       const collectedAmountData = await collectedAmountResponse.json();
+      const serviceFeesData = await serviceFeesResponse.json();
 
       setApplications(appData.rows || []);
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
       setOverdueDebtSchedules(overdueDebtData.rows || []);
       setCollectedAmounts(collectedAmountData.rows || []);
+      setServiceFeeEntries(serviceFeesData.rows || []);
     } catch (error) {
       console.error("Failed to fetch data", error);
       setApplications([]);
@@ -128,6 +139,7 @@ export default function MonthlyReportPage() {
       setFeeSchedules([]);
       setOverdueDebtSchedules([]);
       setCollectedAmounts([]);
+      setServiceFeeEntries([]);
     } finally {
       setLoading(false);
     }
@@ -152,11 +164,6 @@ export default function MonthlyReportPage() {
           return app.status === 7 && app.loanapp__dbm_entry__date && isSameMonth(parseISO(app.loanapp__dbm_entry__date), monthDate)
         });
         
-        const serviceFeesForMonth = disbursedMonthApps.reduce((acc, app) => {
-            let appFees = (app.fees || []).reduce((feeAcc, fee) => feeAcc + (fee.custom_amount || 0), 0);
-            return acc + appFees;
-        }, 0);
-
         const collectedInterestForMonth = interestSchedules
           .filter(s => {
             if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
@@ -173,7 +180,6 @@ export default function MonthlyReportPage() {
           })
           .reduce((acc, s) => acc + (s.paid_amount || 0), 0);
         
-        const totalRevenue = collectedFeesForMonth + collectedInterestForMonth;
         
         const collectedAmountsForMonth = collectedAmounts
             .filter(entry => entry.date && isSameMonth(parseISO(entry.date), monthDate));
@@ -185,6 +191,15 @@ export default function MonthlyReportPage() {
                 return acc;
             }, 0);
         
+        const serviceFeesForMonth = serviceFeeEntries
+            .filter(entry => entry.date && isSameMonth(parseISO(entry.date), monthDate))
+            .reduce((acc, entry) => {
+                if (entry.type === 1) return acc + entry.amount;
+                if (entry.type === 2) return acc - entry.amount;
+                return acc;
+            }, 0);
+
+        const totalRevenue = collectedFeesForMonth + collectedInterestForMonth + serviceFeesForMonth;
         const totalGrossRevenueForMonth = collectedAmountForMonth + serviceFeesForMonth;
 
         const endOfMonthDate = endOfMonth(monthDate);
@@ -278,7 +293,7 @@ export default function MonthlyReportPage() {
         totalCollectedAmount,
         totalCollectedCount
     };
-  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, collectedAmounts]);
+  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, collectedAmounts, serviceFeeEntries]);
 
 
   return (
