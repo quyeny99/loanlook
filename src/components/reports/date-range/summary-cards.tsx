@@ -27,8 +27,8 @@ type SummaryCardsProps = {
         potentialInterest: number;
         overdueDebt: number;
         estimatedProfit: number;
-        totalRepaymentAmount: number;
         totalCollectedAmount: number;
+        totalGrossRevenue: number;
     }
     isAdmin: boolean;
     collectedServiceFees: number;
@@ -85,7 +85,7 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                         <CardContent>
                              <div className="flex items-center gap-2">
                                 <div className="flex items-center justify-center px-2 h-7 rounded-md bg-orange-500 text-white font-bold">{collectedAmount.count}</div>
-                                <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalRepaymentAmount)} ₫</p>
+                                <p className="text-2xl font-bold text-orange-500">{currencyFormatter.format(reportData.totalCollectedAmount)} ₫</p>
                             </div>
                         </CardContent>
                     </Card>
