@@ -234,6 +234,21 @@ export default function DateRangeExcelReportPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Sheet Data Object</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {sheetLoading ? (
+            <p>Loading sheet data...</p>
+          ) : (
+            <pre className="p-4 bg-muted rounded-md overflow-x-auto text-sm">
+              {JSON.stringify(sheetData, null, 2)}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
