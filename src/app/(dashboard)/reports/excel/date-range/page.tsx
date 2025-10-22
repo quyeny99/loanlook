@@ -55,7 +55,7 @@ export default function DateRangeExcelReportPage() {
               const formattedData = (results.data as any[]).map(row => {
                 let date_disbursement;
                 try {
-                  date_disbursement = parse(row['Ngày'], 'dd/MM/yyyy', new Date());
+                  date_disbursement = parse(row['Ngày'], 'M/d/yyyy', new Date());
                 } catch(e) {
                   date_disbursement = new Date();
                 }
@@ -93,7 +93,9 @@ export default function DateRangeExcelReportPage() {
         totalLoanAmount = sheetData
         .filter(row => {
             try {
-                return isWithinInterval(row.date_disbursement, { start, end });
+                const disbursementDate = row.date_disbursement;
+                if (!disbursementDate || !(disbursementDate instanceof Date)) return false;
+                return isWithinInterval(disbursementDate, { start, end });
             } catch(e) {
                 return false;
             }
