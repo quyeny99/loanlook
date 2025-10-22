@@ -1,16 +1,18 @@
 'use client';
 
-import { LogOut, BarChart2 } from 'lucide-react';
+import { LogOut, BarChart2, FileSpreadsheet } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Header() {
   const router = useRouter();
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
 
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
@@ -54,6 +56,22 @@ export default function Header() {
                 <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+
+        {isAdmin && (
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost">
+                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                        Excel Report
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onSelect={() => router.push('/reports/excel/daily')}>1. Daily</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => router.push('/reports/excel/monthly')}>2. Monthly</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => router.push('/reports/excel/date-range')}>3. Date Range</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        )}
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>
