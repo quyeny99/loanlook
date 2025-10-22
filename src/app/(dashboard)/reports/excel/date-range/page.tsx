@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { startOfMonth, format, parse, isWithinInterval } from 'date-fns';
+import { startOfMonth, format, parse, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
 import LegalDocTypeChart from '@/components/reports/shared/legal-doc-type-chart';
 import LoanRegionsChart from '@/components/reports/date-range/loan-regions-chart';
@@ -89,8 +89,16 @@ export default function DateRangeExcelReportPage() {
   const reportData = useMemo(() => {
     let totalLoanAmount = 0;
     if (fromDate && toDate) {
+        const start = startOfDay(fromDate);
+        const end = endOfDay(toDate);
         totalLoanAmount = sheetData
-        .filter(row => isWithinInterval(row.date_disbursement, { start: fromDate, end: toDate }))
+        .filter(row => {
+            try {
+                return isWithinInterval(row.date_disbursement, { start, end });
+            } catch(e) {
+                return false;
+            }
+        })
         .reduce((acc, row) => acc + row.loan_disbursement, 0);
     }
   
