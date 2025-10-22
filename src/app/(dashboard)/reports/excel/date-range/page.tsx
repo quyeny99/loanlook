@@ -22,6 +22,7 @@ type SheetRow = {
   customer_name: string;
   loan_disbursement: number;
   date_disbursement: Date;
+  collected_service_fee: number;
   [key: string]: any;
 };
 
@@ -51,15 +52,18 @@ export default function DateRangeExcelReportPage() {
               const formattedData = (results.data as any[]).map(row => {
                 let date_disbursement;
                 try {
+                  // The sheet uses M/d/yyyy
                   date_disbursement = parse(row['Ngày'], 'M/d/yyyy', new Date());
                 } catch(e) {
                   date_disbursement = new Date();
                 }
 
                 return {
+                  ...row,
                   customer_name: row['Tên khách'],
                   loan_disbursement: parseFloat(row['Dư nợ đầu kỳ']?.replace(/,/g, '')) || 0,
                   date_disbursement: date_disbursement,
+                  collected_service_fee: parseFloat(row['Đã thu phí']?.replace(/,/g, '')) || 0,
                 };
               });
               setSheetData(formattedData);
@@ -88,15 +92,17 @@ export default function DateRangeExcelReportPage() {
         filteredRows = sheetData
         .filter(row => {
             try {
-                if (!row.date_disbursement || !(row.date_disbursement instanceof Date)) return false;
+                if (!row.date_disbursement || !(row.date_disbursement instanceof Date) || isNaN(row.date_disbursement.getTime())) return false;
                 const disbursementDate = row.date_disbursement;
                 return isWithinInterval(disbursementDate, { start, end });
             } catch(e) {
+                console.error("Error filtering row by date:", e, row);
                 return false;
             }
         });
     }
     const totalLoanAmount = filteredRows.reduce((acc, row) => acc + row.loan_disbursement, 0);
+    const collectedServiceFees = filteredRows.reduce((acc, row) => acc + row.collected_service_fee, 0);
   
     return {
       totalLoanAmount,
@@ -112,7 +118,7 @@ export default function DateRangeExcelReportPage() {
       estimatedProfit: 520000000,
       totalCollectedAmount: 370000000,
       totalGrossRevenue: 400000000,
-      collectedServiceFees: 30000000,
+      collectedServiceFees: collectedServiceFees,
       paperData: [
           { name: 'Căn cước công dân', value: 900, fill: '#3b82f6' },
           { name: 'Hộ chiếu', value: 300, fill: '#a855f7' }
@@ -195,7 +201,12 @@ export default function DateRangeExcelReportPage() {
         </CardHeader>
         <CardContent>
           <pre className="p-4 bg-muted rounded-md overflow-x-auto text-sm">
-            {JSON.stringify(sheetData, null, 2)}
+            {JSON.stringify(sheetData, (key, value) => {
+                if (value instanceof Date) {
+                    return value.toISOString();
+                }
+                return value;
+            }, 2)}
           </pre>
         </CardContent>
       </Card>
