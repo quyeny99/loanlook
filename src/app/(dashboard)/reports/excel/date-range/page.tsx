@@ -53,19 +53,18 @@ export default function DateRangeExcelReportPage() {
             if (results.data.length > 0) {
               setTableHeaders(results.meta.fields || []);
               const formattedData = (results.data as any[]).map(row => {
-                const loan_disbursement = parseFloat(row['dư nợ đầu kỳ']?.replace(/,/g, '')) || 0;
                 let date_disbursement;
                 try {
-                  date_disbursement = parse(row['ngày'], 'dd/MM/yyyy', new Date());
+                  date_disbursement = parse(row['Ngày'], 'dd/MM/yyyy', new Date());
                 } catch(e) {
                   date_disbursement = new Date();
                 }
 
                 return {
                   ...row,
-                  customer_name: row['tên khách'],
-                  loan_disbursement,
-                  date_disbursement,
+                  customer_name: row['Tên khách'],
+                  loan_disbursement: parseFloat(row['Dư nợ đầu kỳ']?.replace(/,/g, '')) || 0,
+                  date_disbursement: date_disbursement,
                 };
               });
               setSheetData(formattedData);
