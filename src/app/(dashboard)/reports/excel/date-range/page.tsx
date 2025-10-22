@@ -35,6 +35,8 @@ export default function DateRangeExcelReportPage() {
         
         Papa.parse(url, {
           download: true,
+          encoding: 'UTF-8',
+          skipEmptyLines: true,
           complete: (results) => {
             setSheetData(results.data as string[][]);
             setSheetLoading(false);
