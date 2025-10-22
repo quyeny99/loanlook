@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { startOfMonth, format } from 'date-fns';
+import { startOfMonth, format, parse } from 'date-fns';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
 import LegalDocTypeChart from '@/components/reports/shared/legal-doc-type-chart';
 import LoanRegionsChart from '@/components/reports/date-range/loan-regions-chart';
@@ -19,8 +19,6 @@ import { type Application } from '@/lib/data';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
-const API_BASE_URL = 'https://api.y99.vn/data/Application/';
-const API_VALUES = 'id,loanapp__disbursement,status';
 
 
 export default function DateRangeExcelReportPage() {
@@ -30,37 +28,6 @@ export default function DateRangeExcelReportPage() {
   const [loading, setLoading] = useState(false);
   const [sheetData, setSheetData] = useState<string[][]>([]);
   const [sheetLoading, setSheetLoading] = useState(true);
-  const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
-
-  const fetchLoanData = useCallback(async (start?: Date, end?: Date) => {
-    if (!start || !end || !loginId) return;
-    setLoading(true);
-    try {
-      const formattedFromDate = format(start, 'yyyy-MM-dd');
-      const formattedToDate = format(end, 'yyyy-MM-dd');
-      
-      const disbursementFilter = encodeURIComponent(JSON.stringify({ 
-        "loanapp__dbm_entry__date__gte": formattedFromDate,
-        "loanapp__dbm_entry__date__lte": formattedToDate
-      }));
-
-      const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
-
-      const [disbursedResponse] = await Promise.all([
-        fetch(disbursedUrl),
-      ]);
-
-      const disbursedData = await disbursedResponse.json();
-      
-      setDisbursedApplications(disbursedData.rows || []);
-
-    } catch (error) {
-      console.error("Failed to fetch applications", error);
-      setDisbursedApplications([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [loginId]);
 
   useEffect(() => {
     const fetchSheetData = async () => {
@@ -92,17 +59,79 @@ export default function DateRangeExcelReportPage() {
     fetchSheetData();
   }, []);
 
-  useEffect(() => {
-    if(loginId) {
-      fetchLoanData(fromDate, toDate);
-    }
-  }, [fromDate, toDate, fetchLoanData, loginId]);
-
-
   const reportData = useMemo(() => {
-    const disbursedApps = disbursedApplications.filter(app => app.status === 7);
-    const totalLoanAmount = disbursedApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0);
-    
+    if (sheetData.length < 2) {
+      return {
+        totalLoanAmount: 0,
+        totalApplications: 1500,
+        disbursedCount: 1200,
+        averageLoanTerm: 18,
+        totalCommission: 500000000,
+        collectedFees: 120000000,
+        potentialFees: 50000000,
+        collectedInterest: 250000000,
+        potentialInterest: 100000000,
+        overdueDebt: 300000000,
+        estimatedProfit: 520000000,
+        totalCollectedAmount: 370000000,
+        totalGrossRevenue: 400000000,
+        collectedServiceFees: 30000000,
+        paperData: [
+            { name: 'Căn cước công dân', value: 900, fill: '#3b82f6' },
+            { name: 'Hộ chiếu', value: 300, fill: '#a855f7' }
+        ],
+        regionData: [
+            { name: 'Hồ Chí Minh', value: 300, fill: COLORS[0] },
+            { name: 'Hà Nội', value: 250, fill: COLORS[1] },
+            { name: 'Đà Nẵng', value: 150, fill: COLORS[2] },
+            { name: 'Hải Phòng', value: 100, fill: COLORS[3] },
+            { name: 'Cần Thơ', value: 80, fill: COLORS[4] },
+            { name: 'Others', value: 320, fill: COLORS[5] }
+        ],
+        statusData: [
+            { name: '1. Newly Created', 'Total applications': 400 },
+            { name: '2. Pending Review', 'Total applications': 300 },
+            { name: '3. Request More Info', 'Total applications': 100 },
+            { name: '4. Rejected', 'Total applications': 200 },
+            { name: '5. Approved', 'Total applications': 250 },
+            { name: '6. Contract signed', 'Total applications': 150 },
+            { name: '7. Disbursed', 'Total applications': 100 },
+        ],
+        typeData: [
+            { name: 'Personal Loan', value: 800, fill: COLORS[0] },
+            { name: 'Business Loan', value: 400, fill: COLORS[1] },
+        ],
+        sourceData: [
+            { name: 'Apps', 'Total applications': 700 },
+            { name: 'CTV', 'Total applications': 500 },
+            { name: 'Website', 'Total applications': 300 },
+        ],
+      };
+    }
+  
+    const headers = sheetData[0];
+    const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date') || h.toLowerCase().includes('ngày'));
+    const amountIndex = headers.findIndex(h => h.toLowerCase().includes('amount') || h.toLowerCase().includes('số tiền'));
+  
+    let totalLoanAmount = 0;
+  
+    if (dateIndex !== -1 && amountIndex !== -1 && fromDate && toDate) {
+      for (let i = 1; i < sheetData.length; i++) {
+        const row = sheetData[i];
+        try {
+          const rowDate = parse(row[dateIndex], 'dd/MM/yyyy', new Date());
+          if (rowDate >= fromDate && rowDate <= toDate) {
+            const amount = parseFloat(row[amountIndex].replace(/,/g, ''));
+            if (!isNaN(amount)) {
+              totalLoanAmount += amount;
+            }
+          }
+        } catch (e) {
+          // Ignore rows with invalid dates
+        }
+      }
+    }
+  
     return {
       totalLoanAmount,
       totalApplications: 1500,
@@ -149,7 +178,7 @@ export default function DateRangeExcelReportPage() {
           { name: 'Website', 'Total applications': 300 },
       ],
     }
-  }, [disbursedApplications]);
+  }, [sheetData, fromDate, toDate]);
 
   const collectedAmount = {
     total: 370000000,
@@ -172,7 +201,7 @@ export default function DateRangeExcelReportPage() {
       <div className="flex items-center justify-between mt-6 mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Date Range Excel Report
-          <Button variant="ghost" size="icon" onClick={() => fetchLoanData(fromDate, toDate)} disabled={loading}>
+          <Button variant="ghost" size="icon" onClick={() => {}} disabled={loading}>
             <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </h1>
@@ -231,5 +260,3 @@ export default function DateRangeExcelReportPage() {
     </div>
   );
 }
-
-    
