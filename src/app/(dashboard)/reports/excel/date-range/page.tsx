@@ -111,7 +111,7 @@ export default function DateRangeExcelReportPage() {
   
     const headers = sheetData[0];
     const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date') || h.toLowerCase().includes('ngày'));
-    const amountIndex = headers.findIndex(h => h.toLowerCase().includes('amount') || h.toLowerCase().includes('số tiền'));
+    const amountIndex = headers.findIndex(h => h.toLowerCase().includes('dư nợ đầu kỳ'));
   
     let totalLoanAmount = 0;
   
