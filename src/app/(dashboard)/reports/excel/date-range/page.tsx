@@ -86,11 +86,11 @@ export default function DateRangeExcelReportPage() {
   }, []);
 
   const reportData = useMemo(() => {
-    let totalLoanAmount = 0;
+    let filteredRows: SheetRow[] = [];
     if (fromDate && toDate) {
         const start = startOfDay(fromDate);
         const end = endOfDay(toDate);
-        totalLoanAmount = sheetData
+        filteredRows = sheetData
         .filter(row => {
             try {
                 const disbursementDate = row.date_disbursement;
@@ -99,14 +99,14 @@ export default function DateRangeExcelReportPage() {
             } catch(e) {
                 return false;
             }
-        })
-        .reduce((acc, row) => acc + row.loan_disbursement, 0);
+        });
     }
+    const totalLoanAmount = filteredRows.reduce((acc, row) => acc + row.loan_disbursement, 0);
   
     return {
       totalLoanAmount,
+      disbursedCount: filteredRows.length,
       totalApplications: 1500,
-      disbursedCount: 1200,
       averageLoanTerm: 18,
       totalCommission: 500000000,
       collectedFees: 120000000,
