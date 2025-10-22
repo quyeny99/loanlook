@@ -13,6 +13,7 @@ import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
 import Papa from 'papaparse';
 import { useAuth } from '@/context/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
@@ -187,6 +188,17 @@ export default function DateRangeExcelReportPage() {
         <LoanTypeChart typeData={reportData.typeData} />
         <SourceChart data={reportData.sourceData} />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Sheet Data Object</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="p-4 bg-muted rounded-md overflow-x-auto text-sm">
+            {JSON.stringify(sheetData, null, 2)}
+          </pre>
+        </CardContent>
+      </Card>
     </div>
   );
 }
