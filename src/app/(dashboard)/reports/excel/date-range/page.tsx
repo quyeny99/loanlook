@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { startOfMonth } from 'date-fns';
@@ -11,6 +11,8 @@ import LoanRegionsChart from '@/components/reports/date-range/loan-regions-chart
 import StatusChart from '@/components/reports/date-range/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
@@ -18,7 +20,31 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 export default function DateRangeExcelReportPage() {
   const [fromDate, setFromDate] = useState<Date | undefined>(startOfMonth(new Date()));
   const [toDate, setToDate] = useState<Date | undefined>(new Date());
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sheetData, setSheetData] = useState<string[][]>([]);
+  const [sheetLoading, setSheetLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSheetData = async () => {
+      setSheetLoading(true);
+      try {
+        const sheetId = '1NGlLMEFv9SxC2WXBvZcUsze6eekQSNK6gRbEeU2nKXQ';
+        const sheetName = 'sheet5';
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
+        const response = await fetch(url);
+        const text = await response.text();
+        // Naive CSV parsing
+        const rows = text.split('\n').map(row => row.split(',').map(cell => cell.replace(/"/g, '')));
+        setSheetData(rows);
+      } catch (error) {
+        console.error('Failed to fetch sheet data:', error);
+      } finally {
+        setSheetLoading(false);
+      }
+    };
+
+    fetchSheetData();
+  }, []);
 
   const reportData = {
     totalApplications: 1500,
@@ -72,6 +98,9 @@ export default function DateRangeExcelReportPage() {
     count: 150
   };
 
+  const tableHeaders = sheetData.length > 0 ? sheetData[0] : [];
+  const tableRows = sheetData.length > 1 ? sheetData.slice(1) : [];
+
   return (
     <div className="space-y-6">
        <div className="flex items-center text-sm text-muted-foreground">
@@ -109,6 +138,38 @@ export default function DateRangeExcelReportPage() {
         <LoanTypeChart typeData={reportData.typeData} />
         <SourceChart data={reportData.sourceData} />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Data from Google Sheet</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {sheetLoading ? (
+            <p>Loading sheet data...</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {tableHeaders.map((header, index) => (
+                      <TableHead key={index}>{header}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tableRows.map((row, rowIndex) => (
+                    <TableRow key={rowIndex}>
+                      {row.map((cell, cellIndex) => (
+                        <TableCell key={cellIndex}>{cell}</TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
