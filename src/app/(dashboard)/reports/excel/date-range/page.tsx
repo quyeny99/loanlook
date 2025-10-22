@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { startOfMonth, format, parse } from 'date-fns';
+import { startOfMonth, format, parse, isWithinInterval } from 'date-fns';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
 import LegalDocTypeChart from '@/components/reports/shared/legal-doc-type-chart';
 import LoanRegionsChart from '@/components/reports/date-range/loan-regions-chart';
@@ -20,13 +20,20 @@ import { type Application } from '@/lib/data';
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
+type SheetRow = {
+  customer_name: string;
+  loan_disbursement: number;
+  date_disbursement: Date;
+  [key: string]: any;
+};
 
 export default function DateRangeExcelReportPage() {
   const { loginId } = useAuth();
   const [fromDate, setFromDate] = useState<Date | undefined>(startOfMonth(new Date()));
   const [toDate, setToDate] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(false);
-  const [sheetData, setSheetData] = useState<string[][]>([]);
+  const [sheetData, setSheetData] = useState<SheetRow[]>([]);
+  const [tableHeaders, setTableHeaders] = useState<string[]>([]);
   const [sheetLoading, setSheetLoading] = useState(true);
 
   useEffect(() => {
@@ -39,10 +46,30 @@ export default function DateRangeExcelReportPage() {
         
         Papa.parse(url, {
           download: true,
+          header: true,
           encoding: 'UTF-8',
           skipEmptyLines: true,
           complete: (results) => {
-            setSheetData(results.data as string[][]);
+            if (results.data.length > 0) {
+              setTableHeaders(results.meta.fields || []);
+              const formattedData = (results.data as any[]).map(row => {
+                const loan_disbursement = parseFloat(row['dư nợ đầu kỳ']?.replace(/,/g, '')) || 0;
+                let date_disbursement;
+                try {
+                  date_disbursement = parse(row['ngày'], 'dd/MM/yyyy', new Date());
+                } catch(e) {
+                  date_disbursement = new Date();
+                }
+
+                return {
+                  ...row,
+                  customer_name: row['tên khách'],
+                  loan_disbursement,
+                  date_disbursement,
+                };
+              });
+              setSheetData(formattedData);
+            }
             setSheetLoading(false);
           },
           error: (error: any) => {
@@ -60,76 +87,11 @@ export default function DateRangeExcelReportPage() {
   }, []);
 
   const reportData = useMemo(() => {
-    if (sheetData.length < 2) {
-      return {
-        totalLoanAmount: 0,
-        totalApplications: 1500,
-        disbursedCount: 1200,
-        averageLoanTerm: 18,
-        totalCommission: 500000000,
-        collectedFees: 120000000,
-        potentialFees: 50000000,
-        collectedInterest: 250000000,
-        potentialInterest: 100000000,
-        overdueDebt: 300000000,
-        estimatedProfit: 520000000,
-        totalCollectedAmount: 370000000,
-        totalGrossRevenue: 400000000,
-        collectedServiceFees: 30000000,
-        paperData: [
-            { name: 'Căn cước công dân', value: 900, fill: '#3b82f6' },
-            { name: 'Hộ chiếu', value: 300, fill: '#a855f7' }
-        ],
-        regionData: [
-            { name: 'Hồ Chí Minh', value: 300, fill: COLORS[0] },
-            { name: 'Hà Nội', value: 250, fill: COLORS[1] },
-            { name: 'Đà Nẵng', value: 150, fill: COLORS[2] },
-            { name: 'Hải Phòng', value: 100, fill: COLORS[3] },
-            { name: 'Cần Thơ', value: 80, fill: COLORS[4] },
-            { name: 'Others', value: 320, fill: COLORS[5] }
-        ],
-        statusData: [
-            { name: '1. Newly Created', 'Total applications': 400 },
-            { name: '2. Pending Review', 'Total applications': 300 },
-            { name: '3. Request More Info', 'Total applications': 100 },
-            { name: '4. Rejected', 'Total applications': 200 },
-            { name: '5. Approved', 'Total applications': 250 },
-            { name: '6. Contract signed', 'Total applications': 150 },
-            { name: '7. Disbursed', 'Total applications': 100 },
-        ],
-        typeData: [
-            { name: 'Personal Loan', value: 800, fill: COLORS[0] },
-            { name: 'Business Loan', value: 400, fill: COLORS[1] },
-        ],
-        sourceData: [
-            { name: 'Apps', 'Total applications': 700 },
-            { name: 'CTV', 'Total applications': 500 },
-            { name: 'Website', 'Total applications': 300 },
-        ],
-      };
-    }
-  
-    const headers = sheetData[0];
-    const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date') || h.toLowerCase().includes('ngày'));
-    const amountIndex = headers.findIndex(h => h.toLowerCase().includes('dư nợ đầu kỳ'));
-  
     let totalLoanAmount = 0;
-  
-    if (dateIndex !== -1 && amountIndex !== -1 && fromDate && toDate) {
-      for (let i = 1; i < sheetData.length; i++) {
-        const row = sheetData[i];
-        try {
-          const rowDate = parse(row[dateIndex], 'dd/MM/yyyy', new Date());
-          if (rowDate >= fromDate && rowDate <= toDate) {
-            const amount = parseFloat(row[amountIndex].replace(/,/g, ''));
-            if (!isNaN(amount)) {
-              totalLoanAmount += amount;
-            }
-          }
-        } catch (e) {
-          // Ignore rows with invalid dates
-        }
-      }
+    if (fromDate && toDate) {
+        totalLoanAmount = sheetData
+        .filter(row => isWithinInterval(row.date_disbursement, { start: fromDate, end: toDate }))
+        .reduce((acc, row) => acc + row.loan_disbursement, 0);
     }
   
     return {
@@ -185,8 +147,9 @@ export default function DateRangeExcelReportPage() {
     count: 150
   };
 
-  const tableHeaders = sheetData.length > 0 ? sheetData[0] : [];
-  const tableRows = sheetData.length > 1 ? sheetData.slice(1) : [];
+  const tableRows = sheetData.map(row => 
+    tableHeaders.map(header => row[header] instanceof Date ? format(row[header], 'dd/MM/yyyy') : row[header])
+  );
 
   return (
     <div className="space-y-6">
@@ -247,7 +210,13 @@ export default function DateRangeExcelReportPage() {
                   {tableRows.map((row, rowIndex) => (
                     <TableRow key={rowIndex}>
                       {row.map((cell, cellIndex) => (
-                        <TableCell key={cellIndex}>{cell}</TableCell>
+                        <TableCell key={cellIndex}>
+                          {
+                            typeof cell === 'number' 
+                              ? currencyFormatter.format(cell) 
+                              : (cell instanceof Date ? format(cell, 'dd/MM/yyyy') : cell)
+                          }
+                        </TableCell>
                       ))}
                     </TableRow>
                   ))}
