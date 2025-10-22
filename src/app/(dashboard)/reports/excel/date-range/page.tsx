@@ -11,11 +11,8 @@ import LoanRegionsChart from '@/components/reports/date-range/loan-regions-chart
 import StatusChart from '@/components/reports/date-range/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Papa from 'papaparse';
 import { useAuth } from '@/context/AuthContext';
-import { type Application } from '@/lib/data';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
@@ -33,7 +30,6 @@ export default function DateRangeExcelReportPage() {
   const [toDate, setToDate] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(false);
   const [sheetData, setSheetData] = useState<SheetRow[]>([]);
-  const [tableHeaders, setTableHeaders] = useState<string[]>([]);
   const [sheetLoading, setSheetLoading] = useState(true);
 
   useEffect(() => {
@@ -51,7 +47,6 @@ export default function DateRangeExcelReportPage() {
           skipEmptyLines: true,
           complete: (results) => {
             if (results.data.length > 0) {
-              setTableHeaders(results.meta.fields || []);
               const formattedData = (results.data as any[]).map(row => {
                 let date_disbursement;
                 try {
@@ -61,7 +56,6 @@ export default function DateRangeExcelReportPage() {
                 }
 
                 return {
-                  ...row,
                   customer_name: row['Tên khách'],
                   loan_disbursement: parseFloat(row['Dư nợ đầu kỳ']?.replace(/,/g, '')) || 0,
                   date_disbursement: date_disbursement,
@@ -93,8 +87,8 @@ export default function DateRangeExcelReportPage() {
         filteredRows = sheetData
         .filter(row => {
             try {
+                if (!row.date_disbursement || !(row.date_disbursement instanceof Date)) return false;
                 const disbursementDate = row.date_disbursement;
-                if (!disbursementDate || !(disbursementDate instanceof Date)) return false;
                 return isWithinInterval(disbursementDate, { start, end });
             } catch(e) {
                 return false;
@@ -156,10 +150,6 @@ export default function DateRangeExcelReportPage() {
     count: 150
   };
 
-  const tableRows = sheetData.map(row => 
-    tableHeaders.map(header => row[header] instanceof Date ? format(row[header], 'dd/MM/yyyy') : row[header])
-  );
-
   return (
     <div className="space-y-6">
        <div className="flex items-center text-sm text-muted-foreground">
@@ -197,59 +187,6 @@ export default function DateRangeExcelReportPage() {
         <LoanTypeChart typeData={reportData.typeData} />
         <SourceChart data={reportData.sourceData} />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Data from Google Sheet</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sheetLoading ? (
-            <p>Loading sheet data...</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {tableHeaders.map((header, index) => (
-                      <TableHead key={index}>{header}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tableRows.map((row, rowIndex) => (
-                    <TableRow key={rowIndex}>
-                      {row.map((cell, cellIndex) => (
-                        <TableCell key={cellIndex}>
-                          {
-                            typeof cell === 'number' 
-                              ? currencyFormatter.format(cell) 
-                              : (cell instanceof Date ? format(cell, 'dd/MM/yyyy') : cell)
-                          }
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Sheet Data Object</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sheetLoading ? (
-            <p>Loading sheet data...</p>
-          ) : (
-            <pre className="p-4 bg-muted rounded-md overflow-x-auto text-sm">
-              {JSON.stringify(sheetData, null, 2)}
-            </pre>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
