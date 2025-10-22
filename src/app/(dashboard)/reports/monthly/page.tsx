@@ -199,7 +199,7 @@ export default function MonthlyReportPage() {
                 return acc;
             }, 0);
 
-        const totalRevenue = collectedFeesForMonth + collectedInterestForMonth + serviceFeesForMonth;
+        const totalRevenue = collectedFeesForMonth + collectedInterestForMonth;
         const totalGrossRevenueForMonth = collectedAmountForMonth + serviceFeesForMonth;
 
         const endOfMonthDate = endOfMonth(monthDate);
