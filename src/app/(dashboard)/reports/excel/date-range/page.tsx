@@ -13,6 +13,7 @@ import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Papa from 'papaparse';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
@@ -25,71 +26,26 @@ export default function DateRangeExcelReportPage() {
   const [sheetLoading, setSheetLoading] = useState(true);
 
   useEffect(() => {
-    // Function to parse CSV text into a 2D array
-    const parseCSV = (text: string): string[][] => {
-      const rows: string[][] = [];
-      let currentRow: string[] = [];
-      let currentCell = '';
-      let inQuotedField = false;
-
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-
-        if (inQuotedField) {
-          if (char === '"') {
-            if (i + 1 < text.length && text[i + 1] === '"') {
-              // This is an escaped quote
-              currentCell += '"';
-              i++; // Skip the next quote
-            } else {
-              // This is the end of the quoted field
-              inQuotedField = false;
-            }
-          } else {
-            currentCell += char;
-          }
-        } else {
-          if (char === '"') {
-            inQuotedField = true;
-          } else if (char === ',') {
-            currentRow.push(currentCell);
-            currentCell = '';
-          } else if (char === '\n') {
-            currentRow.push(currentCell);
-            rows.push(currentRow);
-            currentRow = [];
-            currentCell = '';
-          } else if (char !== '\r') {
-            currentCell += char;
-          }
-        }
-      }
-
-      // Add the last cell and row if the text doesn't end with a newline
-      if (currentCell) {
-        currentRow.push(currentCell);
-      }
-      if (currentRow.length > 0) {
-        rows.push(currentRow);
-      }
-
-      return rows;
-    };
-
-
     const fetchSheetData = async () => {
       setSheetLoading(true);
       try {
         const sheetId = '1NGlLMEFv9SxC2WXBvZcUsze6eekQSNK6gRbEeU2nKXQ';
         const sheetName = 'sheet5';
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
-        const response = await fetch(url);
-        const text = await response.text();
-        const rows = parseCSV(text);
-        setSheetData(rows);
+        
+        Papa.parse(url, {
+          download: true,
+          complete: (results) => {
+            setSheetData(results.data as string[][]);
+            setSheetLoading(false);
+          },
+          error: (error: any) => {
+            console.error('Failed to fetch or parse sheet data:', error);
+            setSheetLoading(false);
+          }
+        });
       } catch (error) {
         console.error('Failed to fetch sheet data:', error);
-      } finally {
         setSheetLoading(false);
       }
     };
