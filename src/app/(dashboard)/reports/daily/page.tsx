@@ -14,6 +14,7 @@ import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/daily/source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
+import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -225,16 +226,48 @@ export default function ReportsPage() {
     const collectedInterest = interestSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
     const collectedFees = feeSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-    const totalRevenue = collectedInterest + collectedFees + collectedServiceFees;
+    // Adjustments
+    const dailyAdjustments = adjustments.filter(adj => isSameDay(parseISO(adj.date), date));
+    
+    const totalAdjustmentDisbursement = dailyAdjustments
+        .filter(adj => adj.type === "disbursement")
+        .reduce((sum, adj) => sum + adj.amount, 0);
+
+    const countAdjustmentDisbursement = dailyAdjustments
+        .filter(adj => adj.type === "disbursement")
+        .reduce((sum, adj) => {
+            if (adj.amount > 0) sum += 1;
+            else if (adj.amount < 0) sum -= 1;
+            return sum;
+        }, 0);
+
+    const totalAdjustmentServiceFee = dailyAdjustments
+        .filter(adj => adj.type === "service_fee")
+        .reduce((sum, adj) => sum + adj.amount, 0);
+
+    const totalAdjustmentMonthlyFee = dailyAdjustments
+        .filter(adj => adj.type === "monthly_fee")
+        .reduce((sum, adj) => sum + adj.amount, 0);
+    
+    const totalAdjustmentMonthlyInterest = dailyAdjustments
+        .filter(adj => adj.type === "monthly_interest")
+        .reduce((sum, adj) => sum + adj.amount, 0);
+
+    const finalLoanAmount = loanAmount + totalAdjustmentDisbursement;
+    const finalDisbursedCount = disbursedApps.length + countAdjustmentDisbursement;
+    const finalCollectedServiceFees = collectedServiceFees + totalAdjustmentServiceFee;
+    const finalCollectedFees = collectedFees + totalAdjustmentMonthlyFee;
+    const finalCollectedInterest = collectedInterest + totalAdjustmentMonthlyInterest;
+    
+    const totalRevenue = finalCollectedFees + finalCollectedInterest + finalCollectedServiceFees;
 
     const totalCollectedAmount = collectedAmount.total;
-    const totalGrossRevenue = totalCollectedAmount + collectedServiceFees;
 
     return {
       totalApplications,
       totalRejected,
-      loanAmount,
-      disbursedCount: disbursedApps.length,
+      loanAmount: finalLoanAmount > 0 ? finalLoanAmount : 0,
+      disbursedCount: finalDisbursedCount > 0 ? finalDisbursedCount : 0,
       totalCommission,
       averageLoanTerm: Math.round(averageLoanTerm),
       paperData,
@@ -243,11 +276,11 @@ export default function ReportsPage() {
       typeData,
       sourceData,
       commissionCount,
-      collectedFees,
-      collectedInterest,
+      collectedFees: finalCollectedFees,
+      collectedInterest: finalCollectedInterest,
       totalRevenue,
       totalCollectedAmount,
-      totalGrossRevenue
+      collectedServiceFees: finalCollectedServiceFees
     };
   }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, date, collectedServiceFees, collectedAmount]);
 
@@ -274,7 +307,7 @@ export default function ReportsPage() {
         date={date}
         setDate={setDate}
         isAdmin={isAdmin}
-        collectedServiceFees={collectedServiceFees}
+        collectedServiceFees={reportData.collectedServiceFees}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
