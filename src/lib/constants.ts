@@ -149,23 +149,5 @@ export const adjustments: Adjustment[] = [
     related_ln_code: "LN090925002",
     related_ap_code: "AP1009251154",
     reference_month: "2025-10"
-  },
-  // {
-  //   date: "2025-12-10",
-  //   type: "potential_fee",
-  //   amount: -720000,
-  //   reason: "Trừ phí potential hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
-  //   related_ln_code: "LN090925002",
-  //   related_ap_code: "AP1009251154",
-  //   reference_month: "2025-12"
-  // },
-  // {
-  //   date: "2025-12-10",
-  //   type: "potential_interest",
-  //   amount: -57952,
-  //   reason: "Trừ lãi potential hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
-  //   related_ln_code: "LN090925002",
-  //   related_ap_code: "AP1009251154",
-  //   reference_month: "2025-12"
-  // },
+  }
 ]
