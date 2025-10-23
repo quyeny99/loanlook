@@ -13,6 +13,7 @@ import MonthlyLoanAmountChart from '@/components/reports/monthly/monthly-loan-am
 import MonthlySourceChart from '@/components/reports/monthly/monthly-source-chart';
 import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
+import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#a4de6c', '#d0ed57', '#a4c8e0', '#d8a4e0'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -199,8 +200,41 @@ export default function MonthlyReportPage() {
                 return acc;
             }, 0);
 
-        const totalRevenue = collectedFeesForMonth + collectedInterestForMonth;
-        const totalGrossRevenueForMonth = collectedAmountForMonth + serviceFeesForMonth;
+        // Adjustments
+        const monthlyAdjustments = adjustments.filter(adj => isSameMonth(parseISO(adj.date), monthDate));
+        
+        const totalAdjustmentDisbursement = monthlyAdjustments
+          .filter(adj => adj.type === "disbursement")
+          .reduce((sum, adj) => sum + adj.amount, 0);
+
+        const countAdjustmentDisbursement = monthlyAdjustments
+          .filter(adj => adj.type === "disbursement")
+          .reduce((sum, adj) => {
+              if (adj.amount > 0) sum += 1;
+              else if (adj.amount < 0) sum -= 1;
+              return sum;
+          }, 0);
+        
+        const totalAdjustmentServiceFee = monthlyAdjustments
+          .filter(adj => adj.type === "service_fee")
+          .reduce((sum, adj) => sum + adj.amount, 0);
+
+        const totalAdjustmentMonthlyFee = monthlyAdjustments
+          .filter(adj => adj.type === "monthly_fee")
+          .reduce((sum, adj) => sum + adj.amount, 0);
+        
+        const totalAdjustmentMonthlyInterest = monthlyAdjustments
+          .filter(adj => adj.type === "monthly_interest")
+          .reduce((sum, adj) => sum + adj.amount, 0);
+        
+        const totalDisbursedCount = disbursedMonthApps.length + countAdjustmentDisbursement;
+        const totalLoanAmount = disbursedMonthApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0) + totalAdjustmentDisbursement;
+        const finalCollectedFees = collectedFeesForMonth + totalAdjustmentMonthlyFee;
+        const finalCollectedInterest = collectedInterestForMonth + totalAdjustmentMonthlyInterest;
+        const finalCollectedServiceFees = serviceFeesForMonth + totalAdjustmentServiceFee;
+
+        const totalRevenue = finalCollectedFees + finalCollectedInterest;
+        const totalGrossRevenueForMonth = collectedAmountForMonth + finalCollectedServiceFees;
 
         const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
@@ -214,15 +248,15 @@ export default function MonthlyReportPage() {
             '4. Rejected': monthApps.filter(a => a.status === 4).length,
             '5. Approved': monthApps.filter(a => a.status === 5).length,
             '6. Contract signed': monthApps.filter(a => a.status === 6).length,
-            '7. Disbursed': disbursedMonthApps.length,
-            'Loan Amount': disbursedMonthApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0),
+            '7. Disbursed': totalDisbursedCount > 0 ? totalDisbursedCount : 0,
+            'Loan Amount': totalLoanAmount > 0 ? totalLoanAmount : 0,
             'Apps': monthApps.filter(a => a.source__name === 'Apps').length,
             'CTV': monthApps.filter(a => a.source__name === 'CTV').length,
             'Website': monthApps.filter(a => a.source__name === 'Website').length,
-            collectedFees: collectedFeesForMonth,
-            collectedInterest: collectedInterestForMonth,
+            collectedFees: finalCollectedFees,
+            collectedInterest: finalCollectedInterest,
             overdueDebt,
-            collectedServiceFees: serviceFeesForMonth,
+            collectedServiceFees: finalCollectedServiceFees,
             totalRevenue,
             totalCollectedAmount: collectedAmountForMonth,
             totalCollectedCount: collectedAmountsForMonth.length,
@@ -277,9 +311,23 @@ export default function MonthlyReportPage() {
     const totalCollectedCount = monthlyData.reduce((acc, month) => acc + month.totalCollectedCount, 0);
     const totalGrossRevenue = totalCollectedAmount + totalCollectedServiceFees;
 
+    const yearlyAdjustments = adjustments.filter(adj => isSameYear(parseISO(adj.date), new Date(parseInt(year), 0, 1)));
+    
+    const totalYearlyAdjustmentDisbursement = yearlyAdjustments
+      .filter(adj => adj.type === "disbursement")
+      .reduce((sum, adj) => sum + adj.amount, 0);
+
+    const countYearlyAdjustmentDisbursement = yearlyAdjustments
+      .filter(adj => adj.type === "disbursement")
+      .reduce((sum, adj) => {
+          if (adj.amount > 0) sum += 1;
+          else if (adj.amount < 0) sum -= 1;
+          return sum;
+      }, 0);
+
     return {
-        totalLoans,
-        totalLoanAmount,
+        totalLoans: totalLoans + countYearlyAdjustmentDisbursement,
+        totalLoanAmount: totalLoanAmount + totalYearlyAdjustmentDisbursement,
         totalCommission,
         monthlyData,
         loanRegionsData: loanRegionsDataWithColors,
