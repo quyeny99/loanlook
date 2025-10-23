@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, startOfMonth, isBefore, isWithinInterval, parseISO, subDays } from 'date-fns';
+import { format, startOfMonth, isBefore, isWithinInterval, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SummaryCards from '@/components/reports/date-range/summary-cards';
@@ -68,11 +68,7 @@ export default function DateRangeReportsPage() {
         "create_time__date__lte": formattedToDate
       }));
 
-      const serviceFeesFilter = encodeURIComponent(JSON.stringify({ 
-        "account__code":"HOAC03VND",
-        "date__gte": formattedFromDate,
-        "date__lte": formattedToDate
-      }));
+      const serviceFeesFilter = encodeURIComponent(JSON.stringify({ 'account__code': 'HOAC03VND', 'date__gte': formattedFromDate, 'date__lte': formattedToDate }));
       
       const overdueDebtFilter = encodeURIComponent(JSON.stringify({
         "to_date__gte": "2025-08-01",
@@ -232,20 +228,20 @@ export default function DateRangeReportsPage() {
     });
 
     const interestSchedulesInDateRange = fromDate && toDate
-        ? interestSchedules.filter(s => {
-            if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
-            const paymentTime = parseISO(s.detail[0].time);
-            return isWithinInterval(paymentTime, { start: fromDate, end: toDate });
+      ? interestSchedules.filter(s => {
+          if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
+          const paymentTime = parseISO(s.detail[0].time);
+          return isWithinInterval(paymentTime, { start: startOfDay(fromDate), end: endOfDay(toDate) });
         })
-        : [];
+      : [];
     
     const feeSchedulesInDateRange = fromDate && toDate
-        ? feeSchedules.filter(s => {
-            if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
-            const paymentTime = parseISO(s.detail[0].time);
-            return isWithinInterval(paymentTime, { start: fromDate, end: toDate });
+      ? feeSchedules.filter(s => {
+          if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
+          const paymentTime = parseISO(s.detail[0].time);
+          return isWithinInterval(paymentTime, { start: startOfDay(fromDate), end: endOfDay(toDate) });
         })
-        : [];
+      : [];
 
     const collectedInterest = interestSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
     const collectedFees = feeSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
