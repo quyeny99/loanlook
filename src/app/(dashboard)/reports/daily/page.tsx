@@ -259,7 +259,7 @@ export default function ReportsPage() {
     const finalCollectedFees = collectedFees + totalAdjustmentMonthlyFee;
     const finalCollectedInterest = collectedInterest + totalAdjustmentMonthlyInterest;
     
-    const totalRevenue = finalCollectedFees + finalCollectedInterest + finalCollectedServiceFees;
+    const totalRevenue = finalCollectedFees + finalCollectedInterest;
 
     const totalCollectedAmount = collectedAmount.total;
 
