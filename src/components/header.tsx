@@ -57,7 +57,7 @@ export default function Header() {
             </DropdownMenuContent>
         </DropdownMenu>
 
-        {isAdmin && (
+        {/* {isAdmin && (
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost">
@@ -71,7 +71,7 @@ export default function Header() {
                     <DropdownMenuItem onSelect={() => router.push('/reports/excel/date-range')}>3. Date Range</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-        )}
+        )} */}
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>
