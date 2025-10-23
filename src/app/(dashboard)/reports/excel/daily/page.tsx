@@ -27,8 +27,8 @@ export default function DailyExcelReportPage() {
     averageLoanTerm: 12,
     commissionCount: 10,
     paperData: [
-        { name: 'Căn cước công dân', value: 10, fill: '#3b82f6' },
-        { name: 'Hộ chiếu', value: 5, fill: '#a855f7' }
+        { name: 'National ID', value: 10, fill: '#3b82f6' },
+        { name: 'Passport', value: 5, fill: '#a855f7' }
     ],
     regionData: [
         { name: 'Hồ Chí Minh', value: 5, fill: COLORS[0] },

@@ -13,6 +13,7 @@ import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/date-range/source-chart';
 import { type Application, type InternalEntry } from '@/lib/data';
 import { useAuth } from '@/context/AuthContext';
+import { adjustments } from '@/lib/constants';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
@@ -227,11 +228,15 @@ export default function DateRangeReportsPage() {
         }
     });
 
+    const startDate = fromDate ? startOfDay(fromDate) : parseISO('2025-08-01');
+    const endDate = toDate ? endOfDay(toDate) : parseISO('2025-08-01');
+
+
     const interestSchedulesInDateRange = fromDate && toDate
       ? interestSchedules.filter(s => {
           if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
           const paymentTime = parseISO(s.detail[0].time);
-          return isWithinInterval(paymentTime, { start: startOfDay(fromDate), end: endOfDay(toDate) });
+          return isWithinInterval(paymentTime, { start: startDate, end: endDate });
         })
       : [];
     
@@ -239,16 +244,82 @@ export default function DateRangeReportsPage() {
       ? feeSchedules.filter(s => {
           if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
           const paymentTime = parseISO(s.detail[0].time);
-          return isWithinInterval(paymentTime, { start: startOfDay(fromDate), end: endOfDay(toDate) });
+          return isWithinInterval(paymentTime, { start: startDate, end: endDate });
         })
       : [];
+
+      // Start Adjustments calculator
+
+      const filteredAdjustmentsDisbursement = fromDate && toDate ? adjustments.filter(adj => {
+        if (adj.type !== "disbursement") return false;
+         const adjDate = parseISO(adj.date);
+         return isWithinInterval(adjDate, { start: startDate, end: endDate });
+       }) : [];
+
+       const totalAdjustmentDisbursement = filteredAdjustmentsDisbursement.reduce((sum, adj) => sum + adj.amount, 0);
+
+       const countAdjustmentDisbursement = filteredAdjustmentsDisbursement.reduce((sum, adj) => {
+          if (adj.amount > 0) sum += 1
+          else if (adj.amount < 0) sum -= 1
+          return sum;
+       }, 0);
+
+       const filteredServiceFees = fromDate && toDate ? adjustments.filter(adj => {
+        if (adj.type !== "service_fee") return false;
+        const adjDate = parseISO(adj.date);
+        return isWithinInterval(adjDate, { start: startDate, end: endDate });
+      }) : [];
+
+    const totalAdjustmentServiceFee = filteredServiceFees.reduce((sum, adj) => sum + adj.amount, 0);
+
+
+    const filteredAdjustmentsFee = fromDate && toDate ? adjustments.filter(adj => {
+      if (adj.type !== "monthly_fee") return false;
+      const adjDate = parseISO(adj.date);
+      return isWithinInterval(adjDate, { start: startDate, end: endDate });
+  }) : []
+
+    const totalAdjustmentMonthlyFee = filteredAdjustmentsFee.reduce((sum, adj) => sum + adj.amount, 0);
+
+    const filteredAdjustmentsInterest = fromDate && toDate ? adjustments.filter(adj => {
+      if (adj.type !== "monthly_interest") return false;
+      const adjDate = parseISO(adj.date);
+      return isWithinInterval(adjDate, { start: startDate, end: endDate });
+  }) : []
+
+  const totalAdjustmentMonthlyInterest = filteredAdjustmentsInterest.reduce((sum, adj) => sum + adj.amount, 0);
+
+      const totalAdjustmentPotentialFee = adjustments.reduce((sum, adj) => {
+        if (adj.type === "potential_fee" && isWithinInterval(parseISO(adj.date), { start: startDate, end: endDate })) {
+            return sum + adj.amount;
+        }
+        return sum;
+    }, 0);
+
+
+      const totalAdjustmentPotentialInterest = adjustments.reduce((sum, adj) => {
+        if (adj.type === "potential_interest" && isWithinInterval(parseISO(adj.date), { start: startDate, end: endDate })) {
+            return sum + adj.amount;
+        }
+        return sum;
+    }, 0);
+
+
+
+    // End Adjustments calculator
 
     const collectedInterest = interestSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
     const collectedFees = feeSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
 
-    const potentialInterest = interestSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
+    const potentialInterest = interestSchedules.reduce((acc, s) => {
+      const remaining = Math.max(0, (s.pay_amount || 0) - (s.paid_amount || 0));
+      return acc + remaining;
+    }, 0);
     
-    const potentialFees = feeSchedules.reduce((acc, s) => acc + (s.remain_amount ?? s.pay_amount), 0);
+    const potentialFees = feeSchedules.reduce((acc, s) => {
+      const remaining = Math.max(0, (s.pay_amount || 0) - (s.paid_amount || 0));
+      return acc + remaining;
+    }, 0);
 
     const overdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
 
@@ -262,7 +333,7 @@ export default function DateRangeReportsPage() {
     }, 0);
 
 
-    const estimatedProfit = collectedInterest + collectedFees + potentialInterest + potentialFees + collectedServiceFees;
+    const estimatedProfit = [...interestSchedules, ...feeSchedules].reduce((sum, s) => sum + s.pay_amount, 0);
     
     const totalCollectedAmount = collectedAmount.total;
     const totalGrossRevenue = totalCollectedAmount + collectedServiceFees;
@@ -270,8 +341,8 @@ export default function DateRangeReportsPage() {
 
     return {
         totalApplications,
-        disbursedCount: disbursedApps.length,
-        totalLoanAmount,
+        disbursedCount: disbursedApps.length + countAdjustmentDisbursement > 0 ? disbursedApps.length + countAdjustmentDisbursement : 0,
+        totalLoanAmount: totalLoanAmount + totalAdjustmentDisbursement < 0 ? 0 : totalLoanAmount + totalAdjustmentDisbursement,
         totalCommission,
         averageLoanTerm: averageLoanTerm,
         paperData,
@@ -279,15 +350,15 @@ export default function DateRangeReportsPage() {
         statusData,
         typeData,
         sourceData,
-        collectedFees,
-        potentialFees,
-        collectedInterest,
-        potentialInterest,
+        collectedFees: collectedFees + totalAdjustmentMonthlyFee,
+        potentialFees: potentialFees + totalAdjustmentPotentialFee,
+        collectedInterest: collectedInterest + totalAdjustmentMonthlyInterest,
+        potentialInterest: potentialInterest + totalAdjustmentPotentialInterest,
         overdueDebt,
         estimatedProfit,
         totalCollectedAmount,
         totalGrossRevenue,
-        collectedServiceFees
+        collectedServiceFees: collectedServiceFees + totalAdjustmentServiceFee
     }
   }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, serviceFeeEntries, collectedAmount]);
 
