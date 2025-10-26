@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AddStatementDialog } from "@/components/add-statement-dialog";
+import { DeleteStatementDialog } from "@/components/delete-statement-dialog";
 import { type Statement } from "@/lib/data";
 
 const initialStatementData: Statement[] = [
@@ -79,17 +80,24 @@ const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
 
 export default function StatementPage() {
   const [statementData, setStatementData] = useState<Statement[]>(initialStatementData);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingStatement, setEditingStatement] = useState<Statement | null>(null);
+  const [statementToDelete, setStatementToDelete] = useState<Statement | null>(null);
 
   const openAddDialog = () => {
     setEditingStatement(null);
-    setIsDialogOpen(true);
+    setIsAddDialogOpen(true);
   };
 
   const openEditDialog = (statement: Statement) => {
     setEditingStatement(statement);
-    setIsDialogOpen(true);
+    setIsAddDialogOpen(true);
+  };
+  
+  const openDeleteDialog = (statement: Statement) => {
+    setStatementToDelete(statement);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleSaveStatement = (statement: Omit<Statement, 'id'> & { id?: string }) => {
@@ -104,6 +112,13 @@ export default function StatementPage() {
         ...prevData,
         { ...statement, id: String(Date.now()) } as Statement,
       ]);
+    }
+  };
+
+  const handleDeleteStatement = () => {
+    if (statementToDelete) {
+      setStatementData(prevData => prevData.filter(s => s.id !== statementToDelete.id));
+      setStatementToDelete(null);
     }
   };
 
@@ -187,7 +202,7 @@ export default function StatementPage() {
                           <Pencil className="mr-2 h-4 w-4" />
                           Sửa
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-500">
+                        <DropdownMenuItem className="text-red-500" onClick={() => openDeleteDialog(row)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Xóa
                         </DropdownMenuItem>
@@ -204,9 +219,15 @@ export default function StatementPage() {
       <AddStatementDialog
         key={editingStatement ? editingStatement.id : 'add'}
         onSave={handleSaveStatement}
-        isOpen={isDialogOpen}
-        setIsOpen={setIsDialogOpen}
+        isOpen={isAddDialogOpen}
+        setIsOpen={setIsAddDialogOpen}
         statementToEdit={editingStatement}
+      />
+      <DeleteStatementDialog
+        isOpen={isDeleteDialogOpen}
+        setIsOpen={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteStatement}
+        statement={statementToDelete}
       />
     </div>
   );
