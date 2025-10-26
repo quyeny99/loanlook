@@ -165,7 +165,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP HH:mm")
+                            format(field.value, "PPP")
                           ) : (
                             <span>Pick a date</span>
                           )}

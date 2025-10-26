@@ -25,7 +25,7 @@ import { type Statement } from "@/lib/data";
 const initialStatementData: Statement[] = [
   {
     id: "1",
-    paymentDate: "2024-07-01T09:30:00",
+    paymentDate: "2024-07-01",
     principal: 5000000,
     interest: 500000,
     loanManagementFee: 50000,
@@ -36,7 +36,7 @@ const initialStatementData: Statement[] = [
   },
   {
     id: "2",
-    paymentDate: "2024-08-01T14:15:00",
+    paymentDate: "2024-08-01",
     principal: 5000000,
     interest: 450000,
     loanManagementFee: 50000,
@@ -47,7 +47,7 @@ const initialStatementData: Statement[] = [
   },
   {
     id: "3",
-    paymentDate: "2024-09-01T11:00:00",
+    paymentDate: "2024-09-01",
     principal: 5000000,
     interest: 400000,
     loanManagementFee: 50000,
@@ -58,7 +58,7 @@ const initialStatementData: Statement[] = [
   },
   {
     id: "4",
-    paymentDate: "2025-10-26T09:40:00",
+    paymentDate: "2025-10-26",
     principal: 5000000,
     interest: 350000,
     loanManagementFee: 50000,
@@ -70,13 +70,10 @@ const initialStatementData: Statement[] = [
 ];
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' });
-const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+const dateFormatter = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
   month: '2-digit',
   day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
 });
 
 
@@ -137,7 +134,7 @@ export default function StatementPage() {
             <TableBody>
               {statementData.map((row) => (
                 <TableRow key={row.id}>
-                  <TableCell>{dateTimeFormatter.format(new Date(row.paymentDate))}</TableCell>
+                  <TableCell>{dateFormatter.format(new Date(row.paymentDate))}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.principal)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.interest)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.loanManagementFee)}</TableCell>
