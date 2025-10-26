@@ -180,19 +180,6 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="loanCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mã khoản vay</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="paymentDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
@@ -233,6 +220,19 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               )}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <FormField
+                control={form.control}
+                name="loanCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mã khoản vay</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="principal"
@@ -246,7 +246,9 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                   </FormItem>
                 )}
               />
-              <FormField
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <FormField
                 control={form.control}
                 name="interest"
                 render={({ field }) => (
@@ -259,8 +261,6 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                   </FormItem>
                 )}
               />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <FormField
                 control={form.control}
                 name="loanManagementFee"
@@ -274,6 +274,8 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                   </FormItem>
                 )}
               />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="latePaymentPenalty"
@@ -287,8 +289,6 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                   </FormItem>
                 )}
               />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="settlementFee"
@@ -302,6 +302,8 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                   </FormItem>
                 )}
               />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="surplusCollection"
@@ -315,8 +317,6 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                   </FormItem>
                 )}
               />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="vatPayable"
