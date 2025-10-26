@@ -139,7 +139,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add New Statement</DialogTitle>
           <DialogDescription>
@@ -189,97 +189,105 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="principal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gốc</FormLabel>
-                  <FormControl>
-                    <FormattedNumberInput {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="interest"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Lãi vay</FormLabel>
-                  <FormControl>
-                    <FormattedNumberInput {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="loanManagementFee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phí quản lý khoản vay</FormLabel>
-                  <FormControl>
-                    <FormattedNumberInput {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="latePaymentPenalty"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phí phạt trễ hạn</FormLabel>
-                  <FormControl>
-                    <FormattedNumberInput {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="settlementFee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phí tất toán</FormLabel>
-                  <FormControl>
-                    <FormattedNumberInput {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="surplusCollection"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Thu dư</FormLabel>
-                  <FormControl>
-                    <FormattedNumberInput {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="vatPayable"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Thuế GTGT phải nộp</FormLabel>
-                  <FormControl>
-                    <FormattedNumberInput {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="principal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gốc</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="interest"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lãi vay</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+             <div className="grid grid-cols-2 gap-4">
+               <FormField
+                control={form.control}
+                name="loanManagementFee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phí quản lý khoản vay</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="latePaymentPenalty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phí phạt trễ hạn</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="settlementFee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phí tất toán</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="surplusCollection"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Thu dư</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="vatPayable"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Thuế GTGT phải nộp</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Cancel</Button>
               <Button type="submit">Save</Button>
