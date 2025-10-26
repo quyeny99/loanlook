@@ -72,7 +72,7 @@ export default function StatementPage() {
         <ChevronRight className="h-4 w-4" />
         <span className="font-semibold text-foreground">Statement</span>
       </div>
-      <Card>
+      <Card className="mt-6">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
