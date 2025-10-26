@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -87,6 +87,12 @@ export default function StatementPage() {
       { ...newStatement, id: String(Date.now()) }
     ]);
   };
+
+  const handleReload = () => {
+    // In a real app, this would re-fetch from an API.
+    // For now, it just resets to the initial sample data.
+    setStatementData(initialStatementData);
+  };
   
   return (
     <div className="space-y-6">
@@ -104,16 +110,21 @@ export default function StatementPage() {
                 Detailed breakdown of loan payments and fees.
               </CardDescription>
             </div>
-             <AddStatementDialog
-              onSave={handleAddStatement}
-              isOpen={isDialogOpen}
-              setIsOpen={setIsDialogOpen}
-            >
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Statement
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={handleReload}>
+                <RefreshCw className="h-4 w-4" />
               </Button>
-            </AddStatementDialog>
+              <AddStatementDialog
+                onSave={handleAddStatement}
+                isOpen={isDialogOpen}
+                setIsOpen={setIsDialogOpen}
+              >
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Statement
+                </Button>
+              </AddStatementDialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
