@@ -70,7 +70,7 @@ const initialStatementData: Statement[] = [
 ];
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' });
-const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
   year: 'numeric',
   month: '2-digit',
   day: '2-digit',
@@ -96,13 +96,13 @@ export default function StatementPage() {
     if (statement.id) {
       // Update existing statement
       setStatementData(prevData =>
-        prevData.map(s => (s.id === statement.id ? { ...s, ...statement } : s))
+        prevData.map(s => (s.id === statement.id ? { ...s, ...statement } as Statement : s))
       );
     } else {
       // Add new statement
       setStatementData(prevData => [
         ...prevData,
-        { ...statement, id: String(Date.now()) },
+        { ...statement, id: String(Date.now()) } as Statement,
       ]);
     }
   };
@@ -114,17 +114,17 @@ export default function StatementPage() {
   return (
     <div className="space-y-6">
        <div className="flex items-center text-sm text-muted-foreground">
-        <span className='cursor-pointer' onClick={() => window.location.href = '/reports'}>Reports</span>
+        <span className='cursor-pointer' onClick={() => window.location.href = '/reports'}>Báo cáo</span>
         <ChevronRight className="h-4 w-4" />
-        <span className="font-semibold text-foreground">Statement</span>
+        <span className="font-semibold text-foreground">Sao kê</span>
       </div>
       <Card className="mt-6">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Statement of Account</CardTitle>
+              <CardTitle>Sao kê tài khoản</CardTitle>
               <CardDescription>
-                Detailed breakdown of loan payments and fees.
+                Chi tiết các khoản thanh toán và phí vay.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -133,7 +133,7 @@ export default function StatementPage() {
               </Button>
               <Button onClick={openAddDialog}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Statement
+                Thêm sao kê
               </Button>
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function StatementPage() {
                 <TableHead className="text-right">Thu dư</TableHead>
                 <TableHead className="text-right">Thuế GTGT phải nộp</TableHead>
                 <TableHead className="text-right">Tổng thu</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -185,11 +185,11 @@ export default function StatementPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => openEditDialog(row)}>
                           <Pencil className="mr-2 h-4 w-4" />
-                          Edit
+                          Sửa
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-red-500">
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          Xóa
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

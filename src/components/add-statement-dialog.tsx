@@ -33,7 +33,7 @@ import { type Statement } from "@/lib/data";
 
 const formSchema = z.object({
   paymentDate: z.date({
-    required_error: "Payment date is required.",
+    required_error: "Ngày thanh toán là bắt buộc.",
   }),
   principal: z.coerce.number().min(0),
   interest: z.coerce.number().min(0),
@@ -164,9 +164,9 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Edit Statement' : 'Add New Statement'}</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Cập nhật sao kê' : 'Thêm sao kê mới'}</DialogTitle>
           <DialogDescription>
-            {isEditMode ? 'Update the details for the statement entry.' : 'Fill in the details for the new statement entry.'}
+            {isEditMode ? 'Cập nhật chi tiết cho mục sao kê.' : 'Điền chi tiết cho mục sao kê mới.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -188,9 +188,9 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            format(field.value, "dd/MM/yyyy")
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Chọn ngày</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -312,8 +312,8 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Cancel</Button>
-              <Button type="submit">Save</Button>
+              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Hủy</Button>
+              <Button type="submit">Lưu</Button>
             </DialogFooter>
           </form>
         </Form>
