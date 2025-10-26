@@ -55,9 +55,12 @@ export default function Header() {
                 <DropdownMenuItem onSelect={() => router.push('/reports/daily')}>1. Daily</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>2. Monthly</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => router.push('/reports/statement')}>4. Statement</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+        <Button variant="ghost" onClick={() => router.push('/reports/statement')}>
+            <FileText className="mr-2 h-4 w-4" />
+            Statement
+        </Button>
 
         {/* {isAdmin && (
             <DropdownMenu>
