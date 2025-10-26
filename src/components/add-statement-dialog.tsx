@@ -183,7 +183,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               name="loanCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mã</FormLabel>
+                  <FormLabel>Mã khoản vay</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
