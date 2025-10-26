@@ -80,17 +80,34 @@ const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 export default function StatementPage() {
   const [statementData, setStatementData] = useState<Statement[]>(initialStatementData);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingStatement, setEditingStatement] = useState<Statement | null>(null);
 
-  const handleAddStatement = (newStatement: Omit<Statement, 'id'>) => {
-    setStatementData(prevData => [
-      ...prevData,
-      { ...newStatement, id: String(Date.now()) }
-    ]);
+  const openAddDialog = () => {
+    setEditingStatement(null);
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (statement: Statement) => {
+    setEditingStatement(statement);
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveStatement = (statement: Omit<Statement, 'id'> & { id?: string }) => {
+    if (statement.id) {
+      // Update existing statement
+      setStatementData(prevData =>
+        prevData.map(s => (s.id === statement.id ? { ...s, ...statement } : s))
+      );
+    } else {
+      // Add new statement
+      setStatementData(prevData => [
+        ...prevData,
+        { ...statement, id: String(Date.now()) },
+      ]);
+    }
   };
 
   const handleReload = () => {
-    // In a real app, this would re-fetch from an API.
-    // For now, it just resets to the initial sample data.
     setStatementData(initialStatementData);
   };
   
@@ -114,16 +131,10 @@ export default function StatementPage() {
               <Button variant="outline" size="icon" onClick={handleReload}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
-              <AddStatementDialog
-                onSave={handleAddStatement}
-                isOpen={isDialogOpen}
-                setIsOpen={setIsDialogOpen}
-              >
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Statement
-                </Button>
-              </AddStatementDialog>
+              <Button onClick={openAddDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Statement
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -172,7 +183,7 @@ export default function StatementPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEditDialog(row)}>
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
@@ -190,6 +201,13 @@ export default function StatementPage() {
           </Table>
         </CardContent>
       </Card>
+      <AddStatementDialog
+        key={editingStatement ? editingStatement.id : 'add'}
+        onSave={handleSaveStatement}
+        isOpen={isDialogOpen}
+        setIsOpen={setIsDialogOpen}
+        statementToEdit={editingStatement}
+      />
     </div>
   );
 }

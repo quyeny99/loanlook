@@ -1,11 +1,11 @@
 
 "use client"
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import {
@@ -15,7 +15,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -106,44 +105,68 @@ FormattedNumberInput.displayName = "FormattedNumberInput";
 
 
 type AddStatementDialogProps = {
-  children: React.ReactNode;
-  onSave: (data: Omit<Statement, 'id'>) => void;
+  onSave: (data: Omit<Statement, 'id'> & { id?: string }) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  statementToEdit?: Statement | null;
 };
 
-export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddStatementDialogProps) {
+export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit }: AddStatementDialogProps) {
+  const isEditMode = !!statementToEdit;
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      paymentDate: new Date(),
-      principal: 0,
-      interest: 0,
-      loanManagementFee: 0,
-      latePaymentPenalty: 0,
-      settlementFee: 0,
-      surplusCollection: 0,
-      vatPayable: 0,
-    },
+    defaultValues: isEditMode
+      ? { ...statementToEdit, paymentDate: parseISO(statementToEdit.paymentDate) }
+      : {
+          paymentDate: new Date(),
+          principal: 0,
+          interest: 0,
+          loanManagementFee: 0,
+          latePaymentPenalty: 0,
+          settlementFee: 0,
+          surplusCollection: 0,
+          vatPayable: 0,
+        },
   });
+  
+  useEffect(() => {
+    form.reset(isEditMode ? { ...statementToEdit, paymentDate: parseISO(statementToEdit.paymentDate) } : {
+        paymentDate: new Date(),
+        principal: 0,
+        interest: 0,
+        loanManagementFee: 0,
+        latePaymentPenalty: 0,
+        settlementFee: 0,
+        surplusCollection: 0,
+        vatPayable: 0,
+    });
+  }, [statementToEdit, form, isEditMode]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onSave({
       ...values,
       paymentDate: values.paymentDate.toISOString(),
+      id: isEditMode ? statementToEdit.id : undefined,
     });
     setIsOpen(false);
-    form.reset();
   }
+  
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      form.reset();
+    }
+    setIsOpen(open);
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add New Statement</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Statement' : 'Add New Statement'}</DialogTitle>
           <DialogDescription>
-            Fill in the details for the new statement entry.
+            {isEditMode ? 'Update the details for the statement entry.' : 'Fill in the details for the new statement entry.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
