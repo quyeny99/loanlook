@@ -10,7 +10,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const statementData = [
   {
@@ -67,10 +74,18 @@ export default function StatementPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Statement of Account</CardTitle>
-          <CardDescription>
-            Detailed breakdown of loan payments and fees.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Statement of Account</CardTitle>
+              <CardDescription>
+                Detailed breakdown of loan payments and fees.
+              </CardDescription>
+            </div>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Statement
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -84,6 +99,7 @@ export default function StatementPage() {
                 <TableHead className="text-right">Phí tất toán</TableHead>
                 <TableHead className="text-right">Thu dư</TableHead>
                 <TableHead className="text-right">Thuế GTGT phải nộp</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -97,6 +113,25 @@ export default function StatementPage() {
                   <TableCell className="text-right">{currencyFormatter.format(row.settlementFee)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.surplusCollection)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.vatPayable)}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-500">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
