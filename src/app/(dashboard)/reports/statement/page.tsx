@@ -128,11 +128,21 @@ export default function StatementPage() {
                 <TableHead className="text-right">Phí tất toán</TableHead>
                 <TableHead className="text-right">Thu dư</TableHead>
                 <TableHead className="text-right">Thuế GTGT phải nộp</TableHead>
+                <TableHead className="text-right">Tổng thu</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {statementData.map((row) => (
+              {statementData.map((row) => {
+                const totalCollection =
+                  row.principal +
+                  row.interest +
+                  row.loanManagementFee +
+                  row.latePaymentPenalty +
+                  row.settlementFee +
+                  row.surplusCollection;
+                
+                return (
                 <TableRow key={row.id}>
                   <TableCell>{dateFormatter.format(new Date(row.paymentDate))}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.principal)}</TableCell>
@@ -142,6 +152,7 @@ export default function StatementPage() {
                   <TableCell className="text-right">{currencyFormatter.format(row.settlementFee)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.surplusCollection)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.vatPayable)}</TableCell>
+                  <TableCell className="text-right font-bold">{currencyFormatter.format(totalCollection)}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -162,7 +173,8 @@ export default function StatementPage() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
