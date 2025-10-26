@@ -1,6 +1,7 @@
+
 'use client';
 
-import { LogOut, BarChart2, FileSpreadsheet } from 'lucide-react';
+import { LogOut, BarChart2, FileSpreadsheet, FileText } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -54,6 +55,7 @@ export default function Header() {
                 <DropdownMenuItem onSelect={() => router.push('/reports/daily')}>1. Daily</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>2. Monthly</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/reports/statement')}>4. Statement</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
 
