@@ -21,7 +21,7 @@ import {
 
 const statementData = [
   {
-    paymentDate: "2024-07-01",
+    paymentDate: "01/07/2024 09:30",
     principal: 5000000,
     interest: 500000,
     loanManagementFee: 50000,
@@ -31,7 +31,7 @@ const statementData = [
     vatPayable: 55000,
   },
   {
-    paymentDate: "2024-08-01",
+    paymentDate: "01/08/2024 14:15",
     principal: 5000000,
     interest: 450000,
     loanManagementFee: 50000,
@@ -41,7 +41,7 @@ const statementData = [
     vatPayable: 50000,
   },
   {
-    paymentDate: "2024-09-01",
+    paymentDate: "01/09/2024 11:00",
     principal: 5000000,
     interest: 400000,
     loanManagementFee: 50000,
@@ -51,7 +51,7 @@ const statementData = [
     vatPayable: 45000,
   },
   {
-    paymentDate: "2024-10-01",
+    paymentDate: "26/10/2025 09:40",
     principal: 5000000,
     interest: 350000,
     loanManagementFee: 50000,
