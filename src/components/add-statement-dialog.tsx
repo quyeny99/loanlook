@@ -30,8 +30,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { type Statement } from "@/lib/data";
+import { Textarea } from "./ui/textarea";
 
 const formSchema = z.object({
+  loanCode: z.string().min(1, "Mã khoản vay là bắt buộc."),
+  notes: z.string().optional(),
   paymentDate: z.date({
     required_error: "Ngày thanh toán là bắt buộc.",
   }),
@@ -119,6 +122,8 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
     defaultValues: isEditMode
       ? { ...statementToEdit, paymentDate: parseISO(statementToEdit.paymentDate) }
       : {
+          loanCode: "",
+          notes: "",
           paymentDate: new Date(),
           principal: 0,
           interest: 0,
@@ -132,6 +137,8 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
   
   useEffect(() => {
     form.reset(isEditMode ? { ...statementToEdit, paymentDate: parseISO(statementToEdit.paymentDate) } : {
+        loanCode: "",
+        notes: "",
         paymentDate: new Date(),
         principal: 0,
         interest: 0,
@@ -171,47 +178,62 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="paymentDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Ngày thanh toán</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "dd/MM/yyyy")
-                          ) : (
-                            <span>Chọn ngày</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="loanCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mã khoản vay</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="paymentDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Ngày thanh toán</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Chọn ngày</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -311,6 +333,19 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ghi chú</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Hủy</Button>
               <Button type="submit">Lưu</Button>

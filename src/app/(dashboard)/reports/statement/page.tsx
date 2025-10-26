@@ -26,6 +26,8 @@ import { type Statement } from "@/lib/data";
 const initialStatementData: Statement[] = [
   {
     id: "1",
+    loanCode: "LN001",
+    notes: "Đây là ghi chú cho khoản thanh toán đầu tiên.",
     paymentDate: "2024-07-01",
     principal: 5000000,
     interest: 500000,
@@ -37,6 +39,8 @@ const initialStatementData: Statement[] = [
   },
   {
     id: "2",
+    loanCode: "LN002",
+    notes: "Ghi chú này có thể dài hơn một chút để kiểm tra việc xuống dòng.",
     paymentDate: "2024-08-01",
     principal: 5000000,
     interest: 450000,
@@ -48,6 +52,8 @@ const initialStatementData: Statement[] = [
   },
   {
     id: "3",
+    loanCode: "LN003",
+    notes: "Thanh toán đúng hạn.",
     paymentDate: "2024-09-01",
     principal: 5000000,
     interest: 400000,
@@ -59,6 +65,8 @@ const initialStatementData: Statement[] = [
   },
   {
     id: "4",
+    loanCode: "LN004",
+    notes: "Khách hàng tất toán sớm.",
     paymentDate: "2025-10-26",
     principal: 5000000,
     interest: 350000,
@@ -133,7 +141,7 @@ export default function StatementPage() {
         <ChevronRight className="h-4 w-4" />
         <span className="font-semibold text-foreground">Sao kê</span>
       </div>
-      <Card className="mt-6">
+      <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -157,6 +165,7 @@ export default function StatementPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Mã khoản vay</TableHead>
                 <TableHead>Ngày thanh toán</TableHead>
                 <TableHead className="text-right">Gốc</TableHead>
                 <TableHead className="text-right">Lãi vay</TableHead>
@@ -166,6 +175,7 @@ export default function StatementPage() {
                 <TableHead className="text-right">Thu dư</TableHead>
                 <TableHead className="text-right">Thuế GTGT phải nộp</TableHead>
                 <TableHead className="text-right">Tổng thu</TableHead>
+                <TableHead>Ghi chú</TableHead>
                 <TableHead className="text-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
@@ -181,6 +191,7 @@ export default function StatementPage() {
                 
                 return (
                 <TableRow key={row.id}>
+                  <TableCell>{row.loanCode}</TableCell>
                   <TableCell>{dateFormatter.format(new Date(row.paymentDate))}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.principal)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.interest)}</TableCell>
@@ -190,6 +201,11 @@ export default function StatementPage() {
                   <TableCell className="text-right">{currencyFormatter.format(row.surplusCollection)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.vatPayable)}</TableCell>
                   <TableCell className="text-right font-bold">{currencyFormatter.format(totalCollection)}</TableCell>
+                  <TableCell>
+                    <div className="min-w-[150px] whitespace-normal break-words">
+                      {row.notes}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

@@ -232,6 +232,8 @@ export type InternalEntry = {
 
 export type Statement = {
     id: string;
+    loanCode: string;
+    notes: string;
     paymentDate: string;
     principal: number;
     interest: number;
