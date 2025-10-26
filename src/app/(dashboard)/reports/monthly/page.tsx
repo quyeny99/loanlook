@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { type Application, type InternalEntry } from '@/lib/data';
-import { getMonth, isBefore, isSameMonth, parseISO, subDays, format, endOfMonth, isFuture, isSameYear, startOfMonth } from 'date-fns';
+import { getMonth, isSameMonth, parseISO, subDays, format, endOfMonth, isSameYear, startOfMonth } from 'date-fns';
 import PieChartCard from '@/components/reports/shared/pie-chart';
 import SummaryCards from '@/components/reports/monthly/summary-cards';
 import MonthlyStatusChart from '@/components/reports/monthly/monthly-status-chart';
@@ -388,7 +388,8 @@ export default function MonthlyReportPage() {
             legendLayout="vertical" 
             legendAlign="right" 
             legendVerticalAlign="middle" 
-            legendWrapperStyle={{fontSize: '12px', iconSize: 10}} 
+            legendWrapperStyle={{fontSize: '12px'}}
+            legendIconSize={10}
         />
       </div>
 

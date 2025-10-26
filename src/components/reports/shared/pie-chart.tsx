@@ -1,3 +1,4 @@
+
 'use client';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -13,9 +14,10 @@ type PieChartCardProps = {
     legendWrapperStyle?: React.CSSProperties;
     label?: boolean | ((props: any) => React.ReactNode);
     labelLine?: boolean;
+    legendIconSize?: number;
 };
 
-export default function PieChartCard({ title, data, showLegend = true, legendLayout, legendAlign, legendVerticalAlign, legendWrapperStyle, label = true, labelLine = true }: PieChartCardProps) {
+export default function PieChartCard({ title, data, showLegend = true, legendLayout, legendAlign, legendVerticalAlign, legendWrapperStyle, label = true, labelLine = true, legendIconSize }: PieChartCardProps) {
     const totalValue = data.reduce((acc, entry) => acc + entry.value, 0);
 
     return (
@@ -32,7 +34,7 @@ export default function PieChartCard({ title, data, showLegend = true, legendLay
                             ))}
                         </Pie>
                         <Tooltip formatter={(value, name) => [value, name]} />
-                        {showLegend && <Legend layout={legendLayout} align={legendAlign} verticalAlign={legendVerticalAlign} wrapperStyle={legendWrapperStyle} />}
+                        {showLegend && <Legend layout={legendLayout} align={legendAlign} verticalAlign={legendVerticalAlign} wrapperStyle={legendWrapperStyle} iconSize={legendIconSize} />}
                     </PieChart>
                 </ResponsiveContainer>
             </CardContent>
