@@ -1,11 +1,10 @@
-
 "use client"
 
 import React, { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format, parseISO } from "date-fns";
+import { format, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import {
@@ -30,21 +29,20 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { type Statement } from "@/lib/data";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
-  loanCode: z.string().min(1, "Mã khoản vay là bắt buộc."),
-  notes: z.string().optional(),
-  paymentDate: z.date({
-    required_error: "Ngày thanh toán là bắt buộc.",
-  }),
-  principal: z.coerce.number().min(0),
-  interest: z.coerce.number().min(0),
-  loanManagementFee: z.coerce.number().min(0),
-  latePaymentPenalty: z.coerce.number().min(0),
-  settlementFee: z.coerce.number().min(0),
-  surplusCollection: z.coerce.number().min(0),
-  vatPayable: z.coerce.number().min(0),
+  loan_id: z.string().min(1, "Mã khoản vay là bắt buộc."),
+  note: z.string().optional(),
+  payment_date: z.string().min(1, "Ngày thanh toán là bắt buộc."),
+  principal_amount: z.coerce.number().min(0),
+  interest_amount: z.coerce.number().min(0),
+  management_fee: z.coerce.number().min(0),
+  overdue_fee: z.coerce.number().min(0),
+  settlement_fee: z.coerce.number().min(0),
+  remaining_amount: z.coerce.number().min(0),
+  vat_amount: z.coerce.number().min(0),
+  total_amount: z.coerce.number().min(0),
 });
 
 const currencyFormatter = new Intl.NumberFormat('de-DE');
@@ -108,7 +106,7 @@ FormattedNumberInput.displayName = "FormattedNumberInput";
 
 
 type AddStatementDialogProps = {
-  onSave: (data: Omit<Statement, 'id'> & { id?: string }) => void;
+  onSave: (data: Omit<Statement, 'id' | 'created_at' | 'updated_at' | 'created_by'> & { id?: string }) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   statementToEdit?: Statement | null;
@@ -117,46 +115,60 @@ type AddStatementDialogProps = {
 export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit }: AddStatementDialogProps) {
   const isEditMode = !!statementToEdit;
 
+  const defaultValues = {
+      loan_id: "",
+      note: "",
+      payment_date: format(new Date(), "yyyy-MM-dd"),
+      principal_amount: 0,
+      interest_amount: 0,
+      management_fee: 0,
+      overdue_fee: 0,
+      settlement_fee: 0,
+      remaining_amount: 0,
+      vat_amount: 0,
+      total_amount: 0,
+  }
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: isEditMode
-      ? { ...statementToEdit, paymentDate: parseISO(statementToEdit.paymentDate) }
-      : {
-          loanCode: "",
-          notes: "",
-          paymentDate: new Date(),
-          principal: 0,
-          interest: 0,
-          loanManagementFee: 0,
-          latePaymentPenalty: 0,
-          settlementFee: 0,
-          surplusCollection: 0,
-          vatPayable: 0,
-        },
+    defaultValues: isEditMode ? statementToEdit : defaultValues,
   });
   
   useEffect(() => {
-    form.reset(isEditMode ? { ...statementToEdit, paymentDate: parseISO(statementToEdit.paymentDate) } : {
-        loanCode: "",
-        notes: "",
-        paymentDate: new Date(),
-        principal: 0,
-        interest: 0,
-        loanManagementFee: 0,
-        latePaymentPenalty: 0,
-        settlementFee: 0,
-        surplusCollection: 0,
-        vatPayable: 0,
+    const subscription = form.watch((value, { name, type }) => {
+      if (type === 'change' && ['principal_amount', 'interest_amount', 'management_fee', 'overdue_fee', 'settlement_fee', 'remaining_amount', 'vat_amount'].includes(name as string)) {
+        const { principal_amount, interest_amount, management_fee, overdue_fee, settlement_fee, remaining_amount, vat_amount } = form.getValues();
+        const total = (principal_amount || 0) + (interest_amount || 0) + (management_fee || 0) + (overdue_fee || 0) + (settlement_fee || 0) + (remaining_amount || 0) + (vat_amount || 0);
+        form.setValue('total_amount', total);
+      }
     });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+
+  useEffect(() => {
+    form.reset(isEditMode ? { ...statementToEdit } : defaultValues);
   }, [statementToEdit, form, isEditMode]);
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onSave({
-      ...values,
-      paymentDate: values.paymentDate.toISOString(),
+      loan_id: values.loan_id,
+      note: values.note || "",
+      payment_date: values.payment_date,
+      principal_amount: values.principal_amount,
+      interest_amount: values.interest_amount,
+      management_fee: values.management_fee,
+      overdue_fee: values.overdue_fee,
+      settlement_fee: values.settlement_fee,
+      remaining_amount: values.remaining_amount,
+      vat_amount: values.vat_amount,
+      total_amount: values.total_amount,
       id: isEditMode ? statementToEdit.id : undefined,
     });
+    if (!isEditMode) {
+        form.reset(defaultValues);
+    }
     setIsOpen(false);
   }
   
@@ -177,10 +189,18 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form 
+            onSubmit={form.handleSubmit(onSubmit)} 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+                e.preventDefault();
+              }
+            }}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
-              name="paymentDate"
+              name="payment_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Ngày thanh toán</FormLabel>
@@ -195,7 +215,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "dd/MM/yyyy")
+                            format(parse(field.value, 'yyyy-MM-dd', new Date()), "dd/MM/yyyy")
                           ) : (
                             <span>Chọn ngày</span>
                           )}
@@ -206,11 +226,8 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
+                        selected={field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
+                        onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                         initialFocus
                       />
                     </PopoverContent>
@@ -222,7 +239,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <FormField
                 control={form.control}
-                name="loanCode"
+                name="loan_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Mã khoản vay</FormLabel>
@@ -235,7 +252,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               />
               <FormField
                 control={form.control}
-                name="principal"
+                name="principal_amount"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gốc</FormLabel>
@@ -250,7 +267,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <FormField
                 control={form.control}
-                name="interest"
+                name="interest_amount"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Lãi vay</FormLabel>
@@ -263,7 +280,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               />
                <FormField
                 control={form.control}
-                name="loanManagementFee"
+                name="management_fee"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Phí quản lý</FormLabel>
@@ -278,7 +295,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="latePaymentPenalty"
+                name="overdue_fee"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Phí trễ hạn</FormLabel>
@@ -291,7 +308,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               />
               <FormField
                 control={form.control}
-                name="settlementFee"
+                name="settlement_fee"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Phí tất toán</FormLabel>
@@ -306,7 +323,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="surplusCollection"
+                name="remaining_amount"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Thu dư</FormLabel>
@@ -319,7 +336,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               />
               <FormField
                 control={form.control}
-                name="vatPayable"
+                name="vat_amount"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Thuế GTGT</FormLabel>
@@ -333,7 +350,20 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
             </div>
             <FormField
               control={form.control}
-              name="notes"
+              name="total_amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tổng cộng</FormLabel>
+                  <FormControl>
+                    <FormattedNumberInput {...field} readOnly className="bg-muted"/>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="note"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ghi chú</FormLabel>
@@ -346,7 +376,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
             />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Hủy</Button>
-              <Button type="submit">Lưu</Button>
+              <Button type="button" onClick={form.handleSubmit(onSubmit)}>Lưu</Button>
             </DialogFooter>
           </form>
         </Form>
