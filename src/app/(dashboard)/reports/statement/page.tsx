@@ -78,7 +78,7 @@ const initialStatementData: Statement[] = [
   },
 ];
 
-const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' });
+const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
   year: 'numeric',
   month: '2-digit',
