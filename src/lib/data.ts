@@ -230,5 +230,17 @@ export type InternalEntry = {
     date: string;
 };
 
+export type Statement = {
+    id: string;
+    paymentDate: string;
+    principal: number;
+    interest: number;
+    loanManagementFee: number;
+    latePaymentPenalty: number;
+    settlementFee: number;
+    surplusCollection: number;
+    vatPayable: number;
+}
+
 
 export const loansData: Loan[] = [];

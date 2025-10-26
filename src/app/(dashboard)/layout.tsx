@@ -9,7 +9,7 @@ export default function DashboardLayout({
   return (
     <AuthProvider>
       <Header />
-      <div className="pt-24 p-6 sm:p-8">{children}</div>
+      <div className="pt-24 mt-16 p-6 sm:p-8">{children}</div>
     </AuthProvider>
   );
 }

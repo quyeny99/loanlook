@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -18,10 +19,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AddStatementDialog } from "@/components/add-statement-dialog";
+import { type Statement } from "@/lib/data";
 
-const statementData = [
+const initialStatementData: Statement[] = [
   {
-    paymentDate: "01/07/2024 09:30",
+    id: "1",
+    paymentDate: "2024-07-01T09:30:00",
     principal: 5000000,
     interest: 500000,
     loanManagementFee: 50000,
@@ -31,7 +35,8 @@ const statementData = [
     vatPayable: 55000,
   },
   {
-    paymentDate: "01/08/2024 14:15",
+    id: "2",
+    paymentDate: "2024-08-01T14:15:00",
     principal: 5000000,
     interest: 450000,
     loanManagementFee: 50000,
@@ -41,7 +46,8 @@ const statementData = [
     vatPayable: 50000,
   },
   {
-    paymentDate: "01/09/2024 11:00",
+    id: "3",
+    paymentDate: "2024-09-01T11:00:00",
     principal: 5000000,
     interest: 400000,
     loanManagementFee: 50000,
@@ -51,7 +57,8 @@ const statementData = [
     vatPayable: 45000,
   },
   {
-    paymentDate: "26/10/2025 09:40",
+    id: "4",
+    paymentDate: "2025-10-26T09:40:00",
     principal: 5000000,
     interest: 350000,
     loanManagementFee: 50000,
@@ -63,8 +70,27 @@ const statementData = [
 ];
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' });
+const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
 
 export default function StatementPage() {
+  const [statementData, setStatementData] = useState<Statement[]>(initialStatementData);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleAddStatement = (newStatement: Omit<Statement, 'id'>) => {
+    setStatementData(prevData => [
+      ...prevData,
+      { ...newStatement, id: String(Date.now()) }
+    ]);
+  };
+  
   return (
     <div className="space-y-6 mt-10">
        <div className="flex items-center text-sm text-muted-foreground">
@@ -81,10 +107,16 @@ export default function StatementPage() {
                 Detailed breakdown of loan payments and fees.
               </CardDescription>
             </div>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Statement
-            </Button>
+             <AddStatementDialog
+              onSave={handleAddStatement}
+              isOpen={isDialogOpen}
+              setIsOpen={setIsDialogOpen}
+            >
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Statement
+              </Button>
+            </AddStatementDialog>
           </div>
         </CardHeader>
         <CardContent>
@@ -103,9 +135,9 @@ export default function StatementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {statementData.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell>{row.paymentDate}</TableCell>
+              {statementData.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{dateTimeFormatter.format(new Date(row.paymentDate))}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.principal)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.interest)}</TableCell>
                   <TableCell className="text-right">{currencyFormatter.format(row.loanManagementFee)}</TableCell>
