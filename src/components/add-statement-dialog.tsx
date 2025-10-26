@@ -1,7 +1,8 @@
 
 "use client"
 
-import { useForm } from "react-hook-form";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
@@ -43,6 +44,66 @@ const formSchema = z.object({
   surplusCollection: z.coerce.number().min(0),
   vatPayable: z.coerce.number().min(0),
 });
+
+const currencyFormatter = new Intl.NumberFormat('de-DE');
+
+const FormattedNumberInput = React.forwardRef<
+  HTMLInputElement,
+  Omit<React.ComponentProps<typeof Input>, 'onChange' | 'value'> & {
+    value: number;
+    onChange: (value: number) => void;
+  }
+>(({ value, onChange, onBlur, ...props }, ref) => {
+  const [displayValue, setDisplayValue] = React.useState(currencyFormatter.format(value));
+
+  React.useEffect(() => {
+    setDisplayValue(currencyFormatter.format(value));
+  }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    const numericValue = Number(rawValue.replace(/\./g, '').replace(/,/g, '.'));
+    
+    if (!isNaN(numericValue)) {
+      onChange(numericValue);
+      setDisplayValue(rawValue);
+    } else if (rawValue === '') {
+      onChange(0);
+      setDisplayValue('');
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    const numericValue = Number(rawValue.replace(/\./g, '').replace(/,/g, '.'));
+    if (!isNaN(numericValue)) {
+      setDisplayValue(currencyFormatter.format(numericValue));
+    } else {
+      setDisplayValue(currencyFormatter.format(value));
+    }
+    onBlur?.(e);
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      // Allow only numbers and control keys
+      if (!/[0-9]/.test(e.key) && !['Backspace', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'].includes(e.key)) {
+          e.preventDefault();
+      }
+  };
+
+
+  return <Input 
+            ref={ref} 
+            {...props} 
+            value={displayValue} 
+            onChange={handleInputChange} 
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            onFocus={(e) => e.target.select()}
+         />;
+});
+FormattedNumberInput.displayName = "FormattedNumberInput";
+
 
 type AddStatementDialogProps = {
   children: React.ReactNode;
@@ -135,7 +196,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                 <FormItem>
                   <FormLabel>Gốc</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <FormattedNumberInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -148,7 +209,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                 <FormItem>
                   <FormLabel>Lãi vay</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <FormattedNumberInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -161,7 +222,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                 <FormItem>
                   <FormLabel>Phí quản lý khoản vay</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <FormattedNumberInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -174,7 +235,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                 <FormItem>
                   <FormLabel>Phí phạt trễ hạn</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <FormattedNumberInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -187,7 +248,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                 <FormItem>
                   <FormLabel>Phí tất toán</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <FormattedNumberInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -200,7 +261,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                 <FormItem>
                   <FormLabel>Thu dư</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <FormattedNumberInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -213,7 +274,7 @@ export function AddStatementDialog({ children, onSave, isOpen, setIsOpen }: AddS
                 <FormItem>
                   <FormLabel>Thuế GTGT phải nộp</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <FormattedNumberInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
