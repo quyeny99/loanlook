@@ -165,15 +165,15 @@ export default function StatementPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Mã khoản vay</TableHead>
+                <TableHead>Mã</TableHead>
                 <TableHead>Ngày thanh toán</TableHead>
                 <TableHead className="text-right">Gốc</TableHead>
                 <TableHead className="text-right">Lãi vay</TableHead>
-                <TableHead className="text-right">Phí quản lý khoản vay</TableHead>
-                <TableHead className="text-right">Phí phạt trễ hạn</TableHead>
+                <TableHead className="text-right">Phí quản lý</TableHead>
+                <TableHead className="text-right">Phí trễ hạn</TableHead>
                 <TableHead className="text-right">Phí tất toán</TableHead>
                 <TableHead className="text-right">Thu dư</TableHead>
-                <TableHead className="text-right">Thuế GTGT phải nộp</TableHead>
+                <TableHead className="text-right">Thuế GTGT</TableHead>
                 <TableHead className="text-right">Tổng thu</TableHead>
                 <TableHead>Ghi chú</TableHead>
                 <TableHead className="text-right">Hành động</TableHead>

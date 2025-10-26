@@ -184,7 +184,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="loanCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mã khoản vay</FormLabel>
+                    <FormLabel>Mã</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -268,7 +268,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="loanManagementFee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phí quản lý khoản vay</FormLabel>
+                    <FormLabel>Phí quản lý</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -281,7 +281,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="latePaymentPenalty"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phí phạt trễ hạn</FormLabel>
+                    <FormLabel>Phí trễ hạn</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -324,7 +324,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="vatPayable"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thuế GTGT phải nộp</FormLabel>
+                    <FormLabel>Thuế GTGT</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
