@@ -66,7 +66,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', cu
 
 export default function StatementPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-10">
        <div className="flex items-center text-sm text-muted-foreground">
         <span className='cursor-pointer' onClick={() => window.location.href = '/reports'}>Reports</span>
         <ChevronRight className="h-4 w-4" />
