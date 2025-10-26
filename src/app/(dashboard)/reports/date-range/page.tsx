@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, startOfMonth, isBefore, isWithinInterval, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, startOfMonth, isWithinInterval, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SummaryCards from '@/components/reports/date-range/summary-cards';

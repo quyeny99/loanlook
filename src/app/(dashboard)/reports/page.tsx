@@ -167,8 +167,11 @@ export default function ReportsPage() {
       potentialInterest: 0,
       overdueDebt: 0,
       estimatedProfit: 0,
+      totalRevenue: 0,
+      totalCollectedAmount: collectedAmount.total,
+      totalGrossRevenue: 0,
     };
-  }, [createdApplications, disbursedApplications]);
+  }, [createdApplications, disbursedApplications, collectedAmount]);
 
   return (
     <div className="space-y-6 mt-10">
@@ -193,6 +196,7 @@ export default function ReportsPage() {
         date={date}
         setDate={setDate}
         isAdmin={false}
+        collectedServiceFees={0}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
