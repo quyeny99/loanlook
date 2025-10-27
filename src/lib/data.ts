@@ -230,18 +230,26 @@ export type InternalEntry = {
     date: string;
 };
 
+
+
+
+
 export type Statement = {
-    id: string;
-    loanCode: string;
-    notes: string;
-    paymentDate: string;
-    principal: number;
-    interest: number;
-    loanManagementFee: number;
-    latePaymentPenalty: number;
-    settlementFee: number;
-    surplusCollection: number;
-    vatPayable: number;
+  id: string;
+  loan_id: string;
+  payment_date: string;
+  principal_amount: number;
+  interest_amount: number;
+  management_fee: number;
+  overdue_fee: number;
+  settlement_fee: number;
+  remaining_amount: number;
+  vat_amount: number;
+  total_amount: number;
+  note: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
 }
 
 
