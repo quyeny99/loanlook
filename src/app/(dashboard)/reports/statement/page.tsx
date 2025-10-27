@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, Fragment } from "react";
+import { useState, useEffect, useCallback, Fragment, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 import {
@@ -38,7 +38,7 @@ const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
 
 const ITEMS_PER_PAGE = 10;
 
-export default function StatementPage() {
+function StatementPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [statementData, setStatementData] = useState<Statement[]>([]);
@@ -415,5 +415,45 @@ export default function StatementPage() {
         statement={statementToDelete}
       />
     </div>
+  );
+}
+
+function StatementPageFallback() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center text-sm text-muted-foreground">
+        <span className='cursor-pointer' onClick={() => window.location.href = '/reports'}>Báo cáo</span>
+        <ChevronRight className="h-4 w-4" />
+        <span className="font-semibold text-foreground">Sao kê</span>
+      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Sao kê tài khoản</CardTitle>
+              <CardDescription>
+                Chi tiết các khoản thanh toán và phí vay.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">Đang tải...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function StatementPage() {
+  return (
+    <Suspense fallback={<StatementPageFallback />}>
+      <StatementPageContent />
+    </Suspense>
   );
 }
