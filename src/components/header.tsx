@@ -8,11 +8,13 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Header() {
   const router = useRouter();
   const { toast } = useToast();
-
+  const { isAdmin } = useAuth();
+  
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userId');
@@ -55,10 +57,12 @@ export default function Header() {
                 <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+       {isAdmin && (
         <Button variant="ghost" onClick={() => router.push('/reports/statement')}>
             <FileText className="mr-2 h-4 w-4" />
             Statement
         </Button>
+       )}
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>
