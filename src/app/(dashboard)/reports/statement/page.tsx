@@ -93,8 +93,9 @@ export default function StatementPage() {
         dataQuery = dataQuery.or(`loan_id.ilike.%${searchTerm}%,note.ilike.%${searchTerm}%`);
       }
       
-      // Apply order and range
-      dataQuery = dataQuery.order('payment_date', { ascending: false }).range(from, to);
+      dataQuery = dataQuery
+        .order('payment_date', { ascending: false })
+        .range(from, to);
       
       const { data, error } = await dataQuery;
 
@@ -389,7 +390,7 @@ export default function StatementPage() {
               )}
             </TableBody>
           </Table>
-          {!loading && totalCount > 0 && (
+          {totalCount > 0 && (
             <div className="mt-4">
               <LoanPagination
                 currentPage={currentPage}

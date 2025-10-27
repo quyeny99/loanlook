@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { format, subDays, isWithinInterval, parseISO, isSameDay } from 'date-fns';
-import { type Application } from '@/lib/data';
+import { type Application, type Statement } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
 import SummaryCards from '@/components/reports/daily/summary-cards';
@@ -12,9 +12,9 @@ import LoanAreasChart from '@/components/reports/daily/loan-areas-chart';
 import StatusChart from '@/components/reports/daily/status-chart';
 import LoanTypeChart from '@/components/reports/daily/loan-type-chart';
 import SourceChart from '@/components/reports/daily/source-chart';
-import MonthlyFinancialsChart from '@/components/reports/monthly/monthly-financials-chart';
 import { useAuth } from '@/context/AuthContext';
 import { adjustments } from '@/lib/constants';
+import { createClient } from '@/utils/supabase/client';
 
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
@@ -47,6 +47,7 @@ export default function ReportsPage() {
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
   const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
   const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
+  const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
   const [collectedServiceFees, setCollectedServiceFees] = useState(0);
@@ -66,26 +67,29 @@ export default function ReportsPage() {
       
       const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
-      const collectedAmountUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${encodeURIComponent(JSON.stringify({"date": formattedDate, "account__code":"HOAC02VND"}))}&page=-1&login=${loginId}`;
       const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${serviceFeesFilter}&login=${loginId}`;
       
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
       
+      // Fetch loan_statements from Supabase
+      const supabase = createClient();
+      const supabaseQuery = supabase
+        .from('loan_statements')
+        .select('*')
+        .eq('payment_date', formattedDate);
 
-
-      const [createdResponse, disbursedResponse, collectedAmountResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse] = await Promise.all([
+      const [createdResponse, disbursedResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, collectedAmountData] = await Promise.all([
         fetch(createdUrl),
         fetch(disbursedUrl),
-        fetch(collectedAmountUrl),
         fetch(serviceFeesUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
+        supabaseQuery,
       ]);
 
       const createdData = await createdResponse.json();
       const disbursedData = await disbursedResponse.json();
-      const collectedAmountData = await collectedAmountResponse.json();
       const serviceFeesData = await serviceFeesResponse.json();
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
@@ -95,17 +99,23 @@ export default function ReportsPage() {
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
 
+      // Parse Supabase loan_statements data
+      const { data: statementsData, error: statementsError } = collectedAmountData;
       
-      const totalCollected = (collectedAmountData.rows || []).reduce((acc: number, entry: { amount: number, type: number }) => {
-        if (entry.type === 1) {
-          return acc + entry.amount;
-        } else if (entry.type === 2) {
-          return acc - entry.amount;
-        }
-        return acc;
-      }, 0);
-      const collectedCount = (collectedAmountData.rows || []).length;
-      setCollectedAmount({ total: totalCollected, count: collectedCount });
+      if (statementsError) {
+        console.error("Error fetching loan statements from Supabase:", statementsError);
+        setLoanStatements([]);
+        setCollectedAmount({ total: 0, count: 0 });
+      } else {
+        const statements = (statementsData || []) as Statement[];
+        setLoanStatements(statements);
+        
+        const totalCollected = statements.reduce((acc: number, statement: Statement) => {
+          return acc + (statement.total_amount || 0);
+        }, 0);
+        const collectedCount = statements.length;
+        setCollectedAmount({ total: totalCollected, count: collectedCount });
+      }
 
       const totalServiceFees = (serviceFeesData.rows || []).reduce((acc: number, entry: { amount: number; type: number }) => {
         if (entry.type === 1) {
@@ -124,6 +134,7 @@ export default function ReportsPage() {
       setDisbursedApplications([]);
       setInterestSchedules([]);
       setFeeSchedules([]);
+      setLoanStatements([]);
       setCollectedAmount({ total: 0, count: 0 });
       setCollectedServiceFees(0);
     } finally {
@@ -211,20 +222,14 @@ export default function ReportsPage() {
         }
     });
     
-    const interestSchedulesInDateRange = interestSchedules.filter(s => {
-        if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
-        const paymentTime = parseISO(s.detail[0].time);
-        return isSameDay(paymentTime, date);
-      });
-      
-    const feeSchedulesInDateRange = feeSchedules.filter(s => {
-      if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
-      const paymentTime = parseISO(s.detail[0].time);
-      return isSameDay(paymentTime, date);
-    });
-
-    const collectedInterest = interestSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
-    const collectedFees = feeSchedulesInDateRange.reduce((acc, s) => acc + (s.paid_amount || 0), 0);
+    // Calculate collected interest and fees from Supabase loan_statements
+    const collectedInterest = loanStatements.reduce((acc, statement) => 
+      acc + (statement.interest_amount || 0), 0
+    );
+    
+    const collectedFees = loanStatements.reduce((acc, statement) => 
+      acc + (statement.management_fee || 0), 0
+    );
 
     // Adjustments
     const dailyAdjustments = adjustments.filter(adj => isSameDay(parseISO(adj.date), date));
@@ -260,8 +265,8 @@ export default function ReportsPage() {
     const finalCollectedInterest = collectedInterest + totalAdjustmentMonthlyInterest;
     
     const totalRevenue = finalCollectedFees + finalCollectedInterest;
-
     const totalCollectedAmount = collectedAmount.total;
+    const totalGrossRevenue = totalCollectedAmount + finalCollectedServiceFees;
 
     return {
       totalApplications,
@@ -280,9 +285,10 @@ export default function ReportsPage() {
       collectedInterest: finalCollectedInterest,
       totalRevenue,
       totalCollectedAmount,
+      totalGrossRevenue,
       collectedServiceFees: finalCollectedServiceFees
     };
-  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, date, collectedServiceFees, collectedAmount]);
+  }, [createdApplications, disbursedApplications, loanStatements, date, collectedServiceFees, collectedAmount]);
 
   return (
     <div className="space-y-6">

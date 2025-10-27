@@ -237,7 +237,6 @@ export type InternalEntry = {
 export type Statement = {
   id: string;
   loan_id: string;
-  note: string;
   payment_date: string;
   principal_amount: number;
   interest_amount: number;
@@ -247,9 +246,10 @@ export type Statement = {
   remaining_amount: number;
   vat_amount: number;
   total_amount: number;
-  created_at?: any;
-  updated_at?: any;
-  created_by?: string;
+  note: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
 }
 
 
