@@ -73,6 +73,7 @@ export default function MonthlyReportPage() {
   const [collectedAmounts, setCollectedAmounts] = useState<CollectedAmountEntry[]>([]);
   const [serviceFeeEntries, setServiceFeeEntries] = useState<InternalEntry[]>([]);
   const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
+  const [overdueLoansCount, setOverdueLoansCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async (selectedYear: string) => {
@@ -97,6 +98,8 @@ export default function MonthlyReportPage() {
         "remain_amount__gt": 0,
       }));
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
+      const overdueLoansFilter = encodeURIComponent(JSON.stringify({ status: 5 }));
+      const overdueLoansUrl = `https://api.y99.vn/data/Loan/?values=id,itr_next_amount,fee_next_amount,prin_next_amount&distinct_values=${encodeURIComponent(JSON.stringify({"count_note":{"type":"Count","field":"id","subquery":{"model":"Loan_Note","column":"ref"}},"sms_count":{"type":"Count","subquery":{"model":"Loan_Sms","column":"ref"},"field":"id"},"file_count":{"type":"Count","field":"id","subquery":{"model":"Loan_File","column":"ref"}},"collat_count":{"type":"Count","field":"id","subquery":{"model":"Loan_Collateral","column":"loan"}}}))}&sort=-id&summary=annotate&login=${loginId}&filter=${overdueLoansFilter}`;
       
       const serviceFeesFilter = encodeURIComponent(JSON.stringify({
         "account__code": "HOAC03VND",
@@ -113,11 +116,12 @@ export default function MonthlyReportPage() {
         .gte('payment_date', fromDate)
         .lte('payment_date', toDate);
 
-      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, serviceFeesResponse, collectedAmountData] = await Promise.all([
+      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, overdueLoansResponse, serviceFeesResponse, collectedAmountData] = await Promise.all([
         fetch(appUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
         fetch(overdueDebtUrl),
+        fetch(overdueLoansUrl),
         fetch(serviceFeesUrl),
         supabaseQuery,
       ]);
@@ -126,6 +130,7 @@ export default function MonthlyReportPage() {
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
       const overdueDebtData = await overdueDebtResponse.json();
+      const overdueLoansData = await overdueLoansResponse.json();
       const serviceFeesData = await serviceFeesResponse.json();
 
       // Parse Supabase loan_statements data
@@ -153,6 +158,7 @@ export default function MonthlyReportPage() {
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
       setOverdueDebtSchedules(overdueDebtData.rows || []);
+      setOverdueLoansCount(overdueLoansData.total_rows || 0);
       setServiceFeeEntries(serviceFeesData.rows || []);
     } catch (error) {
       console.error("Failed to fetch data", error);
@@ -163,6 +169,7 @@ export default function MonthlyReportPage() {
       setCollectedAmounts([]);
       setServiceFeeEntries([]);
       setLoanStatements([]);
+      setOverdueLoansCount(0);
     } finally {
       setLoading(false);
     }
@@ -258,7 +265,12 @@ export default function MonthlyReportPage() {
         const totalGrossRevenueForMonth = collectedAmountForMonth + finalCollectedServiceFees;
 
         const endOfMonthDate = endOfMonth(monthDate);
-        const overdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+        const overdueDebt = overdueDebtSchedules.reduce((acc, s) => {
+          if (!s.detail) {
+            return acc + (s.remain_amount || 0);
+          }
+          return acc;
+        }, 0);
         
         return {
             month: `Month ${month + 1}`,
@@ -324,7 +336,13 @@ export default function MonthlyReportPage() {
 
     const totalCollectedFees = monthlyData.reduce((acc, month) => acc + month.collectedFees, 0);
     const totalCollectedInterest = monthlyData.reduce((acc, month) => acc + month.collectedInterest, 0);
-    const totalOverdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+    const totalOverdueDebt = overdueDebtSchedules.reduce((acc, s) => {
+      if (!s.detail) {
+        return acc + (s.remain_amount || 0);
+      }
+      return acc;
+    }, 0);
+    const totalOverdueDebtCount = overdueLoansCount;
 
     const totalCollectedServiceFees = monthlyData.reduce((acc, month) => acc + month.collectedServiceFees, 0);
     const totalRevenue = monthlyData.reduce((acc, month) => acc + month.totalRevenue, 0);
@@ -356,13 +374,14 @@ export default function MonthlyReportPage() {
         totalCollectedFees,
         totalCollectedInterest,
         totalOverdueDebt,
+        totalOverdueDebtCount,
         totalCollectedServiceFees,
         totalRevenue,
         totalGrossRevenue,
         totalCollectedAmount,
         totalCollectedCount
     };
-  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, collectedAmounts, serviceFeeEntries, loanStatements]);
+  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, overdueLoansCount, collectedAmounts, serviceFeeEntries, loanStatements]);
 
 
   return (

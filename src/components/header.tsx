@@ -57,12 +57,10 @@ export default function Header() {
                 <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-       {isAdmin && (
         <Button variant="ghost" onClick={() => router.push('/reports/statement')}>
             <FileText className="mr-2 h-4 w-4" />
             Statement
         </Button>
-       )}
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>

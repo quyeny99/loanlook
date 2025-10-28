@@ -42,8 +42,8 @@ export function LoanTable({
     { label: 'Outstanding', style: { width: '120px' }, className: 'text-right' },
     { label: 'Due Amount', style: { width: '120px' }, className: 'text-right' },
     { label: 'Due Date', style: { width: '120px' } },
-    { label: 'Interest Date', style: { width: '120px' } },
     { label: 'Principal Date', style: { width: '120px' } },
+    { label: 'Interest Date', style: { width: '120px' } },
     { label: 'Fee Date', style: { width: '120px' } },
     { label: 'Interest Payment Term', style: { width: '150px' } },
     { label: 'Principal Repayment Term', style: { width: '150px' } },
@@ -119,15 +119,15 @@ export function LoanTable({
                   )}
                   </TableCell>
                   <TableCell>
-                    <div>{formatDateString(loan.itr_next_date)}</div>
-                    {loan.itr_next_amount > 0 && (
-                      <div className={cn("text-accent", { "text-red-600": loan.itr_ovd_days && loan.itr_ovd_days > 0 })}>{currencyFormatter.format(loan.itr_next_amount)}</div>
-                    )}
-                  </TableCell>
-                  <TableCell>
                     <div>{formatDateString(loan.prin_next_date)}</div>
                     {loan.prin_next_amount > 0 && (
                        <div className={cn("text-accent", { "text-red-600": loan.prin_ovd_days && loan.prin_ovd_days > 0 })}>{currencyFormatter.format(loan.prin_next_amount)}</div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div>{formatDateString(loan.itr_next_date)}</div>
+                    {loan.itr_next_amount > 0 && (
+                      <div className={cn("text-accent", { "text-red-600": loan.itr_ovd_days && loan.itr_ovd_days > 0 })}>{currencyFormatter.format(loan.itr_next_amount)}</div>
                     )}
                   </TableCell>
                   <TableCell>

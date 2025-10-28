@@ -51,6 +51,7 @@ export default function DateRangeReportsPage() {
   const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<LoanSchedule[]>([]);
   const [serviceFeeEntries, setServiceFeeEntries] = useState<InternalEntry[]>([]);
   const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
+  const [overdueLoansCount, setOverdueLoansCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
 
@@ -86,6 +87,8 @@ export default function DateRangeReportsPage() {
       const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
       const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
       const overdueDebtUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${overdueDebtFilter}`;
+      const overdueLoansFilter = encodeURIComponent(JSON.stringify({ status: 5 }));
+      const overdueLoansUrl = `https://api.y99.vn/data/Loan/?values=id,itr_next_amount,fee_next_amount,prin_next_amount&distinct_values=${encodeURIComponent(JSON.stringify({"count_note":{"type":"Count","field":"id","subquery":{"model":"Loan_Note","column":"ref"}},"sms_count":{"type":"Count","subquery":{"model":"Loan_Sms","column":"ref"},"field":"id"},"file_count":{"type":"Count","field":"id","subquery":{"model":"Loan_File","column":"ref"}},"collat_count":{"type":"Count","field":"id","subquery":{"model":"Loan_Collateral","column":"loan"}}}))}&sort=-id&summary=annotate&login=${loginId}&filter=${overdueLoansFilter}`;
 
 
       // Fetch collected amount from Supabase
@@ -96,13 +99,14 @@ export default function DateRangeReportsPage() {
         .gte('payment_date', formattedFromDate)
         .lte('payment_date', formattedToDate);
 
-      const [disbursedResponse, createdResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, collectedAmountData] = await Promise.all([
+      const [disbursedResponse, createdResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, overdueLoansResponse, collectedAmountData] = await Promise.all([
         fetch(disbursedUrl),
         fetch(createdUrl),
         fetch(serviceFeesUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
         fetch(overdueDebtUrl),
+        fetch(overdueLoansUrl),
         supabaseQuery
       ]);
 
@@ -112,11 +116,13 @@ export default function DateRangeReportsPage() {
       const interestScheduleData = await interestScheduleResponse.json();
       const feeScheduleData = await feeScheduleResponse.json();
       const overdueDebtData = await overdueDebtResponse.json();
+      const overdueLoansData = await overdueLoansResponse.json();
       
       setInterestSchedules(interestScheduleData.rows || []);
       setFeeSchedules(feeScheduleData.rows || []);
       setOverdueDebtSchedules(overdueDebtData.rows || []);
       setServiceFeeEntries(serviceFeesData.rows || []);
+      setOverdueLoansCount(overdueLoansData.total_rows || 0);
 
       setDisbursedApplications(disbursedData.rows || []);
       setCreatedApplications(createdData.rows || []);
@@ -148,6 +154,7 @@ export default function DateRangeReportsPage() {
       setOverdueDebtSchedules([]);
       setServiceFeeEntries([]);
       setLoanStatements([]);
+      setOverdueLoansCount(0);
       setCollectedAmount({ total: 0, count: 0 });
     } finally {
       setLoading(false);
@@ -241,22 +248,6 @@ export default function DateRangeReportsPage() {
     const endDate = toDate ? endOfDay(toDate) : parseISO('2025-08-01');
 
 
-    const interestSchedulesInDateRange = fromDate && toDate
-      ? interestSchedules.filter(s => {
-          if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
-          const paymentTime = parseISO(s.detail[0].time);
-          return isWithinInterval(paymentTime, { start: startDate, end: endDate });
-        })
-      : [];
-    
-    const feeSchedulesInDateRange = fromDate && toDate
-      ? feeSchedules.filter(s => {
-          if (!s.detail || s.detail.length === 0 || (s.paid_amount ?? 0) <= 0) return false;
-          const paymentTime = parseISO(s.detail[0].time);
-          return isWithinInterval(paymentTime, { start: startDate, end: endDate });
-        })
-      : [];
-
       // Start Adjustments calculator
 
       const filteredAdjustmentsDisbursement = fromDate && toDate ? adjustments.filter(adj => {
@@ -339,7 +330,13 @@ export default function DateRangeReportsPage() {
       return acc + remaining;
     }, 0);
 
-    const overdueDebt = overdueDebtSchedules.reduce((acc, s) => acc + (s.remain_amount || 0), 0);
+    const overdueDebt = overdueDebtSchedules.reduce((acc, s) => {
+      if (!s.detail) {
+       return acc + (s.remain_amount || 0)
+      }
+      return acc;
+    }, 0);
+    const overdueDebtCount = overdueLoansCount;
 
     const collectedServiceFees = serviceFeeEntries.reduce((acc: number, entry: InternalEntry) => {
         if (entry.type === 1) {
@@ -373,12 +370,13 @@ export default function DateRangeReportsPage() {
         collectedInterest: collectedInterest + totalAdjustmentMonthlyInterest,
         potentialInterest: potentialInterest + totalAdjustmentPotentialInterest,
         overdueDebt,
+        overdueDebtCount,
         estimatedProfit,
         totalCollectedAmount,
         totalGrossRevenue,
         collectedServiceFees: collectedServiceFees + totalAdjustmentServiceFee
     }
-  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, serviceFeeEntries, collectedAmount, loanStatements]);
+  }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, overdueLoansCount, serviceFeeEntries, collectedAmount, loanStatements]);
 
   return (
     <div className="space-y-6">
