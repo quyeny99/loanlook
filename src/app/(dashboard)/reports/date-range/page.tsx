@@ -315,6 +315,20 @@ export default function DateRangeReportsPage() {
     const collectedFeesFromStatements = loanStatements.reduce((acc, statement) => 
       acc + (statement.management_fee || 0), 0
     );
+    
+    // Calculate additional totals from loan_statements
+    const totalOverdueFees = loanStatements.reduce((acc, statement) => 
+      acc + (statement.overdue_fee || 0), 0
+    );
+    const totalSettlementFees = loanStatements.reduce((acc, statement) => 
+      acc + (statement.settlement_fee || 0), 0
+    );
+    const totalRemainingAmount = loanStatements.reduce((acc, statement) => 
+      acc + (statement.remaining_amount || 0), 0
+    );
+    const totalVAT = loanStatements.reduce((acc, statement) => 
+      acc + (statement.vat_amount || 0), 0
+    );
 
     // Keep the old calculations for potential amounts (still from API)
     const collectedInterest = collectedInterestFromStatements;
@@ -374,7 +388,11 @@ export default function DateRangeReportsPage() {
         estimatedProfit,
         totalCollectedAmount,
         totalGrossRevenue,
-        collectedServiceFees: collectedServiceFees + totalAdjustmentServiceFee
+        collectedServiceFees: collectedServiceFees + totalAdjustmentServiceFee,
+        totalOverdueFees,
+        totalSettlementFees,
+        totalRemainingAmount,
+        totalVAT
     }
   }, [createdApplications, disbursedApplications, interestSchedules, feeSchedules, fromDate, toDate, overdueDebtSchedules, overdueLoansCount, serviceFeeEntries, collectedAmount, loanStatements]);
 
