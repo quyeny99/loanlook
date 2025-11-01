@@ -60,9 +60,7 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                     <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)}</p>
                 </CardContent>
             </Card>
-            {isAdmin && (
-                <>
-                    <Card>
+            <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
                         </CardHeader>
@@ -81,6 +79,9 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                             <p className="text-2xl font-bold text-cyan-500">{currencyFormatter.format(reportData.totalCollectedServiceFees || 0)}</p>
                         </CardContent>
                     </Card>
+            {isAdmin && (
+                <>
+                  
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Total Revenue ( Fees &amp; Interest )</CardTitle>

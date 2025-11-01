@@ -82,9 +82,7 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                     <p className="text-2xl font-bold text-red-600">{currencyFormatter.format(reportData.totalCommission)} ₫</p>
                 </CardContent>
             </Card>
-            {isAdmin && (
-                <>
-                    <Card>
+            <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Total Collected Amount</CardTitle>
                         </CardHeader>
@@ -103,6 +101,9 @@ export default function SummaryCards({ fromDate, setFromDate, toDate, setToDate,
                             <p className="text-2xl font-bold text-green-500">{currencyFormatter.format(reportData.collectedServiceFees)} ₫</p>
                         </CardContent>
                     </Card>
+                   
+            {isAdmin && (
+                <>
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
