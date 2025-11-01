@@ -136,6 +136,7 @@ export default function DateRangeReportsPage() {
         setLoanStatements([]);
       } else {
         const statements = (statementsData || []) as Statement[];
+        console.log(statements);
         const totalCollected = statements.reduce((acc: number, statement: Statement) => {
           return acc + (statement.total_amount || 0);
         }, 0);
@@ -273,22 +274,6 @@ export default function DateRangeReportsPage() {
     const totalAdjustmentServiceFee = filteredServiceFees.reduce((sum, adj) => sum + adj.amount, 0);
 
 
-    const filteredAdjustmentsFee = fromDate && toDate ? adjustments.filter(adj => {
-      if (adj.type !== "monthly_fee") return false;
-      const adjDate = parseISO(adj.date);
-      return isWithinInterval(adjDate, { start: startDate, end: endDate });
-  }) : []
-
-    const totalAdjustmentMonthlyFee = filteredAdjustmentsFee.reduce((sum, adj) => sum + adj.amount, 0);
-
-    const filteredAdjustmentsInterest = fromDate && toDate ? adjustments.filter(adj => {
-      if (adj.type !== "monthly_interest") return false;
-      const adjDate = parseISO(adj.date);
-      return isWithinInterval(adjDate, { start: startDate, end: endDate });
-  }) : []
-
-  const totalAdjustmentMonthlyInterest = filteredAdjustmentsInterest.reduce((sum, adj) => sum + adj.amount, 0);
-
       const totalAdjustmentPotentialFee = adjustments.reduce((sum, adj) => {
         if (adj.type === "potential_fee" && isWithinInterval(parseISO(adj.date), { start: startDate, end: endDate })) {
             return sum + adj.amount;
@@ -382,9 +367,9 @@ export default function DateRangeReportsPage() {
         statusData,
         typeData,
         sourceData,
-        collectedFees: collectedFees + totalAdjustmentMonthlyFee,
+        collectedFees: collectedFees,
         potentialFees: potentialFees + totalAdjustmentPotentialFee,
-        collectedInterest: collectedInterest + totalAdjustmentMonthlyInterest,
+        collectedInterest: collectedInterest,
         potentialInterest: potentialInterest + totalAdjustmentPotentialInterest,
         overdueDebt,
         overdueDebtCount,

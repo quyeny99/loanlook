@@ -114,40 +114,40 @@ export const adjustments: Adjustment[] = [
     related_ap_code: "AP1009251154",
     reference_month: "2025-09"
   },
-  {
-    date: "2025-10-12",
-    type: "monthly_fee",
-    amount: -720432,
-    reason: "Trừ phí hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
-    related_ln_code: "LN090925002",
-    related_ap_code: "AP1009251154",
-    reference_month: "2025-10"
-  },
-   {
-    date: "2025-10-12",
-    type: "monthly_fee",
-    amount: -48000,
-    reason: "Trừ phí hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
-    related_ln_code: "LN090925002",
-    related_ap_code: "AP1009251154",
-    reference_month: "2025-10"
-  },
-  {
-    date: "2025-10-12",
-    type: "monthly_interest",
-    amount: -180174,
-    reason: "Trừ lãi hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
-    related_ln_code: "LN090925002",
-    related_ap_code: "AP1009251154",
-    reference_month: "2025-10"
-  },
-  {
-    date: "2025-10-12",
-    type: "monthly_interest",
-    amount: -8000,
-    reason: "Trừ lãi hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
-    related_ln_code: "LN090925002",
-    related_ap_code: "AP1009251154",
-    reference_month: "2025-10"
-  }
+  // {
+  //   date: "2025-10-12",
+  //   type: "monthly_fee",
+  //   amount: -720432,
+  //   reason: "Trừ phí hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
+  //   related_ln_code: "LN090925002",
+  //   related_ap_code: "AP1009251154",
+  //   reference_month: "2025-10"
+  // },
+  //  {
+  //   date: "2025-10-12",
+  //   type: "monthly_fee",
+  //   amount: -48000,
+  //   reason: "Trừ phí hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
+  //   related_ln_code: "LN090925002",
+  //   related_ap_code: "AP1009251154",
+  //   reference_month: "2025-10"
+  // },
+  // {
+  //   date: "2025-10-12",
+  //   type: "monthly_interest",
+  //   amount: -180174,
+  //   reason: "Trừ lãi hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
+  //   related_ln_code: "LN090925002",
+  //   related_ap_code: "AP1009251154",
+  //   reference_month: "2025-10"
+  // },
+  // {
+  //   date: "2025-10-12",
+  //   type: "monthly_interest",
+  //   amount: -8000,
+  //   reason: "Trừ lãi hàng tháng do khách hàng hủy khoản vay ngay sau khi giải ngân (Tú Oanh).",
+  //   related_ln_code: "LN090925002",
+  //   related_ap_code: "AP1009251154",
+  //   reference_month: "2025-10"
+  // }
 ]

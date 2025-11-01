@@ -19,25 +19,7 @@ import { createClient } from '@/utils/supabase/client';
 const COLORS = ['#3b82f6', '#a855f7', '#2dd4bf', '#f97316', '#ec4899', '#84cc16'];
 const API_BASE_URL = 'https://api.y99.vn/data/Application/';
 const API_VALUES = 'id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date';
-const LOAN_SCHEDULE_API_VALUES = ['id','type','status','paid_amount','remain_amount','ovd_amount','itr_income','to_date','pay_amount', 'detail'];
 
-
-type LoanSchedule = {
-  id: number;
-  type: number;
-  status: number;
-  paid_amount: number;
-  remain_amount: number;
-  ovd_amount: number;
-  itr_income: number;
-  to_date: string;
-  pay_amount: number;
-  detail: {
-      paid: number;
-      time: string;
-      pay_amount: number;
-  }[];
-};
 
 
 export default function ReportsPage() {
@@ -45,8 +27,6 @@ export default function ReportsPage() {
   const [date, setDate] = useState<Date>(subDays(new Date(), 1));
   const [createdApplications, setCreatedApplications] = useState<Application[]>([]);
   const [disbursedApplications, setDisbursedApplications] = useState<Application[]>([]);
-  const [interestSchedules, setInterestSchedules] = useState<LoanSchedule[]>([]);
-  const [feeSchedules, setFeeSchedules] = useState<LoanSchedule[]>([]);
   const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({ total: 0, count: 0 });
@@ -69,8 +49,6 @@ export default function ReportsPage() {
       const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
       const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${serviceFeesFilter}&login=${loginId}`;
       
-      const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 2 }))}`;
-      const loanScheduleFeesUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(',')}&filter=${encodeURIComponent(JSON.stringify({ type: 3 }))}`;
       
       // Fetch loan_statements from Supabase
       const supabase = createClient();
@@ -79,25 +57,20 @@ export default function ReportsPage() {
         .select('*')
         .eq('payment_date', formattedDate);
 
-      const [createdResponse, disbursedResponse, serviceFeesResponse, interestScheduleResponse, feeScheduleResponse, collectedAmountData] = await Promise.all([
+      const [createdResponse, disbursedResponse, serviceFeesResponse, collectedAmountData] = await Promise.all([
         fetch(createdUrl),
         fetch(disbursedUrl),
         fetch(serviceFeesUrl),
-        fetch(loanScheduleInterestUrl),
-        fetch(loanScheduleFeesUrl),
         supabaseQuery,
       ]);
 
       const createdData = await createdResponse.json();
       const disbursedData = await disbursedResponse.json();
       const serviceFeesData = await serviceFeesResponse.json();
-      const interestScheduleData = await interestScheduleResponse.json();
-      const feeScheduleData = await feeScheduleResponse.json();
+
 
       setCreatedApplications(createdData.rows || []);
       setDisbursedApplications(disbursedData.rows || []);
-      setInterestSchedules(interestScheduleData.rows || []);
-      setFeeSchedules(feeScheduleData.rows || []);
 
       // Parse Supabase loan_statements data
       const { data: statementsData, error: statementsError } = collectedAmountData;
@@ -132,8 +105,6 @@ export default function ReportsPage() {
       console.error("Failed to fetch data", error);
       setCreatedApplications([]);
       setDisbursedApplications([]);
-      setInterestSchedules([]);
-      setFeeSchedules([]);
       setLoanStatements([]);
       setCollectedAmount({ total: 0, count: 0 });
       setCollectedServiceFees(0);
@@ -267,21 +238,13 @@ export default function ReportsPage() {
         .filter(adj => adj.type === "service_fee")
         .reduce((sum, adj) => sum + adj.amount, 0);
 
-    const totalAdjustmentMonthlyFee = dailyAdjustments
-        .filter(adj => adj.type === "monthly_fee")
-        .reduce((sum, adj) => sum + adj.amount, 0);
-    
-    const totalAdjustmentMonthlyInterest = dailyAdjustments
-        .filter(adj => adj.type === "monthly_interest")
-        .reduce((sum, adj) => sum + adj.amount, 0);
 
     const finalLoanAmount = loanAmount + totalAdjustmentDisbursement;
     const finalDisbursedCount = disbursedApps.length + countAdjustmentDisbursement;
     const finalCollectedServiceFees = collectedServiceFees + totalAdjustmentServiceFee;
-    const finalCollectedFees = collectedFees + totalAdjustmentMonthlyFee;
-    const finalCollectedInterest = collectedInterest + totalAdjustmentMonthlyInterest;
+
     
-    const totalRevenue = finalCollectedFees + finalCollectedInterest;
+    const totalRevenue = collectedFees + collectedInterest;
     const totalCollectedAmount = collectedAmount.total;
     const totalGrossRevenue = totalCollectedAmount + finalCollectedServiceFees;
 
@@ -298,8 +261,8 @@ export default function ReportsPage() {
       typeData,
       sourceData,
       commissionCount,
-      collectedFees: finalCollectedFees,
-      collectedInterest: finalCollectedInterest,
+      collectedFees,
+      collectedInterest,
       totalRevenue,
       totalCollectedAmount,
       totalGrossRevenue,

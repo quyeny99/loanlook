@@ -23,7 +23,7 @@ const LOAN_SCHEDULE_API_VALUES = ['id','type','status','paid_amount','remain_amo
 
 
 const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, name }: any) => {
   const radius = outerRadius * 1.25;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -183,8 +183,6 @@ export default function MonthlyReportPage() {
 
   const reportData = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => i);
-    const currentDate = new Date();
-    const currentMonthDate = startOfMonth(currentDate);
 
     const monthlyData = months.map(month => {
         const monthDate = new Date(parseInt(year), month, 1);
@@ -246,25 +244,16 @@ export default function MonthlyReportPage() {
         const totalAdjustmentServiceFee = monthlyAdjustments
           .filter(adj => adj.type === "service_fee")
           .reduce((sum, adj) => sum + adj.amount, 0);
-
-        const totalAdjustmentMonthlyFee = monthlyAdjustments
-          .filter(adj => adj.type === "monthly_fee")
-          .reduce((sum, adj) => sum + adj.amount, 0);
-        
-        const totalAdjustmentMonthlyInterest = monthlyAdjustments
-          .filter(adj => adj.type === "monthly_interest")
-          .reduce((sum, adj) => sum + adj.amount, 0);
         
         const totalDisbursedCount = disbursedMonthApps.length + countAdjustmentDisbursement;
         const totalLoanAmount = disbursedMonthApps.reduce((acc, app) => acc + (app.loanapp__disbursement || 0), 0) + totalAdjustmentDisbursement;
-        const finalCollectedFees = collectedFeesForMonth + totalAdjustmentMonthlyFee;
-        const finalCollectedInterest = collectedInterestForMonth + totalAdjustmentMonthlyInterest;
+        const finalCollectedFees = collectedFeesForMonth;
+        const finalCollectedInterest = collectedInterestForMonth;
         const finalCollectedServiceFees = serviceFeesForMonth + totalAdjustmentServiceFee;
 
         const totalRevenue = finalCollectedFees + finalCollectedInterest;
         const totalGrossRevenueForMonth = collectedAmountForMonth + finalCollectedServiceFees;
 
-        const endOfMonthDate = endOfMonth(monthDate);
         const overdueDebt = overdueDebtSchedules.reduce((acc, s) => {
           if (!s.detail) {
             return acc + (s.remain_amount || 0);
