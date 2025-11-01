@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, subDays, isWithinInterval, parseISO, isSameDay } from 'date-fns';
+import { format, subDays, parseISO, isSameDay } from 'date-fns';
 import { type Application, type Statement } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, ChevronRight } from 'lucide-react';
@@ -231,6 +231,23 @@ export default function ReportsPage() {
       acc + (statement.management_fee || 0), 0
     );
 
+    // Calculate additional totals from loan_statements
+    const totalCollectedPrincipal = loanStatements.reduce((acc, statement) => 
+      acc + (statement.principal_amount || 0), 0
+    );
+    const totalOverdueFees = loanStatements.reduce((acc, statement) => 
+      acc + (statement.overdue_fee || 0), 0
+    );
+    const totalSettlementFees = loanStatements.reduce((acc, statement) => 
+      acc + (statement.settlement_fee || 0), 0
+    );
+    const totalRemainingAmount = loanStatements.reduce((acc, statement) => 
+      acc + (statement.remaining_amount || 0), 0
+    );
+    const totalVAT = loanStatements.reduce((acc, statement) => 
+      acc + (statement.vat_amount || 0), 0
+    );
+
     // Adjustments
     const dailyAdjustments = adjustments.filter(adj => isSameDay(parseISO(adj.date), date));
     
@@ -286,7 +303,12 @@ export default function ReportsPage() {
       totalRevenue,
       totalCollectedAmount,
       totalGrossRevenue,
-      collectedServiceFees: finalCollectedServiceFees
+      collectedServiceFees: finalCollectedServiceFees,
+      totalCollectedPrincipal,
+      totalOverdueFees,
+      totalSettlementFees,
+      totalRemainingAmount,
+      totalVAT
     };
   }, [createdApplications, disbursedApplications, loanStatements, date, collectedServiceFees, collectedAmount]);
 

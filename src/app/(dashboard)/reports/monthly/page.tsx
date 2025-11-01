@@ -350,6 +350,23 @@ export default function MonthlyReportPage() {
     const totalCollectedCount = monthlyData.reduce((acc, month) => acc + month.totalCollectedCount, 0);
     const totalGrossRevenue = totalCollectedAmount + totalCollectedServiceFees;
 
+    // Calculate additional totals from loan_statements for the entire year
+    const totalCollectedPrincipal = loanStatements.reduce((acc, statement) => 
+      acc + (statement.principal_amount || 0), 0
+    );
+    const totalOverdueFees = loanStatements.reduce((acc, statement) => 
+      acc + (statement.overdue_fee || 0), 0
+    );
+    const totalSettlementFees = loanStatements.reduce((acc, statement) => 
+      acc + (statement.settlement_fee || 0), 0
+    );
+    const totalRemainingAmount = loanStatements.reduce((acc, statement) => 
+      acc + (statement.remaining_amount || 0), 0
+    );
+    const totalVAT = loanStatements.reduce((acc, statement) => 
+      acc + (statement.vat_amount || 0), 0
+    );
+
     const yearlyAdjustments = adjustments.filter(adj => isSameYear(parseISO(adj.date), new Date(parseInt(year), 0, 1)));
     
     const totalYearlyAdjustmentDisbursement = yearlyAdjustments
@@ -379,7 +396,12 @@ export default function MonthlyReportPage() {
         totalRevenue,
         totalGrossRevenue,
         totalCollectedAmount,
-        totalCollectedCount
+        totalCollectedCount,
+        totalCollectedPrincipal,
+        totalOverdueFees,
+        totalSettlementFees,
+        totalRemainingAmount,
+        totalVAT
     };
   }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, overdueLoansCount, collectedAmounts, serviceFeeEntries, loanStatements]);
 

@@ -18,6 +18,11 @@ type SummaryCardsProps = {
         totalGrossRevenue: number;
         totalCollectedAmount: number;
         totalCollectedCount: number;
+        totalCollectedPrincipal: number;
+        totalOverdueFees: number;
+        totalSettlementFees: number;
+        totalRemainingAmount: number;
+        totalVAT: number;
     }
     year: string;
     setYear: (year: string) => void;
@@ -98,6 +103,46 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                         </CardHeader>
                         <CardContent>
                             <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.totalCollectedInterest || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Collected Principal</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-emerald-600">{currencyFormatter.format(reportData.totalCollectedPrincipal || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Collected Overdue Fees</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-amber-600">{currencyFormatter.format(reportData.totalOverdueFees || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Collected Settlement Fees</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-amber-700">{currencyFormatter.format(reportData.totalSettlementFees || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Collected Remaining Amount</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-cyan-600">{currencyFormatter.format(reportData.totalRemainingAmount || 0)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Collected VAT</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-pink-600">{currencyFormatter.format(reportData.totalVAT || 0)}</p>
                         </CardContent>
                     </Card>
                     <Card>

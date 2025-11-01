@@ -317,6 +317,9 @@ export default function DateRangeReportsPage() {
     );
     
     // Calculate additional totals from loan_statements
+    const totalCollectedPrincipal = loanStatements.reduce((acc, statement) => 
+      acc + (statement.principal_amount || 0), 0
+    );
     const totalOverdueFees = loanStatements.reduce((acc, statement) => 
       acc + (statement.overdue_fee || 0), 0
     );
@@ -389,6 +392,7 @@ export default function DateRangeReportsPage() {
         totalCollectedAmount,
         totalGrossRevenue,
         collectedServiceFees: collectedServiceFees + totalAdjustmentServiceFee,
+        totalCollectedPrincipal,
         totalOverdueFees,
         totalSettlementFees,
         totalRemainingAmount,
