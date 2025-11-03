@@ -42,7 +42,18 @@ type SummaryCardsProps = {
 const currencyFormatter = new Intl.NumberFormat('de-DE', {});
 
 export default function SummaryCards({ reportData, collectedAmount, date, setDate, isAdmin, collectedServiceFees }: SummaryCardsProps) {
-    
+    const totalServiceFees = collectedServiceFees || 0;
+    const serviceFeesExclVAT = Math.floor(totalServiceFees / 1.1);
+    const vatOnServiceFees = totalServiceFees - serviceFeesExclVAT;
+    const collectedFeeExcl = reportData.collectedFees || 0;
+    const collectedFeeGross = Math.ceil(collectedFeeExcl * 1.1);
+    const collectedFeeVAT = Math.ceil(collectedFeeGross - collectedFeeExcl);
+    const collectedInterestExcl = reportData.collectedInterest || 0;
+    const collectedInterestGross = Math.ceil(collectedInterestExcl * 1.1);
+    const collectedInterestVAT = Math.ceil(collectedInterestGross - collectedInterestExcl);
+    const settlementFeeExcl = reportData.totalSettlementFees || 0;
+    const settlementFeeGross = Math.ceil(settlementFeeExcl * 1.1);
+    const settlementFeeVAT = Math.ceil(settlementFeeGross - settlementFeeExcl);
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
@@ -107,7 +118,11 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                             <CardTitle className="text-sm font-medium">Total Collected Service Fees</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-green-500">{currencyFormatter.format(collectedServiceFees)} ₫</p>
+                            <p className="text-2xl font-bold text-green-500">{currencyFormatter.format(totalServiceFees)} ₫</p>
+                            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                <p>Service Fees (excl. VAT): <span className="font-semibold text-foreground">{currencyFormatter.format(serviceFeesExclVAT)} ₫</span></p>
+                                <p>VAT Amount (10%): <span className="font-semibold text-foreground">{currencyFormatter.format(vatOnServiceFees)} ₫</span></p>
+                            </div>
                         </CardContent>
                     </Card>
             {isAdmin && (
@@ -123,10 +138,14 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Collected Fees</CardTitle>
+                            <CardTitle className="text-sm font-medium">Collected Fee</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-lg font-bold text-indigo-500">{currencyFormatter.format(reportData.collectedFees || 0)} ₫</p>
+                            <p className="text-lg font-bold text-indigo-500">{currencyFormatter.format(collectedFeeGross)} ₫</p>
+                            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                <p>Collected Fee (excl. VAT): <span className="font-semibold text-foreground">{currencyFormatter.format(collectedFeeExcl)} ₫</span></p>
+                                <p>VAT Amount (10%): <span className="font-semibold text-foreground">{currencyFormatter.format(collectedFeeVAT)} ₫</span></p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -134,7 +153,11 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                             <CardTitle className="text-sm font-medium">Collected Interest</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(reportData.collectedInterest || 0)} ₫</p>
+                            <p className="text-lg font-bold text-teal-500">{currencyFormatter.format(collectedInterestGross)} ₫</p>
+                            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                <p>Collected Interest (excl. VAT): <span className="font-semibold text-foreground">{currencyFormatter.format(collectedInterestExcl)} ₫</span></p>
+                                <p>VAT Amount (10%): <span className="font-semibold text-foreground">{currencyFormatter.format(collectedInterestVAT)} ₫</span></p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -158,7 +181,11 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                             <CardTitle className="text-sm font-medium">Collected Settlement Fees</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-amber-700">{currencyFormatter.format(reportData.totalSettlementFees || 0)} ₫</p>
+                            <p className="text-2xl font-bold text-amber-700">{currencyFormatter.format(settlementFeeGross)} ₫</p>
+                            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                <p>Settlement Fees (excl. VAT): <span className="font-semibold text-foreground">{currencyFormatter.format(settlementFeeExcl)} ₫</span></p>
+                                <p>VAT Amount (10%): <span className="font-semibold text-foreground">{currencyFormatter.format(settlementFeeVAT)} ₫</span></p>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -175,6 +202,11 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                         </CardHeader>
                         <CardContent>
                             <p className="text-2xl font-bold text-pink-600">{currencyFormatter.format(reportData.totalVAT || 0)} ₫</p>
+                            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                <p>VAT Fee: <span className="font-semibold text-foreground">{currencyFormatter.format(collectedFeeVAT)} ₫</span></p>
+                                <p>VAT Interest: <span className="font-semibold text-foreground">{currencyFormatter.format(collectedInterestVAT)} ₫</span></p>
+                                <p>VAT Settlement Fees: <span className="font-semibold text-foreground">{currencyFormatter.format(settlementFeeVAT)} ₫</span></p>
+                            </div>
                         </CardContent>
                     </Card>
                 </>

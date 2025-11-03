@@ -31,6 +31,11 @@ const currencyFormatter = (value: number, name: string) => {
 
 
 export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartProps) {
+  const chartData = data.map((d) => ({
+    ...d,
+    collectedFees: Math.ceil((d.collectedFees || 0) * 1.1),
+    collectedInterest: Math.ceil((d.collectedInterest || 0) * 1.1),
+  }));
   return (
     <Card>
       <CardHeader>
@@ -39,7 +44,7 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart
-            data={data}
+            data={chartData}
             margin={{
               top: 20,
               right: 30,
