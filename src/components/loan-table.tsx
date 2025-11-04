@@ -47,6 +47,7 @@ export function LoanTable({
     { label: 'Fee Date', style: { width: '120px' } },
     { label: 'Interest Payment Term', style: { width: '150px' } },
     { label: 'Principal Repayment Term', style: { width: '150px' } },
+    { label: 'Fee Repayment Term', style: { width: '150px' } },
     { label: 'Collateral', style: { width: '100px' } },
     { label: 'Profit', style: { width: '100px' }, className: 'text-right' },
     { label: 'Status', style: { width: '120px' } },
@@ -80,6 +81,8 @@ export function LoanTable({
               const itrUnpaid = loan.itr_num_cycle - loan.itr_pay_cycle;
               const prinPaid = loan.prin_pay_cycle;
               const prinUnpaid = loan.prin_num_cycle - loan.prin_pay_cycle;
+              const feePaid = loan.fee_pay_cycle;
+              const feeUnpaid = loan.fee_num_cycle - loan.fee_pay_cycle;
               const isPendingDisbursement = loan.status === 1;
               const isPaidOff = loan.status === 8;
               const daysRemaining = loan.due_date ? differenceInCalendarDays(parseISO(loan.due_date), new Date()) : null;
@@ -199,6 +202,42 @@ export function LoanTable({
                            <Tooltip>
                             <TooltipTrigger asChild>
                               <Badge variant="destructive">{loan.prin_ovd_cycle}</Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Overdue periods</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {isPendingDisbursement ? null : (
+                      <div className="flex items-center gap-1">
+                        {feePaid >= 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge variant="secondary" className="bg-blue-100 text-blue-800">{feePaid}</Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Periods already paid</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        {feeUnpaid >= 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge>{feeUnpaid}</Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Unpaid periods</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        {loan.fee_ovd_cycle > 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge variant="destructive">{loan.fee_ovd_cycle}</Badge>
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>Overdue periods</p>

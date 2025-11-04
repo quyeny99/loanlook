@@ -1,19 +1,17 @@
 
 'use client';
 
-import { LogOut, BarChart2, FileText } from 'lucide-react';
+import { LogOut, BarChart2, FileText, TimerIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/context/AuthContext';
 
 export default function Header() {
   const router = useRouter();
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
   
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
@@ -47,24 +45,28 @@ export default function Header() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost">
-                    <BarChart2 className="mr-2 h-4 w-4" />
+                    <BarChart2 className="h-4 w-4" />
                     Application Report
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuItem onSelect={() => router.push('/reports/daily')}>1. Daily</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>2. Monthly</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>3. Date Range</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/reports/daily')}>Daily</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/reports/monthly')}>Monthly</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/reports/date-range')}>Date Range</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
         <Button variant="ghost" onClick={() => router.push('/reports/statement')}>
-            <FileText className="mr-2 h-4 w-4" />
+            <FileText className="h-4 w-4" />
             Statement
+        </Button>
+        <Button variant="ghost" onClick={() => router.push('/overdue')}>
+            <TimerIcon className="h-4 w-4" />
+            Overdue Loans
         </Button>
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="h-4 w-4" />
           Sign Out
         </Button>
       </div>
