@@ -167,6 +167,7 @@ function StatementPageContent() {
   const handleSaveStatement = async (statement: Omit<Statement, 'id' | 'created_at' | 'updated_at' | 'created_by'> & { id?: string }) => {
     try {
       const supabase = createClient();
+      const params = new URLSearchParams(searchParams.toString());
       
       if (statement.id) {
         // Update existing statement
@@ -192,6 +193,8 @@ function StatementPageContent() {
           console.error('Error updating statement:', error);
           return;
         }
+        params.set("page", currentPage.toString())
+        
       } else {
         // Add new statement
         const { error } = await supabase
@@ -214,11 +217,10 @@ function StatementPageContent() {
           console.error('Error inserting statement:', error);
           return;
         }
+        params.set('page', "1");
       }
 
-      // Reset to page 1 and refresh data from database
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('page', '1');
+      // Preserve current page after save and refresh data from database
       router.push(`?${params.toString()}`, { scroll: false });
       
       // Refresh data

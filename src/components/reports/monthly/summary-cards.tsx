@@ -49,7 +49,7 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
     const collectedInterestVAT = Math.ceil(collectedInterestGross - collectedInterestExcl);
     const settlementFeeExcl = reportData.totalSettlementFees || 0;
     const settlementFeeGross = Math.ceil(settlementFeeExcl * 1.1);
-    const settlementFeeVAT = Math.ceil(settlementFeeGross - settlementFeeExcl);
+    const settlementFeeVAT = Math.max(reportData.totalVAT - collectedFeeVAT - collectedInterestVAT, 0);
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             <Card>
