@@ -1,6 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
+import { Suspense, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { OverdueLoansTable } from '@/components/overdue-loans-table';
@@ -18,22 +21,40 @@ const tabDescriptions = {
   critical: 'Displays loans that are overdue by more than 14 days.',
 };
 
-
-export default function OverduePage() {
-  const [exportLoading, setExportLoading] = useState(false);
+function OverdueInner({ refreshToken, setTableLoading }: { refreshToken: number; setTableLoading: (loading: boolean) => void }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [refreshToken, setRefreshToken] = useState(0);
-  const [tableLoading, setTableLoading] = useState(false);
-
   const currentTab = (searchParams.get('tab') || 'all') as 'all' | 'active' | 'late' | 'warning' | 'critical';
-
   const setTab = (nextTab: 'all' | 'active' | 'late' | 'warning' | 'critical') => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', nextTab);
     router.push(`${pathname}?${params.toString()}`);
   };
+  return (
+    <Tabs value={currentTab} onValueChange={(val) => setTab(val as any)}>
+      <TabsList className="mb-4">
+        <TabsTrigger value="all">All</TabsTrigger>
+        <TabsTrigger value="active">Active</TabsTrigger>
+        <TabsTrigger value="late">Short Overdue</TabsTrigger>
+        <TabsTrigger value="warning">Medium Overdue</TabsTrigger>
+        <TabsTrigger value="critical">Long Overdue</TabsTrigger>
+      </TabsList>
+      <CardDescription className='mb-4'>
+          {tabDescriptions[currentTab]}
+      </CardDescription>
+      <TabsContent value={currentTab} className="m-0">
+        <OverdueLoansTable tab={currentTab} refreshToken={refreshToken} onLoadingChange={setTableLoading} />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+
+export default function OverduePage() {
+  const [exportLoading, setExportLoading] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [tableLoading, setTableLoading] = useState(false);
 
 
   async function handleExportAll() {
@@ -117,21 +138,9 @@ export default function OverduePage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs value={currentTab} onValueChange={(val) => setTab(val as any)}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="late">Short Overdue</TabsTrigger>
-                <TabsTrigger value="warning">Medium Overdue</TabsTrigger>
-                <TabsTrigger value="critical">Long Overdue</TabsTrigger>
-              </TabsList>
-              <CardDescription className='mb-4'>
-                  {tabDescriptions[currentTab]}
-              </CardDescription>
-              <TabsContent value={currentTab} className="m-0">
-                <OverdueLoansTable tab={currentTab} refreshToken={refreshToken} onLoadingChange={setTableLoading} />
-              </TabsContent>
-            </Tabs>
+            <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
+              <OverdueInner refreshToken={refreshToken} setTableLoading={setTableLoading} />
+            </Suspense>
           </CardContent>
         </Card>
       </main>
