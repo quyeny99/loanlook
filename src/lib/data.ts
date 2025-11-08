@@ -253,4 +253,41 @@ export type Statement = {
 }
 
 
+export type Customer = {
+  id: number;
+  code: string;
+  fullname: string;
+  phone: string;
+  email?: string;
+  province?: string;
+  district?: string;
+  address?: string;
+  sex?: number;
+  sex__name?: string;
+  legal_type?: number;
+  legal_type__name?: string;
+  legal_code?: string;
+  issue_date?: string;
+  issue_place?: string;
+  blacklisted?: number;
+  blacklisted_reason?: string;
+  blacklisted_by?: number;
+  blacklisted_by__fullname?: string;
+  blacklisted_time?: string;
+  create_time: string;
+  update_time: string;
+};
+
+export type BlacklistedCustomer = {
+  id: string;
+  customer_id: string;
+  name: string;
+  phone: string | null;
+  reason: string;
+  blacklisted_by: string;
+  blacklisted_by_name: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export const loansData: Loan[] = [];
