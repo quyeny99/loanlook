@@ -28,6 +28,7 @@ type SummaryCardsProps = {
         totalSettlementFees: number;
         totalRemainingAmount: number;
         totalVAT: number;
+        outstandingLoans: number;
     };
     collectedAmount: {
         total: number;
@@ -207,6 +208,14 @@ export default function SummaryCards({ reportData, collectedAmount, date, setDat
                                 <p>VAT Interest: <span className="font-semibold text-foreground">{currencyFormatter.format(collectedInterestVAT)} ₫</span></p>
                                 <p>VAT Settlement Fees: <span className="font-semibold text-foreground">{currencyFormatter.format(settlementFeeVAT)} ₫</span></p>
                             </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">Outstanding Loans</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-yellow-600">{currencyFormatter.format(reportData.outstandingLoans || 0)} ₫</p>
                         </CardContent>
                     </Card>
                 </>

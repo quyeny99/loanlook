@@ -74,6 +74,7 @@ export default function MonthlyReportPage() {
   const [serviceFeeEntries, setServiceFeeEntries] = useState<InternalEntry[]>([]);
   const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
   const [overdueLoansCount, setOverdueLoansCount] = useState<number>(0);
+  const [outstandingLoans, setOutstandingLoans] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async (selectedYear: string) => {
@@ -101,6 +102,15 @@ export default function MonthlyReportPage() {
       const overdueLoansFilter = encodeURIComponent(JSON.stringify({ status: 5 }));
       const overdueLoansUrl = `https://api.y99.vn/data/Loan/?values=id,itr_next_amount,fee_next_amount,prin_next_amount&distinct_values=${encodeURIComponent(JSON.stringify({"count_note":{"type":"Count","field":"id","subquery":{"model":"Loan_Note","column":"ref"}},"sms_count":{"type":"Count","subquery":{"model":"Loan_Sms","column":"ref"},"field":"id"},"file_count":{"type":"Count","field":"id","subquery":{"model":"Loan_File","column":"ref"}},"collat_count":{"type":"Count","field":"id","subquery":{"model":"Loan_Collateral","column":"loan"}}}))}&sort=-id&summary=annotate&login=${loginId}&filter=${overdueLoansFilter}`;
       
+      // Fetch outstanding loans from loans disbursed in the year
+      const outstandingLoansFilter = encodeURIComponent(
+        JSON.stringify({
+          dbm_entry__date__gte: fromDate,
+          dbm_entry__date__lte: toDate,
+        })
+      );
+      const outstandingLoansUrl = `https://api.y99.vn/data/Loan/?sort=-id&login=${loginId}&values=id,outstanding,code&filter=${outstandingLoansFilter}`;
+      
       const serviceFeesFilter = encodeURIComponent(JSON.stringify({
         "account__code": "HOAC03VND",
         "date__gte": fromDate,
@@ -116,12 +126,13 @@ export default function MonthlyReportPage() {
         .gte('payment_date', fromDate)
         .lte('payment_date', toDate);
 
-      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, overdueLoansResponse, serviceFeesResponse, collectedAmountData] = await Promise.all([
+      const [appResponse, interestScheduleResponse, feeScheduleResponse, overdueDebtResponse, overdueLoansResponse, outstandingLoansResponse, serviceFeesResponse, collectedAmountData] = await Promise.all([
         fetch(appUrl),
         fetch(loanScheduleInterestUrl),
         fetch(loanScheduleFeesUrl),
         fetch(overdueDebtUrl),
         fetch(overdueLoansUrl),
+        fetch(outstandingLoansUrl),
         fetch(serviceFeesUrl),
         supabaseQuery,
       ]);
@@ -131,6 +142,7 @@ export default function MonthlyReportPage() {
       const feeScheduleData = await feeScheduleResponse.json();
       const overdueDebtData = await overdueDebtResponse.json();
       const overdueLoansData = await overdueLoansResponse.json();
+      const outstandingLoansData = await outstandingLoansResponse.json();
       const serviceFeesData = await serviceFeesResponse.json();
 
       // Parse Supabase loan_statements data
@@ -160,6 +172,19 @@ export default function MonthlyReportPage() {
       setOverdueDebtSchedules(overdueDebtData.rows || []);
       setOverdueLoansCount(overdueLoansData.total_rows || 0);
       setServiceFeeEntries(serviceFeesData.rows || []);
+
+      // Calculate total outstanding amount from outstanding loans
+      const totalOutstanding = (outstandingLoansData.rows || []).reduce(
+        (acc: number, loan: any) => {
+          // Skip null outstanding values
+          if (loan.outstanding !== null && loan.outstanding !== undefined) {
+            return acc + (loan.outstanding || 0);
+          }
+          return acc;
+        },
+        0
+      );
+      setOutstandingLoans(totalOutstanding);
     } catch (error) {
       console.error("Failed to fetch data", error);
       setApplications([]);
@@ -170,6 +195,7 @@ export default function MonthlyReportPage() {
       setServiceFeeEntries([]);
       setLoanStatements([]);
       setOverdueLoansCount(0);
+      setOutstandingLoans(0);
     } finally {
       setLoading(false);
     }
@@ -390,9 +416,10 @@ export default function MonthlyReportPage() {
         totalOverdueFees,
         totalSettlementFees,
         totalRemainingAmount,
-        totalVAT
+        totalVAT,
+        outstandingLoans
     };
-  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, overdueLoansCount, collectedAmounts, serviceFeeEntries, loanStatements]);
+  }, [applications, interestSchedules, feeSchedules, year, overdueDebtSchedules, overdueLoansCount, collectedAmounts, serviceFeeEntries, loanStatements, outstandingLoans]);
 
 
   return (
