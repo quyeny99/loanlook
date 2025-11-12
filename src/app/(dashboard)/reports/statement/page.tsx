@@ -1,5 +1,4 @@
-
-'use client';
+"use client";
 
 import { useState, useEffect, useCallback, Fragment, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -13,8 +12,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash2, RefreshCw, Loader2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChevronRight,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Trash2,
+  RefreshCw,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,12 +41,13 @@ import { LoanPagination } from "@/components/loan-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type Statement } from "@/lib/data";
 import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
-const currencyFormatter = new Intl.NumberFormat('de-DE', {});
-const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
+const currencyFormatter = new Intl.NumberFormat("de-DE", {});
+const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
 });
 
 const ITEMS_PER_PAGE = 10;
@@ -44,15 +58,19 @@ function StatementPageContent() {
   const [statementData, setStatementData] = useState<Statement[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [editingStatement, setEditingStatement] = useState<Statement | null>(null);
-  const [statementToDelete, setStatementToDelete] = useState<Statement | null>(null);
+  const [editingStatement, setEditingStatement] = useState<Statement | null>(
+    null
+  );
+  const [statementToDelete, setStatementToDelete] = useState<Statement | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [searchInput, setSearchInput] = useState('');
-
+  const [searchInput, setSearchInput] = useState("");
+  const { isAdmin } = useAuth();
   // Get current page and search from URL params
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const searchTerm = searchParams.get('search') || '';
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const searchTerm = searchParams.get("search") || "";
 
   // Sync search input with URL params
   useEffect(() => {
@@ -63,18 +81,22 @@ function StatementPageContent() {
     try {
       setLoading(true);
       const supabase = createClient();
-      
+
       // Get total count with search filter
-      let countQuery = supabase.from('loan_statements').select('*', { count: 'exact', head: true });
-      
+      let countQuery = supabase
+        .from("loan_statements")
+        .select("*", { count: "exact", head: true });
+
       if (searchTerm) {
-        countQuery = countQuery.or(`loan_id.ilike.%${searchTerm}%,note.ilike.%${searchTerm}%`);
+        countQuery = countQuery.or(
+          `loan_id.ilike.%${searchTerm}%,note.ilike.%${searchTerm}%`
+        );
       }
-      
+
       const { count, error: countError } = await countQuery;
 
       if (countError) {
-        console.error('Error counting statements:', countError);
+        console.error("Error counting statements:", countError);
       } else if (count !== null) {
         setTotalCount(count);
       }
@@ -83,36 +105,43 @@ function StatementPageContent() {
       const from = (currentPage - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
 
-      console.log('Fetching statements from Supabase...', { from, to, currentPage, searchTerm });
-      
+      console.log("Fetching statements from Supabase...", {
+        from,
+        to,
+        currentPage,
+        searchTerm,
+      });
+
       // Build query with filters
-      let dataQuery = supabase.from('loan_statements').select('*');
-      
+      let dataQuery = supabase.from("loan_statements").select("*");
+
       // Add search filter if search term exists
       if (searchTerm) {
-        dataQuery = dataQuery.or(`loan_id.ilike.%${searchTerm}%,note.ilike.%${searchTerm}%`);
+        dataQuery = dataQuery.or(
+          `loan_id.ilike.%${searchTerm}%,note.ilike.%${searchTerm}%`
+        );
       }
-      
+
       dataQuery = dataQuery
-        .order('payment_date', { ascending: false })
+        .order("payment_date", { ascending: false })
         .range(from, to);
-      
+
       const { data, error } = await dataQuery;
 
       if (error) {
-        console.error('Error fetching statements:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
+        console.error("Error fetching statements:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         return;
       }
 
-      console.log('Fetched data:', data);
-      
+      console.log("Fetched data:", data);
+
       if (data) {
         setStatementData(data as Statement[]);
       }
     } catch (error) {
-      console.error('Failed to fetch statements:', error);
-      console.error('Full error:', JSON.stringify(error, null, 2));
+      console.error("Failed to fetch statements:", error);
+      console.error("Full error:", JSON.stringify(error, null, 2));
     } finally {
       setLoading(false);
     }
@@ -124,7 +153,7 @@ function StatementPageContent() {
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('page', page.toString());
+    params.set("page", page.toString());
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
@@ -132,15 +161,15 @@ function StatementPageContent() {
   const debouncedSearch = useDebouncedCallback((value: string) => {
     const trimmedValue = value.trim();
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (trimmedValue) {
-      params.set('search', trimmedValue);
-      params.set('page', '1'); // Reset to page 1 when searching
+      params.set("search", trimmedValue);
+      params.set("page", "1"); // Reset to page 1 when searching
     } else {
-      params.delete('search');
-      params.set('page', '1');
+      params.delete("search");
+      params.set("page", "1");
     }
-    
+
     router.push(`?${params.toString()}`, { scroll: false });
   }, 500);
 
@@ -158,21 +187,26 @@ function StatementPageContent() {
     setEditingStatement(statement);
     setIsAddDialogOpen(true);
   };
-  
+
   const openDeleteDialog = (statement: Statement) => {
     setStatementToDelete(statement);
     setIsDeleteDialogOpen(true);
   };
 
-  const handleSaveStatement = async (statement: Omit<Statement, 'id' | 'created_at' | 'updated_at' | 'created_by'> & { id?: string }) => {
+  const handleSaveStatement = async (
+    statement: Omit<
+      Statement,
+      "id" | "created_at" | "updated_at" | "created_by"
+    > & { id?: string }
+  ) => {
     try {
       const supabase = createClient();
       const params = new URLSearchParams(searchParams.toString());
-      
+
       if (statement.id) {
         // Update existing statement
         const { error } = await supabase
-          .from('loan_statements')
+          .from("loan_statements")
           .update({
             loan_id: statement.loan_id,
             note: statement.note,
@@ -187,46 +221,43 @@ function StatementPageContent() {
             total_amount: statement.total_amount,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', statement.id);
+          .eq("id", statement.id);
 
         if (error) {
-          console.error('Error updating statement:', error);
+          console.error("Error updating statement:", error);
           return;
         }
-        params.set("page", currentPage.toString())
-        
+        params.set("page", currentPage.toString());
       } else {
         // Add new statement
-        const { error } = await supabase
-          .from('loan_statements')
-          .insert({
-            loan_id: statement.loan_id,
-            note: statement.note,
-            payment_date: statement.payment_date,
-            principal_amount: statement.principal_amount,
-            interest_amount: statement.interest_amount,
-            management_fee: statement.management_fee,
-            overdue_fee: statement.overdue_fee,
-            settlement_fee: statement.settlement_fee,
-            remaining_amount: statement.remaining_amount,
-            vat_amount: statement.vat_amount,
-            total_amount: statement.total_amount,
-          });
+        const { error } = await supabase.from("loan_statements").insert({
+          loan_id: statement.loan_id,
+          note: statement.note,
+          payment_date: statement.payment_date,
+          principal_amount: statement.principal_amount,
+          interest_amount: statement.interest_amount,
+          management_fee: statement.management_fee,
+          overdue_fee: statement.overdue_fee,
+          settlement_fee: statement.settlement_fee,
+          remaining_amount: statement.remaining_amount,
+          vat_amount: statement.vat_amount,
+          total_amount: statement.total_amount,
+        });
 
         if (error) {
-          console.error('Error inserting statement:', error);
+          console.error("Error inserting statement:", error);
           return;
         }
-        params.set('page', "1");
+        params.set("page", "1");
       }
 
       // Preserve current page after save and refresh data from database
       router.push(`?${params.toString()}`, { scroll: false });
-      
+
       // Refresh data
       await fetchStatements();
     } catch (error) {
-      console.error('Failed to save statement:', error);
+      console.error("Failed to save statement:", error);
     }
   };
 
@@ -235,12 +266,12 @@ function StatementPageContent() {
       try {
         const supabase = createClient();
         const { error } = await supabase
-          .from('loan_statements')
+          .from("loan_statements")
           .delete()
-          .eq('id', statementToDelete.id);
+          .eq("id", statementToDelete.id);
 
         if (error) {
-          console.error('Error deleting statement:', error);
+          console.error("Error deleting statement:", error);
           return;
         }
 
@@ -249,19 +280,19 @@ function StatementPageContent() {
         const newTotalCount = totalCount - 1;
         const totalPages = Math.ceil(newTotalCount / ITEMS_PER_PAGE);
         const params = new URLSearchParams(searchParams.toString());
-        
+
         if (currentPage > totalPages && totalPages > 0) {
-          params.set('page', totalPages.toString());
+          params.set("page", totalPages.toString());
         } else {
-          params.set('page', currentPage.toString());
+          params.set("page", currentPage.toString());
         }
-        
+
         router.push(`?${params.toString()}`, { scroll: false });
-        
+
         // Refresh data
         await fetchStatements();
       } catch (error) {
-        console.error('Failed to delete statement:', error);
+        console.error("Failed to delete statement:", error);
       }
     }
   };
@@ -269,34 +300,41 @@ function StatementPageContent() {
   const handleReload = () => {
     fetchStatements();
   };
-  
+
   return (
     <div className="space-y-6">
-       <div className="flex items-center text-sm text-muted-foreground">
-        <span className='cursor-pointer' onClick={() => window.location.href = '/reports'}>Báo cáo</span>
+      <div className="flex items-center text-sm text-muted-foreground">
+        <span
+          className="cursor-pointer"
+          onClick={() => (window.location.href = "/reports")}
+        >
+          Reports
+        </span>
         <ChevronRight className="h-4 w-4" />
-        <span className="font-semibold text-foreground">Sao kê</span>
+        <span className="font-semibold text-foreground">Statement</span>
       </div>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Sao kê tài khoản</CardTitle>
+              <CardTitle>Statement</CardTitle>
               <CardDescription>
-                Chi tiết các khoản thanh toán và phí vay.
+                Detailed information about loan payments and fees.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Tìm kiếm theo mã hoặc ghi chú..."
+                placeholder="Search by loan ID or note..."
                 value={searchInput}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 className="w-[250px]"
               />
-              <Button onClick={openAddDialog}>
-                <Plus className="mr-2 h-4 w-4" />
-                Thêm sao kê
-              </Button>
+              {isAdmin && (
+                <Button onClick={openAddDialog}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add statement
+                </Button>
+              )}
               <Button variant="outline" size="icon" onClick={handleReload}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
@@ -307,18 +345,39 @@ function StatementPageContent() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead style={{ width: '8%' }}>Mã khoản vay</TableHead>
-                <TableHead style={{ width: '9%' }}>Ngày thanh toán</TableHead>
-                <TableHead className="text-right" style={{ width: '8%' }}>Gốc</TableHead>
-                <TableHead className="text-right" style={{ width: '8%' }}>Lãi vay</TableHead>
-                <TableHead className="text-right" style={{ width: '8%' }}>Phí quản lý</TableHead>
-                <TableHead className="text-right" style={{ width: '8%' }}>Phí trễ hạn</TableHead>
-                <TableHead className="text-right" style={{ width: '8%' }}>Phí tất toán</TableHead>
-                <TableHead className="text-right" style={{ width: '8%' }}>Thu dư</TableHead>
-                <TableHead className="text-right" style={{ width: '8%' }}>Thuế GTGT</TableHead>
-                <TableHead className="text-right" style={{ width: '9%' }}>Tổng thu</TableHead>
-                <TableHead style={{ width: '12%' }}>Ghi chú</TableHead>
-                <TableHead className="text-right" style={{ width: '8%' }}>Hành động</TableHead>
+                <TableHead style={{ width: "8%" }}>Loan ID</TableHead>
+                <TableHead style={{ width: "9%" }}>Payment Date</TableHead>
+                <TableHead className="text-right" style={{ width: "8%" }}>
+                  Principal
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "8%" }}>
+                  Interest
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "8%" }}>
+                  Management Fee
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "8%" }}>
+                  Overdue Fee
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "8%" }}>
+                  Settlement Fee
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "8%" }}>
+                  Remaining Amount
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "8%" }}>
+                  VAT Amount
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "9%" }}>
+                  Total Amount
+                </TableHead>
+                <TableHead style={{ width: "12%" }}>Note</TableHead>
+                {isAdmin && (
+                  <TableHead
+                    className="text-right"
+                    style={{ width: "8%" }}
+                  ></TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -326,68 +385,119 @@ function StatementPageContent() {
                 // Loading skeleton rows
                 Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
                   <TableRow key={`skeleton-${index}`}>
-                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-24 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-24 ml-auto" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-8 w-8 ml-auto" />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : statementData.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={12} className="text-center py-12">
-                    <p className="text-muted-foreground">Không có dữ liệu sao kê</p>
+                    <p className="text-muted-foreground">
+                      Không có dữ liệu sao kê
+                    </p>
                   </TableCell>
                 </TableRow>
               ) : (
                 <Fragment key="statement-data">
                   {statementData.map((row) => {
-                return (
-                <TableRow key={row.id}>
-                  <TableCell>{row.loan_id}</TableCell>
-                  <TableCell>{dateFormatter.format(new Date(row.payment_date))}</TableCell>
-                  <TableCell className="text-right">{currencyFormatter.format(row.principal_amount)}</TableCell>
-                  <TableCell className="text-right">{currencyFormatter.format(row.interest_amount)}</TableCell>
-                  <TableCell className="text-right">{currencyFormatter.format(row.management_fee)}</TableCell>
-                  <TableCell className="text-right">{currencyFormatter.format(row.overdue_fee)}</TableCell>
-                  <TableCell className="text-right">{currencyFormatter.format(row.settlement_fee)}</TableCell>
-                  <TableCell className="text-right">{currencyFormatter.format(row.remaining_amount)}</TableCell>
-                  <TableCell className="text-right">{currencyFormatter.format(row.vat_amount)}</TableCell>
-                  <TableCell className="text-right font-bold">{currencyFormatter.format(row.total_amount)}</TableCell>
-                  <TableCell>
-                    <div className="min-w-[150px] whitespace-normal break-words">
-                      {row.note}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEditDialog(row)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Sửa
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-500" onClick={() => openDeleteDialog(row)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Xóa
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-                );
-              })}
+                    return (
+                      <TableRow key={row.id}>
+                        <TableCell>{row.loan_id}</TableCell>
+                        <TableCell>
+                          {dateFormatter.format(new Date(row.payment_date))}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(row.principal_amount)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(row.interest_amount)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(row.management_fee)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(row.overdue_fee)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(row.settlement_fee)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(row.remaining_amount)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(row.vat_amount)}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          {currencyFormatter.format(row.total_amount)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="min-w-[150px] whitespace-normal break-words">
+                            {row.note}
+                          </div>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => openEditDialog(row)}
+                                >
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-500"
+                                  onClick={() => openDeleteDialog(row)}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
                 </Fragment>
               )}
             </TableBody>
@@ -404,7 +514,7 @@ function StatementPageContent() {
         </CardContent>
       </Card>
       <AddStatementDialog
-        key={editingStatement ? editingStatement.id : 'add'}
+        key={editingStatement ? editingStatement.id : "add"}
         onSave={handleSaveStatement}
         isOpen={isAddDialogOpen}
         setIsOpen={setIsAddDialogOpen}
@@ -424,17 +534,22 @@ function StatementPageFallback() {
   return (
     <div className="space-y-6">
       <div className="flex items-center text-sm text-muted-foreground">
-        <span className='cursor-pointer' onClick={() => window.location.href = '/reports'}>Báo cáo</span>
+        <span
+          className="cursor-pointer"
+          onClick={() => (window.location.href = "/reports")}
+        >
+          Reports
+        </span>
         <ChevronRight className="h-4 w-4" />
-        <span className="font-semibold text-foreground">Sao kê</span>
+        <span className="font-semibold text-foreground">Statement</span>
       </div>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Sao kê tài khoản</CardTitle>
+              <CardTitle>Statement</CardTitle>
               <CardDescription>
-                Chi tiết các khoản thanh toán và phí vay.
+                Detailed information about loan payments and fees.
               </CardDescription>
             </div>
           </div>
@@ -443,7 +558,7 @@ function StatementPageFallback() {
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <p className="text-muted-foreground">Đang tải...</p>
+              <p className="text-muted-foreground">Loading...</p>
             </div>
           </div>
         </CardContent>

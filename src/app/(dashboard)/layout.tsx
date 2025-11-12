@@ -1,5 +1,4 @@
-import { AuthProvider } from '@/context/AuthContext';
-import Header from '@/components/header';
+import Header from "@/components/header";
 
 export default function DashboardLayout({
   children,
@@ -7,9 +6,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <AuthProvider>
+    <div>
       <Header />
       <div className="pt-24 mt-16 p-6 sm:p-8">{children}</div>
-    </AuthProvider>
+    </div>
   );
 }

@@ -39,18 +39,31 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {
 
 
 export default function SummaryCards({ reportData, year, setYear, years, isAdmin }: SummaryCardsProps) {
+    const total_before_vat =
+        reportData.totalCollectedFees +
+        reportData.totalCollectedInterest +
+        reportData.totalSettlementFees;
+
+    const interest_ratio = total_before_vat > 0 ? reportData.totalCollectedInterest / total_before_vat : 0;
+    const management_fee_ratio = total_before_vat > 0 ? reportData.totalCollectedFees / total_before_vat : 0;
+    const settlement_fee_ratio = total_before_vat > 0 ? reportData.totalSettlementFees / total_before_vat : 0;
+
+    const collectedInterestVAT = Math.round(reportData.totalVAT * interest_ratio);
+    const collectedFeeVAT = Math.round(reportData.totalVAT * management_fee_ratio);
+    const settlementFeeVAT = Math.round(reportData.totalVAT * settlement_fee_ratio);
+
     const totalServiceFees = reportData.totalCollectedServiceFees || 0;
     const serviceFeesExclVAT = Math.floor(totalServiceFees / 1.1);
     const vatOnServiceFees = totalServiceFees - serviceFeesExclVAT;
+
     const collectedFeeExcl = reportData.totalCollectedFees || 0;
-    const collectedFeeGross = Math.ceil(collectedFeeExcl * 1.1);
-    const collectedFeeVAT = Math.ceil(collectedFeeGross - collectedFeeExcl);
+    const collectedFeeGross = reportData.totalCollectedFees + collectedFeeVAT;
+
     const collectedInterestExcl = reportData.totalCollectedInterest || 0;
-    const collectedInterestGross = Math.ceil(collectedInterestExcl * 1.1);
-    const collectedInterestVAT = Math.ceil(collectedInterestGross - collectedInterestExcl);
+    const collectedInterestGross = reportData.totalCollectedInterest + collectedInterestVAT;
+
     const settlementFeeExcl = reportData.totalSettlementFees || 0;
-    const settlementFeeGross = Math.ceil(settlementFeeExcl * 1.1);
-    const settlementFeeVAT = Math.max(reportData.totalVAT - collectedFeeVAT - collectedInterestVAT, 0);
+    const settlementFeeGross = reportData.totalSettlementFees + settlementFeeVAT;
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             <Card>

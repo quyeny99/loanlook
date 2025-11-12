@@ -58,23 +58,43 @@ export default function SummaryCards({
   isAdmin,
   collectedAmount,
 }: SummaryCardsProps) {
+  const total_before_vat =
+    reportData.collectedFees +
+    reportData.collectedInterest +
+    reportData.totalSettlementFees;
+
+  const interest_ratio =
+    total_before_vat > 0 ? reportData.collectedInterest / total_before_vat : 0;
+  const management_fee_ratio =
+    total_before_vat > 0 ? reportData.collectedFees / total_before_vat : 0;
+  const settlement_fee_ratio =
+    total_before_vat > 0
+      ? reportData.totalSettlementFees / total_before_vat
+      : 0;
+
+  const collectedInterestVAT = Math.round(reportData.totalVAT * interest_ratio);
+  const collectedFeeVAT = Math.round(
+    reportData.totalVAT * management_fee_ratio
+  );
+  const settlementFeeVAT = Math.round(
+    reportData.totalVAT * settlement_fee_ratio
+  );
+
   const totalServiceFees = reportData.collectedServiceFees || 0;
   const serviceFeesExclVAT = Math.floor(totalServiceFees / 1.1);
+
   const vatOnServiceFees = totalServiceFees - serviceFeesExclVAT;
+
   const collectedFeeExcl = reportData.collectedFees || 0;
-  const collectedFeeGross = Math.ceil(collectedFeeExcl * 1.1);
-  const collectedFeeVAT = Math.ceil(collectedFeeGross - collectedFeeExcl);
+  const collectedFeeGross = reportData.collectedFees + collectedFeeVAT;
+
   const collectedInterestExcl = reportData.collectedInterest || 0;
-  const collectedInterestGross = Math.ceil(collectedInterestExcl * 1.1);
-  const collectedInterestVAT = Math.ceil(
-    collectedInterestGross - collectedInterestExcl
-  );
+  const collectedInterestGross =
+    reportData.collectedInterest + collectedInterestVAT;
+
   const settlementFeeExcl = reportData.totalSettlementFees || 0;
-  const settlementFeeGross = Math.ceil(settlementFeeExcl * 1.1);
-  const settlementFeeVAT = Math.max(
-    reportData.totalVAT - collectedFeeVAT - collectedInterestVAT,
-    0
-  );
+  const settlementFeeGross = reportData.totalSettlementFees + settlementFeeVAT;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
       <Card>
@@ -143,6 +163,65 @@ export default function SummaryCards({
               {currencyFormatter.format(reportData.totalCollectedAmount)} ₫
             </p>
           </div>
+          {isAdmin && (
+            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+              <div className="grid grid-cols-2 items-center gap-2 space-y-1">
+                <p>
+                  Collected Fee (excl. VAT):{" "}
+                  <span className="font-semibold text-foreground">
+                    {currencyFormatter.format(collectedFeeExcl)} ₫
+                  </span>
+                </p>
+                <p>
+                  Collected Interest (excl. VAT):{" "}
+                  <span className="font-semibold text-foreground">
+                    {currencyFormatter.format(collectedInterestExcl)} ₫
+                  </span>
+                </p>
+              </div>
+              <div className="grid grid-cols-2 items-center gap-2 space-y-1">
+                <p>
+                  Collected Principal:{" "}
+                  <span className="font-semibold text-foreground">
+                    {currencyFormatter.format(
+                      reportData.totalCollectedPrincipal
+                    )}{" "}
+                    ₫
+                  </span>
+                </p>
+                <p>
+                  Collected Overdue Fees:{" "}
+                  <span className="font-semibold text-foreground">
+                    {currencyFormatter.format(reportData.totalOverdueFees)} ₫
+                  </span>
+                </p>
+              </div>
+              <div className="grid grid-cols-2 items-center gap-2 space-y-1">
+                <p>
+                  Collected VAT:{" "}
+                  <span className="font-semibold text-foreground">
+                    {currencyFormatter.format(reportData.totalVAT)} ₫
+                  </span>
+                </p>
+
+                <p>
+                  Collected Remaining Amount:{" "}
+                  <span className="font-semibold text-foreground">
+                    {currencyFormatter.format(reportData.totalRemainingAmount)}{" "}
+                    ₫
+                  </span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2 my-10">
+                <p>
+                  Collected Settlement Fees (excl. VAT):{" "}
+                  <span className="font-semibold text-foreground">
+                    {currencyFormatter.format(settlementFeeExcl)} ₫
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       <Card>
@@ -200,7 +279,9 @@ export default function SummaryCards({
               </div>
               <p className="text-sm text-muted-foreground mt-2">
                 Potential:{" "}
-                {currencyFormatter.format(reportData.potentialFees || 0)} ₫
+                <span className="font-semibold text-foreground">
+                  {currencyFormatter.format(reportData.potentialFees || 0)} ₫
+                </span>
               </p>
             </CardContent>
           </Card>
@@ -230,7 +311,10 @@ export default function SummaryCards({
               </div>
               <p className="text-sm text-muted-foreground mt-2">
                 Potential:{" "}
-                {currencyFormatter.format(reportData.potentialInterest || 0)} ₫
+                <span className="font-semibold text-foreground">
+                  {currencyFormatter.format(reportData.potentialInterest || 0)}{" "}
+                  ₫
+                </span>
               </p>
             </CardContent>
           </Card>

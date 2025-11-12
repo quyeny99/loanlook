@@ -1,23 +1,25 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import LoanDashboard from '@/components/loan-dashboard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from "react";
+import { redirect, useRouter } from "next/navigation";
+import LoanDashboard from "@/components/loan-dashboard";
+import { useAuth } from "@/context/AuthContext";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     // In a real app, you'd verify a token stored in localStorage or a cookie.
     // For this example, we'll use a simple flag in localStorage.
-    const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem("userId");
     if (userId) {
       setIsAuthenticated(true);
     } else {
-      router.push('/login');
+      router.push("/login");
     }
     setIsLoading(false);
   }, [router]);
@@ -25,14 +27,15 @@ export default function Home() {
   if (isLoading || !isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="w-full max-w-5xl p-4 space-y-4">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-96 w-full" />
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
-  
+
+  if (currentUser?.role === "cs") {
+    return redirect("/blacklist");
+  }
+
   return (
     <div className="min-h-screen w-full">
       <main className="mx-auto">

@@ -17,12 +17,10 @@ import { useAuth } from "@/context/AuthContext";
 export default function Header() {
   const router = useRouter();
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
+  const { currentUser, signOut } = useAuth();
 
   const handleSignOut = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userInfo");
+    signOut();
 
     toast({
       title: "Signed Out",
@@ -36,7 +34,10 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex flex-row items-center justify-between border-b bg-background p-4">
       <div className="flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2">
+        <Link
+          href={currentUser?.role === "cs" ? "/blacklist" : "/"}
+          className="flex items-center gap-2"
+        >
           <Image
             src="https://drive.google.com/uc?id=1P0wjUyetjh_7ERCxjmhWARWi8Ig1qng5"
             alt="Company Logo"
@@ -46,44 +47,50 @@ export default function Header() {
           />
           <span className="text-3xl font-bold font-headline">Loan</span>
         </Link>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost">
-              <BarChart2 className="h-4 w-4" />
-              Application Report
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onSelect={() => router.push("/reports/daily")}>
-              Daily
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => router.push("/reports/monthly")}>
-              Monthly
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => router.push("/reports/date-range")}
+        {currentUser?.role && currentUser.role !== "cs" && (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                  <BarChart2 className="h-4 w-4" />
+                  Application Report
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onSelect={() => router.push("/reports/daily")}
+                >
+                  Daily
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => router.push("/reports/monthly")}
+                >
+                  Monthly
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => router.push("/reports/date-range")}
+                >
+                  Date Range
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="ghost"
+              onClick={() => router.push("/reports/statement")}
             >
-              Date Range
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button
-          variant="ghost"
-          onClick={() => router.push("/reports/statement")}
-        >
-          <FileText className="h-4 w-4" />
-          Statement
-        </Button>
-        <Button variant="ghost" onClick={() => router.push("/overdue")}>
-          <TimerIcon className="h-4 w-4" />
-          Overdue Loans
-        </Button>
-        {isAdmin && (
-          <Button variant="ghost" onClick={() => router.push("/blacklist")}>
-            <Ban className="h-4 w-4" />
-            Blacklist
-          </Button>
+              <FileText className="h-4 w-4" />
+              Statement
+            </Button>
+            <Button variant="ghost" onClick={() => router.push("/overdue")}>
+              <TimerIcon className="h-4 w-4" />
+              Overdue Loans
+            </Button>
+          </>
         )}
+        <Button variant="ghost" onClick={() => router.push("/blacklist")}>
+          <Ban className="h-4 w-4" />
+          Blacklist
+        </Button>
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={handleSignOut}>

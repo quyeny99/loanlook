@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -25,7 +25,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { type Statement } from "@/lib/data";
@@ -45,16 +49,18 @@ const formSchema = z.object({
   total_amount: z.coerce.number().min(0),
 });
 
-const currencyFormatter = new Intl.NumberFormat('de-DE');
+const currencyFormatter = new Intl.NumberFormat("de-DE");
 
 const FormattedNumberInput = React.forwardRef<
   HTMLInputElement,
-  Omit<React.ComponentProps<typeof Input>, 'onChange' | 'value'> & {
+  Omit<React.ComponentProps<typeof Input>, "onChange" | "value"> & {
     value: number;
     onChange: (value: number) => void;
   }
 >(({ value, onChange, onBlur, ...props }, ref) => {
-  const [displayValue, setDisplayValue] = React.useState(currencyFormatter.format(value));
+  const [displayValue, setDisplayValue] = React.useState(
+    currencyFormatter.format(value)
+  );
 
   React.useEffect(() => {
     setDisplayValue(currencyFormatter.format(value));
@@ -62,20 +68,20 @@ const FormattedNumberInput = React.forwardRef<
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
-    const numericValue = Number(rawValue.replace(/\./g, '').replace(/,/g, '.'));
-    
+    const numericValue = Number(rawValue.replace(/\./g, "").replace(/,/g, "."));
+
     if (!isNaN(numericValue)) {
       onChange(numericValue);
       setDisplayValue(rawValue);
-    } else if (rawValue === '') {
+    } else if (rawValue === "") {
       onChange(0);
-      setDisplayValue('');
+      setDisplayValue("");
     }
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
-    const numericValue = Number(rawValue.replace(/\./g, '').replace(/,/g, '.'));
+    const numericValue = Number(rawValue.replace(/\./g, "").replace(/,/g, "."));
     if (!isNaN(numericValue)) {
       setDisplayValue(currencyFormatter.format(numericValue));
     } else {
@@ -83,73 +89,118 @@ const FormattedNumberInput = React.forwardRef<
     }
     onBlur?.(e);
   };
-  
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      // Allow only numbers and control keys
-      if (!/[0-9]/.test(e.key) && !['Backspace', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'].includes(e.key)) {
-          e.preventDefault();
-      }
+    // Allow only numbers and control keys
+    if (
+      !/[0-9]/.test(e.key) &&
+      ![
+        "Backspace",
+        "Tab",
+        "Enter",
+        "ArrowLeft",
+        "ArrowRight",
+        "Delete",
+        "Home",
+        "End",
+      ].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
   };
 
-
-  return <Input 
-            ref={ref} 
-            {...props} 
-            value={displayValue} 
-            onChange={handleInputChange} 
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            onFocus={(e) => e.target.select()}
-         />;
+  return (
+    <Input
+      ref={ref}
+      {...props}
+      value={displayValue}
+      onChange={handleInputChange}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      onFocus={(e) => e.target.select()}
+    />
+  );
 });
 FormattedNumberInput.displayName = "FormattedNumberInput";
 
-
 type AddStatementDialogProps = {
-  onSave: (data: Omit<Statement, 'id' | 'created_at' | 'updated_at' | 'created_by'> & { id?: string }) => void;
+  onSave: (
+    data: Omit<Statement, "id" | "created_at" | "updated_at" | "created_by"> & {
+      id?: string;
+    }
+  ) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   statementToEdit?: Statement | null;
 };
 
-export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit }: AddStatementDialogProps) {
+export function AddStatementDialog({
+  onSave,
+  isOpen,
+  setIsOpen,
+  statementToEdit,
+}: AddStatementDialogProps) {
   const isEditMode = !!statementToEdit;
 
   const defaultValues = {
-      loan_id: "",
-      note: "",
-      payment_date: format(new Date(), "yyyy-MM-dd"),
-      principal_amount: 0,
-      interest_amount: 0,
-      management_fee: 0,
-      overdue_fee: 0,
-      settlement_fee: 0,
-      remaining_amount: 0,
-      vat_amount: 0,
-      total_amount: 0,
-  }
+    loan_id: "",
+    note: "",
+    payment_date: format(new Date(), "yyyy-MM-dd"),
+    principal_amount: 0,
+    interest_amount: 0,
+    management_fee: 0,
+    overdue_fee: 0,
+    settlement_fee: 0,
+    remaining_amount: 0,
+    vat_amount: 0,
+    total_amount: 0,
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: isEditMode ? statementToEdit : defaultValues,
   });
-  
+
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      if (type === 'change' && ['principal_amount', 'interest_amount', 'management_fee', 'overdue_fee', 'settlement_fee', 'remaining_amount', 'vat_amount'].includes(name as string)) {
-        const { principal_amount, interest_amount, management_fee, overdue_fee, settlement_fee, remaining_amount, vat_amount } = form.getValues();
-        const total = (principal_amount || 0) + (interest_amount || 0) + (management_fee || 0) + (overdue_fee || 0) + (settlement_fee || 0) + (remaining_amount || 0) + (vat_amount || 0);
-        form.setValue('total_amount', total);
+      if (
+        type === "change" &&
+        [
+          "principal_amount",
+          "interest_amount",
+          "management_fee",
+          "overdue_fee",
+          "settlement_fee",
+          "remaining_amount",
+          "vat_amount",
+        ].includes(name as string)
+      ) {
+        const {
+          principal_amount,
+          interest_amount,
+          management_fee,
+          overdue_fee,
+          settlement_fee,
+          remaining_amount,
+          vat_amount,
+        } = form.getValues();
+        const total =
+          (principal_amount || 0) +
+          (interest_amount || 0) +
+          (management_fee || 0) +
+          (overdue_fee || 0) +
+          (settlement_fee || 0) +
+          (remaining_amount || 0) +
+          (vat_amount || 0);
+        form.setValue("total_amount", total);
       }
     });
     return () => subscription.unsubscribe();
   }, [form]);
 
-
   useEffect(() => {
     form.reset(isEditMode ? { ...statementToEdit } : defaultValues);
   }, [statementToEdit, form, isEditMode]);
-
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onSave({
@@ -167,11 +218,11 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
       id: isEditMode ? statementToEdit.id : undefined,
     });
     if (!isEditMode) {
-        form.reset(defaultValues);
+      form.reset(defaultValues);
     }
     setIsOpen(false);
   }
-  
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       form.reset();
@@ -183,16 +234,20 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Cập nhật sao kê' : 'Thêm sao kê mới'}</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Update statement" : "Add statement"}
+          </DialogTitle>
           <DialogDescription>
-            {isEditMode ? 'Cập nhật chi tiết cho mục sao kê.' : 'Điền chi tiết cho mục sao kê mới.'}
+            {isEditMode
+              ? "Update details for the statement."
+              : "Enter details for the new statement."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form 
-            onSubmit={form.handleSubmit(onSubmit)} 
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+              if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
                 e.preventDefault();
               }
             }}
@@ -203,7 +258,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               name="payment_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Ngày thanh toán</FormLabel>
+                  <FormLabel>Payment Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -215,9 +270,12 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                           )}
                         >
                           {field.value ? (
-                            format(parse(field.value, 'yyyy-MM-dd', new Date()), "dd/MM/yyyy")
+                            format(
+                              parse(field.value, "yyyy-MM-dd", new Date()),
+                              "dd/MM/yyyy"
+                            )
                           ) : (
-                            <span>Chọn ngày</span>
+                            <span>Select date</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -226,8 +284,14 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
-                        onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                        selected={
+                          field.value
+                            ? parse(field.value, "yyyy-MM-dd", new Date())
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                        }
                         initialFocus
                       />
                     </PopoverContent>
@@ -237,12 +301,12 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               )}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <FormField
+              <FormField
                 control={form.control}
                 name="loan_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mã khoản vay</FormLabel>
+                    <FormLabel>Loan ID</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -255,7 +319,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="principal_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Gốc</FormLabel>
+                    <FormLabel>Principal</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -264,13 +328,13 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 )}
               />
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <FormField
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
                 control={form.control}
                 name="interest_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Lãi vay</FormLabel>
+                    <FormLabel>Interest</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -278,12 +342,12 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                   </FormItem>
                 )}
               />
-               <FormField
+              <FormField
                 control={form.control}
                 name="management_fee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phí quản lý</FormLabel>
+                    <FormLabel>Management Fee</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -298,7 +362,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="overdue_fee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phí trễ hạn</FormLabel>
+                    <FormLabel>Overdue Fee</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -311,7 +375,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="settlement_fee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phí tất toán</FormLabel>
+                    <FormLabel>Settlement Fee</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -326,7 +390,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="remaining_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thu dư</FormLabel>
+                    <FormLabel>Remaining Amount</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -339,7 +403,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
                 name="vat_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thuế GTGT</FormLabel>
+                    <FormLabel>VAT Amount</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -353,9 +417,13 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               name="total_amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tổng cộng</FormLabel>
+                  <FormLabel>Total Amount</FormLabel>
                   <FormControl>
-                    <FormattedNumberInput {...field} readOnly className="bg-muted"/>
+                    <FormattedNumberInput
+                      {...field}
+                      readOnly
+                      className="bg-muted"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -366,7 +434,7 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               name="note"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ghi chú</FormLabel>
+                  <FormLabel>Note</FormLabel>
                   <FormControl>
                     <Textarea {...field} />
                   </FormControl>
@@ -375,8 +443,16 @@ export function AddStatementDialog({ onSave, isOpen, setIsOpen, statementToEdit 
               )}
             />
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Hủy</Button>
-              <Button type="button" onClick={form.handleSubmit(onSubmit)}>Lưu</Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="button" onClick={form.handleSubmit(onSubmit)}>
+                Save
+              </Button>
             </DialogFooter>
           </form>
         </Form>
