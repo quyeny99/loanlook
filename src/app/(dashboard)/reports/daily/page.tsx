@@ -371,7 +371,8 @@ export default function ReportsPage() {
       totalRevenue,
       totalCollectedAmount,
       totalGrossRevenue,
-      collectedServiceFees: finalCollectedServiceFees,
+      collectedServiceFees:
+        finalCollectedServiceFees > 0 ? finalCollectedServiceFees : 0,
       totalCollectedPrincipal,
       totalOverdueFees,
       totalSettlementFees,

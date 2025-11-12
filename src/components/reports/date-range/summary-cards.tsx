@@ -165,7 +165,7 @@ export default function SummaryCards({
           </div>
           {isAdmin && (
             <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-              <div className="grid grid-cols-2 items-center gap-2 space-y-1">
+              <div className="grid grid-cols-1 xl:grid-cols-2 items-center gap-2 space-y-1">
                 <p>
                   Collected Fee (excl. VAT):{" "}
                   <span className="font-semibold text-foreground">
@@ -179,7 +179,7 @@ export default function SummaryCards({
                   </span>
                 </p>
               </div>
-              <div className="grid grid-cols-2 items-center gap-2 space-y-1">
+              <div className="grid grid-cols-1 xl:grid-cols-2 items-center gap-2 space-y-1">
                 <p>
                   Collected Principal:{" "}
                   <span className="font-semibold text-foreground">
@@ -196,7 +196,7 @@ export default function SummaryCards({
                   </span>
                 </p>
               </div>
-              <div className="grid grid-cols-2 items-center gap-2 space-y-1">
+              <div className="grid grid-cols-1 xl:grid-cols-2 items-center gap-2 space-y-1">
                 <p>
                   Collected VAT:{" "}
                   <span className="font-semibold text-foreground">
