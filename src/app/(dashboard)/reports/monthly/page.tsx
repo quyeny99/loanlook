@@ -550,6 +550,20 @@ export default function MonthlyReportPage() {
       0
     );
 
+    // Calculate VAT amounts from loan_statements
+    const totalInterestVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.interest_vat || 0),
+      0
+    );
+    const totalManagementFeeVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.management_fee_vat || 0),
+      0
+    );
+    const totalSettlementFeeVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.settlement_fee_vat || 0),
+      0
+    );
+
     const yearlyAdjustments = adjustments.filter((adj) =>
       isSameYear(parseISO(adj.date), new Date(parseInt(year), 0, 1))
     );
@@ -593,6 +607,9 @@ export default function MonthlyReportPage() {
       totalSettlementFees,
       totalRemainingAmount,
       totalVAT,
+      totalInterestVAT,
+      totalManagementFeeVAT,
+      totalSettlementFeeVAT,
       outstandingLoans,
     };
   }, [

@@ -1,5 +1,3 @@
-
-
 export type Loan = {
   id: number;
   beneficiary_account: string;
@@ -224,15 +222,11 @@ export type Application = {
 };
 
 export type InternalEntry = {
-    id: number;
-    amount: number;
-    type: number;
-    date: string;
+  id: number;
+  amount: number;
+  type: number;
+  date: string;
 };
-
-
-
-
 
 export type Statement = {
   id: string;
@@ -245,13 +239,15 @@ export type Statement = {
   settlement_fee: number;
   remaining_amount: number;
   vat_amount: number;
+  interest_vat: number;
+  management_fee_vat: number;
+  settlement_fee_vat: number;
   total_amount: number;
   note: string;
   created_by: string;
   created_at: string;
   updated_at: string;
-}
-
+};
 
 export type Customer = {
   id: number;

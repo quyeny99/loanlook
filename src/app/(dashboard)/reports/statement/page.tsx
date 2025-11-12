@@ -218,6 +218,9 @@ function StatementPageContent() {
             settlement_fee: statement.settlement_fee,
             remaining_amount: statement.remaining_amount,
             vat_amount: statement.vat_amount,
+            interest_vat: statement.interest_vat || 0,
+            management_fee_vat: statement.management_fee_vat || 0,
+            settlement_fee_vat: statement.settlement_fee_vat || 0,
             total_amount: statement.total_amount,
             updated_at: new Date().toISOString(),
           })
@@ -241,6 +244,9 @@ function StatementPageContent() {
           settlement_fee: statement.settlement_fee,
           remaining_amount: statement.remaining_amount,
           vat_amount: statement.vat_amount,
+          interest_vat: statement.interest_vat || 0,
+          management_fee_vat: statement.management_fee_vat || 0,
+          settlement_fee_vat: statement.settlement_fee_vat || 0,
           total_amount: statement.total_amount,
         });
 
@@ -365,6 +371,15 @@ function StatementPageContent() {
                 <TableHead className="text-right" style={{ width: "8%" }}>
                   Remaining Amount
                 </TableHead>
+                <TableHead className="text-right" style={{ width: "7%" }}>
+                  Interest VAT
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "7%" }}>
+                  Management Fee VAT
+                </TableHead>
+                <TableHead className="text-right" style={{ width: "7%" }}>
+                  Settlement Fee VAT
+                </TableHead>
                 <TableHead className="text-right" style={{ width: "8%" }}>
                   VAT Amount
                 </TableHead>
@@ -413,6 +428,15 @@ function StatementPageContent() {
                       <Skeleton className="h-4 w-20 ml-auto" />
                     </TableCell>
                     <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
                       <Skeleton className="h-4 w-24 ml-auto" />
                     </TableCell>
                     <TableCell>
@@ -425,7 +449,7 @@ function StatementPageContent() {
                 ))
               ) : statementData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} className="text-center py-12">
+                  <TableCell colSpan={15} className="text-center py-12">
                     <p className="text-muted-foreground">
                       Không có dữ liệu sao kê
                     </p>
@@ -457,6 +481,19 @@ function StatementPageContent() {
                         </TableCell>
                         <TableCell className="text-right">
                           {currencyFormatter.format(row.remaining_amount)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(row.interest_vat || 0)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(
+                            row.management_fee_vat || 0
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(
+                            row.settlement_fee_vat || 0
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           {currencyFormatter.format(row.vat_amount)}

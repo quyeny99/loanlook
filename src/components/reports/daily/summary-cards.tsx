@@ -31,6 +31,9 @@ type SummaryCardsProps = {
     totalSettlementFees: number;
     totalRemainingAmount: number;
     totalVAT: number;
+    totalInterestVAT: number;
+    totalManagementFeeVAT: number;
+    totalSettlementFeeVAT: number;
     outstandingLoans: number;
   };
   collectedAmount: {
@@ -53,27 +56,10 @@ export default function SummaryCards({
   isAdmin,
   collectedServiceFees,
 }: SummaryCardsProps) {
-  const total_before_vat =
-    reportData.collectedFees +
-    reportData.collectedInterest +
-    reportData.totalSettlementFees;
-
-  const interest_ratio =
-    total_before_vat > 0 ? reportData.collectedInterest / total_before_vat : 0;
-  const management_fee_ratio =
-    total_before_vat > 0 ? reportData.collectedFees / total_before_vat : 0;
-  const settlement_fee_ratio =
-    total_before_vat > 0
-      ? reportData.totalSettlementFees / total_before_vat
-      : 0;
-
-  const collectedInterestVAT = Math.round(reportData.totalVAT * interest_ratio);
-  const collectedFeeVAT = Math.round(
-    reportData.totalVAT * management_fee_ratio
-  );
-  const settlementFeeVAT = Math.round(
-    reportData.totalVAT * settlement_fee_ratio
-  );
+  // Use VAT amounts directly from loan_statements
+  const collectedInterestVAT = reportData.totalInterestVAT || 0;
+  const collectedFeeVAT = reportData.totalManagementFeeVAT || 0;
+  const settlementFeeVAT = reportData.totalSettlementFeeVAT || 0;
 
   const totalServiceFees = collectedServiceFees || 0;
   const serviceFeesExclVAT = Math.floor(totalServiceFees / 1.1);

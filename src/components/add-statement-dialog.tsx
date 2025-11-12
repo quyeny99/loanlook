@@ -46,6 +46,9 @@ const formSchema = z.object({
   settlement_fee: z.coerce.number().min(0),
   remaining_amount: z.coerce.number().min(0),
   vat_amount: z.coerce.number().min(0),
+  interest_vat: z.coerce.number().min(0),
+  management_fee_vat: z.coerce.number().min(0),
+  settlement_fee_vat: z.coerce.number().min(0),
   total_amount: z.coerce.number().min(0),
 });
 
@@ -153,6 +156,9 @@ export function AddStatementDialog({
     settlement_fee: 0,
     remaining_amount: 0,
     vat_amount: 0,
+    interest_vat: 0,
+    management_fee_vat: 0,
+    settlement_fee_vat: 0,
     total_amount: 0,
   };
 
@@ -214,6 +220,9 @@ export function AddStatementDialog({
       settlement_fee: values.settlement_fee,
       remaining_amount: values.remaining_amount,
       vat_amount: values.vat_amount,
+      interest_vat: values.interest_vat,
+      management_fee_vat: values.management_fee_vat,
+      settlement_fee_vat: values.settlement_fee_vat,
       total_amount: values.total_amount,
       id: isEditMode ? statementToEdit.id : undefined,
     });
@@ -400,10 +409,10 @@ export function AddStatementDialog({
               />
               <FormField
                 control={form.control}
-                name="vat_amount"
+                name="settlement_fee_vat"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>VAT Amount</FormLabel>
+                    <FormLabel>VAT Phí Tất Toán (Settlement Fee VAT)</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -412,6 +421,48 @@ export function AddStatementDialog({
                 )}
               />
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="management_fee_vat"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>VAT Phí Quản Lý (Management Fee VAT)</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="interest_vat"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>VAT Lãi (Interest VAT)</FormLabel>
+                    <FormControl>
+                      <FormattedNumberInput {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="vat_amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>VAT Amount</FormLabel>
+                  <FormControl>
+                    <FormattedNumberInput {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="total_amount"

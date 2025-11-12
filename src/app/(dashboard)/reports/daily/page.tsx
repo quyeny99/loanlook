@@ -322,6 +322,20 @@ export default function ReportsPage() {
       0
     );
 
+    // Calculate VAT amounts from loan_statements
+    const totalInterestVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.interest_vat || 0),
+      0
+    );
+    const totalManagementFeeVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.management_fee_vat || 0),
+      0
+    );
+    const totalSettlementFeeVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.settlement_fee_vat || 0),
+      0
+    );
+
     // Adjustments
     const dailyAdjustments = adjustments.filter((adj) =>
       isSameDay(parseISO(adj.date), date)
@@ -378,6 +392,9 @@ export default function ReportsPage() {
       totalSettlementFees,
       totalRemainingAmount,
       totalVAT,
+      totalInterestVAT,
+      totalManagementFeeVAT,
+      totalSettlementFeeVAT,
       outstandingLoans,
     };
   }, [

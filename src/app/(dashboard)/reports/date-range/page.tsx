@@ -528,6 +528,20 @@ export default function DateRangeReportsPage() {
       0
     );
 
+    // Calculate VAT amounts from loan_statements
+    const totalInterestVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.interest_vat || 0),
+      0
+    );
+    const totalManagementFeeVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.management_fee_vat || 0),
+      0
+    );
+    const totalSettlementFeeVAT = loanStatements.reduce(
+      (acc, statement) => acc + (statement.settlement_fee_vat || 0),
+      0
+    );
+
     // Keep the old calculations for potential amounts (still from API)
     const collectedInterest = collectedInterestFromStatements;
     const collectedFees = collectedFeesFromStatements;
@@ -602,6 +616,9 @@ export default function DateRangeReportsPage() {
       totalSettlementFees,
       totalRemainingAmount,
       totalVAT,
+      totalInterestVAT,
+      totalManagementFeeVAT,
+      totalSettlementFeeVAT,
       outstandingLoans,
     };
   }, [
