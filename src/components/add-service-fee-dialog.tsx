@@ -302,12 +302,12 @@ export function AddServiceFeeDialog({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? "Cập nhật phí dịch vụ" : "Thêm phí dịch vụ"}
+            {isEditMode ? "Update service fee" : "Add service fee"}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? "Cập nhật thông tin phí dịch vụ khoản vay."
-              : "Nhập thông tin phí dịch vụ khoản vay mới."}
+              ? "Update service fee information for the loan."
+              : "Enter new service fee information for the loan."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -325,7 +325,7 @@ export function AddServiceFeeDialog({
               name="payment_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Ngày thanh toán</FormLabel>
+                  <FormLabel>Payment Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -351,7 +351,7 @@ export function AddServiceFeeDialog({
                               }
                             })()
                           ) : (
-                            <span>Chọn ngày</span>
+                            <span>Select date</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -381,7 +381,7 @@ export function AddServiceFeeDialog({
               name="loan_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mã khoản vay (Loan ID)</FormLabel>
+                  <FormLabel>Loan ID</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -396,7 +396,7 @@ export function AddServiceFeeDialog({
                 name="appraisal_fee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phí thẩm định (chưa VAT)</FormLabel>
+                    <FormLabel>Appraisal Fee (excl. VAT)</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -409,7 +409,7 @@ export function AddServiceFeeDialog({
                 name="appraisal_fee_vat"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>VAT phí thẩm định</FormLabel>
+                    <FormLabel>Appraisal Fee VAT</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -425,7 +425,7 @@ export function AddServiceFeeDialog({
                 name="disbursement_fee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phí giải ngân (chưa VAT)</FormLabel>
+                    <FormLabel>Disbursement Fee (excl. VAT)</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -438,7 +438,7 @@ export function AddServiceFeeDialog({
                 name="disbursement_fee_vat"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>VAT phí giải ngân</FormLabel>
+                    <FormLabel>Disbursement Fee VAT</FormLabel>
                     <FormControl>
                       <FormattedNumberInput {...field} />
                     </FormControl>
@@ -453,7 +453,7 @@ export function AddServiceFeeDialog({
               name="vat_amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tổng VAT</FormLabel>
+                  <FormLabel>Total VAT</FormLabel>
                   <FormControl>
                     <FormattedNumberInput
                       {...field}
@@ -471,7 +471,7 @@ export function AddServiceFeeDialog({
               name="total_amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tổng phí (có VAT)</FormLabel>
+                  <FormLabel>Total Fee (incl. VAT)</FormLabel>
                   <FormControl>
                     <FormattedNumberInput
                       {...field}
@@ -489,7 +489,7 @@ export function AddServiceFeeDialog({
               name="note"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ghi chú</FormLabel>
+                  <FormLabel>Note</FormLabel>
                   <FormControl>
                     <Textarea {...field} />
                   </FormControl>
@@ -503,10 +503,10 @@ export function AddServiceFeeDialog({
                 variant="ghost"
                 onClick={() => setIsOpen(false)}
               >
-                Hủy
+                Cancel
               </Button>
               <Button type="button" onClick={form.handleSubmit(onSubmit)}>
-                Lưu
+                Save
               </Button>
             </DialogFooter>
           </form>

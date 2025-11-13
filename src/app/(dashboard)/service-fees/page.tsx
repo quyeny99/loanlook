@@ -303,21 +303,18 @@ function ServiceFeesPageContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground">Phí dịch vụ</span>
-      </div>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Phí dịch vụ khoản vay</CardTitle>
+              <CardTitle>Service Fees</CardTitle>
               <CardDescription>
-                Quản lý phí thẩm định và phí giải ngân cho các khoản vay.
+                Manage appraisal and disbursement fees for loans.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Tìm kiếm theo mã khoản vay hoặc ghi chú..."
+                placeholder="Search by loan ID or note..."
                 value={searchInput}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 className="w-[250px]"
@@ -325,7 +322,7 @@ function ServiceFeesPageContent() {
               {isAdmin && (
                 <Button onClick={openAddDialog}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Thêm phí dịch vụ
+                  Add service fee
                 </Button>
               )}
               <Button variant="outline" size="icon" onClick={handleReload}>
@@ -338,28 +335,27 @@ function ServiceFeesPageContent() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead style={{ width: "8%" }}>Mã khoản vay</TableHead>
-                <TableHead style={{ width: "8%" }}>Ngày thanh toán</TableHead>
+                <TableHead style={{ width: "8%" }}>Loan ID</TableHead>
+                <TableHead style={{ width: "8%" }}>Payment Date</TableHead>
                 <TableHead className="text-right" style={{ width: "8%" }}>
-                  Phí thẩm định
+                  Appraisal Fee
                 </TableHead>
                 <TableHead className="text-right" style={{ width: "8%" }}>
-                  VAT thẩm định
+                  Appraisal Fee VAT
                 </TableHead>
                 <TableHead className="text-right" style={{ width: "8%" }}>
-                  Phí giải ngân
+                  Disbursement Fee
                 </TableHead>
                 <TableHead className="text-right" style={{ width: "8%" }}>
-                  VAT giải ngân
+                  Disbursement Fee VAT
                 </TableHead>
                 <TableHead className="text-right" style={{ width: "8%" }}>
-                  Tổng VAT
+                  Total VAT
                 </TableHead>
                 <TableHead className="text-right" style={{ width: "8%" }}>
-                  Tổng phí
+                  Total Fee
                 </TableHead>
-                <TableHead style={{ width: "12%" }}>Ghi chú</TableHead>
-                <TableHead style={{ width: "8%" }}>Ngày tạo</TableHead>
+                <TableHead style={{ width: "12%" }}>Notes</TableHead>
                 {isAdmin && (
                   <TableHead
                     className="text-right"
@@ -400,9 +396,6 @@ function ServiceFeesPageContent() {
                     <TableCell>
                       <Skeleton className="h-4 w-32" />
                     </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-24" />
-                    </TableCell>
                     {isAdmin && (
                       <TableCell className="text-right">
                         <Skeleton className="h-8 w-8 ml-auto" />
@@ -417,7 +410,7 @@ function ServiceFeesPageContent() {
                     className="text-center py-12"
                   >
                     <p className="text-muted-foreground">
-                      Không có dữ liệu phí dịch vụ
+                      No service fees data
                     </p>
                   </TableCell>
                 </TableRow>
@@ -457,9 +450,7 @@ function ServiceFeesPageContent() {
                             {row.note}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {dateFormatter.format(new Date(row.created_at))}
-                        </TableCell>
+
                         {isAdmin && (
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -473,14 +464,14 @@ function ServiceFeesPageContent() {
                                   onClick={() => openEditDialog(row)}
                                 >
                                   <Pencil className="mr-2 h-4 w-4" />
-                                  Sửa
+                                  Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-red-500"
                                   onClick={() => openDeleteDialog(row)}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
-                                  Xóa
+                                  Delete
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
