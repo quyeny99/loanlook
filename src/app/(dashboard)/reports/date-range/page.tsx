@@ -118,6 +118,7 @@ export default function DateRangeReportsPage() {
             loanapp__dbm_entry__date__lte: formattedToDate,
           })
         );
+
         const creationFilter = encodeURIComponent(
           JSON.stringify({
             create_time__date__gte: formattedFromDate,
