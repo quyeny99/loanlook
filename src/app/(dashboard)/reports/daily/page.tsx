@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, subDays, parseISO, isSameDay } from "date-fns";
-import { type Application, type Statement } from "@/lib/data";
+import {
+  type Application,
+  type Statement,
+  type LoanServiceFee,
+} from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ChevronRight } from "lucide-react";
 import SummaryCards from "@/components/reports/daily/summary-cards";
@@ -37,13 +41,13 @@ export default function ReportsPage() {
     Application[]
   >([]);
   const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
+  const [loanServiceFees, setLoanServiceFees] = useState<LoanServiceFee[]>([]);
   const [outstandingLoans, setOutstandingLoans] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({
     total: 0,
     count: 0,
   });
-  const [collectedServiceFees, setCollectedServiceFees] = useState(0);
 
   const fetchData = useCallback(
     async (selectedDate: Date) => {
@@ -58,16 +62,9 @@ export default function ReportsPage() {
         const disbursementDateFilter = encodeURIComponent(
           JSON.stringify({ loanapp__dbm_entry__date: formattedDate })
         );
-        const serviceFeesFilter = encodeURIComponent(
-          JSON.stringify({
-            account__code: "HOAC03VND",
-            date: formattedDate,
-          })
-        );
 
         const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
         const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
-        const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${serviceFeesFilter}&login=${loginId}`;
 
         // Fetch outstanding loans from loans disbursed on the selected date
         const outstandingLoansFilter = encodeURIComponent(
@@ -84,23 +81,28 @@ export default function ReportsPage() {
           .select("*")
           .eq("payment_date", formattedDate);
 
+        // Fetch loan service fees from Supabase
+        const serviceFeesQuery = supabase
+          .from("loan_service_fees")
+          .select("*")
+          .eq("payment_date", formattedDate);
+
         const [
           createdResponse,
           disbursedResponse,
-          serviceFeesResponse,
           outstandingLoansResponse,
           collectedAmountData,
+          serviceFeesData,
         ] = await Promise.all([
           fetch(createdUrl),
           fetch(disbursedUrl),
-          fetch(serviceFeesUrl),
           fetch(outstandingLoansUrl),
           supabaseQuery,
+          serviceFeesQuery,
         ]);
 
         const createdData = await createdResponse.json();
         const disbursedData = await disbursedResponse.json();
-        const serviceFeesData = await serviceFeesResponse.json();
         const outstandingLoansData = await outstandingLoansResponse.json();
 
         setCreatedApplications(createdData.rows || []);
@@ -131,18 +133,20 @@ export default function ReportsPage() {
           setCollectedAmount({ total: totalCollected, count: collectedCount });
         }
 
-        const totalServiceFees = (serviceFeesData.rows || []).reduce(
-          (acc: number, entry: { amount: number; type: number }) => {
-            if (entry.type === 1) {
-              return acc + entry.amount;
-            } else if (entry.type === 2) {
-              return acc - entry.amount;
-            }
-            return acc;
-          },
-          0
-        );
-        setCollectedServiceFees(totalServiceFees);
+        // Fetch and set loan service fees from Supabase
+        const { data: serviceFeesDataResult, error: serviceFeesError } =
+          serviceFeesData;
+
+        if (serviceFeesError) {
+          console.error(
+            "Error fetching loan service fees from Supabase:",
+            serviceFeesError
+          );
+          setLoanServiceFees([]);
+        } else {
+          const serviceFees = (serviceFeesDataResult || []) as LoanServiceFee[];
+          setLoanServiceFees(serviceFees);
+        }
 
         // Calculate total outstanding amount from outstanding loans
         const totalOutstanding = (outstandingLoansData.rows || []).reduce(
@@ -161,9 +165,9 @@ export default function ReportsPage() {
         setCreatedApplications([]);
         setDisbursedApplications([]);
         setLoanStatements([]);
+        setLoanServiceFees([]);
         setOutstandingLoans(0);
         setCollectedAmount({ total: 0, count: 0 });
-        setCollectedServiceFees(0);
       } finally {
         setLoading(false);
       }
@@ -353,15 +357,35 @@ export default function ReportsPage() {
         return sum;
       }, 0);
 
-    const totalAdjustmentServiceFee = dailyAdjustments
-      .filter((adj) => adj.type === "service_fee")
-      .reduce((sum, adj) => sum + adj.amount, 0);
+    // Calculate collected service fees from loan_service_fees table
+    const collectedServiceFeesFromTable = loanServiceFees.reduce(
+      (acc: number, fee: LoanServiceFee) => {
+        return acc + (fee.total_amount || 0);
+      },
+      0
+    );
+
+    // Calculate VAT amount from loan_service_fees
+    const collectedServiceFeesVAT = loanServiceFees.reduce(
+      (acc: number, fee: LoanServiceFee) => {
+        return acc + (fee.vat_amount || 0);
+      },
+      0
+    );
+
+    // Calculate service fees excluding VAT
+    const collectedServiceFeesExclVAT = loanServiceFees.reduce(
+      (acc: number, fee: LoanServiceFee) => {
+        return acc + (fee.appraisal_fee || 0) + (fee.disbursement_fee || 0);
+      },
+      0
+    );
 
     const finalLoanAmount = loanAmount + totalAdjustmentDisbursement;
     const finalDisbursedCount =
       disbursedApps.length + countAdjustmentDisbursement;
-    const finalCollectedServiceFees =
-      collectedServiceFees + totalAdjustmentServiceFee;
+    // Use service fees from Supabase table only, no adjustments
+    const finalCollectedServiceFees = collectedServiceFeesFromTable;
 
     const totalRevenue = collectedFees + collectedInterest;
     const totalCollectedAmount = collectedAmount.total;
@@ -385,8 +409,9 @@ export default function ReportsPage() {
       totalRevenue,
       totalCollectedAmount,
       totalGrossRevenue,
-      collectedServiceFees:
-        finalCollectedServiceFees > 0 ? finalCollectedServiceFees : 0,
+      collectedServiceFees: finalCollectedServiceFees,
+      collectedServiceFeesVAT: collectedServiceFeesVAT,
+      collectedServiceFeesExclVAT: collectedServiceFeesExclVAT,
       totalCollectedPrincipal,
       totalOverdueFees,
       totalSettlementFees,
@@ -401,8 +426,8 @@ export default function ReportsPage() {
     createdApplications,
     disbursedApplications,
     loanStatements,
+    loanServiceFees,
     date,
-    collectedServiceFees,
     collectedAmount,
     outstandingLoans,
   ]);

@@ -1,6 +1,15 @@
 "use client";
 
-import { LogOut, BarChart2, FileText, TimerIcon, Ban } from "lucide-react";
+import {
+  LogOut,
+  BarChart2,
+  FileText,
+  TimerIcon,
+  Ban,
+  Receipt,
+  ReceiptCentIcon,
+  CircleDollarSignIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
+import { hasRole } from "@/lib/utils";
 
 export default function Header() {
   const router = useRouter();
@@ -31,11 +41,13 @@ export default function Header() {
     router.refresh();
   };
 
+  console.log(currentUser);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex flex-row items-center justify-between border-b bg-background p-4">
       <div className="flex items-center gap-4">
         <Link
-          href={currentUser?.role === "cs" ? "/blacklist" : "/"}
+          href={hasRole(currentUser?.role || "", ["cs"]) ? "/blacklist" : "/"}
           className="flex items-center gap-2"
         >
           <Image
@@ -47,7 +59,7 @@ export default function Header() {
           />
           <span className="text-3xl font-bold font-headline">Loan</span>
         </Link>
-        {currentUser?.role && currentUser.role !== "cs" && (
+        {currentUser?.role && hasRole(currentUser.role, ["admin", "user"]) && (
           <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -80,6 +92,13 @@ export default function Header() {
             >
               <FileText className="h-4 w-4" />
               Statement
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => router.push("/service-fees")}
+            >
+              <CircleDollarSignIcon className="h-4 w-4" />
+              Service Fees
             </Button>
             <Button variant="ghost" onClick={() => router.push("/overdue")}>
               <TimerIcon className="h-4 w-4" />

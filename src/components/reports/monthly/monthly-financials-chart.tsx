@@ -1,8 +1,16 @@
+"use client";
 
-'use client';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 type MonthlyFinancialsChartProps = {
   data: {
@@ -13,28 +21,39 @@ type MonthlyFinancialsChartProps = {
     totalRevenue: number;
     totalGrossRevenue: number;
     totalCollectedAmount: number;
+    collectedInterestVAT: number;
+    collectedFeesVAT: number;
+    collectedSettlementFeeVAT: number;
   }[];
 };
 
-const compactFormatter = (value: number) => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(value);
+const compactFormatter = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    compactDisplay: "short",
+  }).format(value);
 
 const currencyFormatter = (value: number, name: string) => {
-  const formattedValue = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(value) + ' ₫';
-  if (name === 'totalRevenue') {
-    return [formattedValue, 'Total Revenue ( Fees & Interest )'];
+  const formattedValue =
+    new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 }).format(value) +
+    " ₫";
+  if (name === "totalRevenue") {
+    return [formattedValue, "Total Revenue ( Fees & Interest )"];
   }
-  if (name === 'Total Collected Amount') {
-    return [formattedValue, 'Total Collected Amount'];
+  if (name === "Total Collected Amount") {
+    return [formattedValue, "Total Collected Amount"];
   }
   return formattedValue;
 };
 
-
-export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartProps) {
+export default function MonthlyFinancialsChart({
+  data,
+}: MonthlyFinancialsChartProps) {
   const chartData = data.map((d) => ({
     ...d,
-    collectedFees: Math.ceil((d.collectedFees || 0) * 1.1),
-    collectedInterest: Math.ceil((d.collectedInterest || 0) * 1.1),
+    collectedFees: d.collectedFees + d.collectedFeesVAT,
+    collectedInterest: d.collectedInterest + d.collectedInterestVAT,
+    totalRevenue: d.totalRevenue + d.collectedFeesVAT + d.collectedInterestVAT,
   }));
   return (
     <Card>
@@ -57,23 +76,37 @@ export default function MonthlyFinancialsChart({ data }: MonthlyFinancialsChartP
             <YAxis tickFormatter={compactFormatter} fontSize={12} />
             <Tooltip
               formatter={currencyFormatter}
-              cursor={{ fill: 'hsl(var(--muted))' }}
+              cursor={{ fill: "hsl(var(--muted))" }}
               contentStyle={{
-                backgroundColor: 'hsl(var(--background))',
-                borderColor: 'hsl(var(--border))',
+                backgroundColor: "hsl(var(--background))",
+                borderColor: "hsl(var(--border))",
               }}
             />
-            <Legend wrapperStyle={{fontSize: '12px'}} iconSize={10} />
-            <Bar dataKey="totalCollectedAmount" name="Total Collected Amount" fill="#a855f7" />
-            <Bar dataKey="collectedServiceFees" name="Collected Service Fees" fill="#22d3ee" />
+            <Legend wrapperStyle={{ fontSize: "12px" }} iconSize={10} />
+            <Bar
+              dataKey="totalCollectedAmount"
+              name="Total Collected Amount"
+              fill="#a855f7"
+            />
+            <Bar
+              dataKey="collectedServiceFees"
+              name="Collected Service Fees"
+              fill="#22d3ee"
+            />
             <Bar dataKey="collectedFees" name="Collected Fees" fill="#8b5cf6" />
-            <Bar dataKey="collectedInterest" name="Collected Interest" fill="#14b8a6" />
-            <Bar dataKey="totalRevenue" name="Total Revenue ( Fees & Interest )" fill="#f97316" />
+            <Bar
+              dataKey="collectedInterest"
+              name="Collected Interest"
+              fill="#14b8a6"
+            />
+            <Bar
+              dataKey="totalRevenue"
+              name="Total Revenue ( Fees & Interest )"
+              fill="#f97316"
+            />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-
-    

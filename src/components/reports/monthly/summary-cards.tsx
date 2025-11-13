@@ -27,6 +27,8 @@ type SummaryCardsProps = {
         totalManagementFeeVAT: number;
         totalSettlementFeeVAT: number;
         outstandingLoans: number;
+        totalCollectedServiceFeesVAT: number;
+        totalCollectedServiceFeesExclVAT: number;
     }
     year: string;
     setYear: (year: string) => void;
@@ -48,8 +50,9 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
     const settlementFeeVAT = reportData.totalSettlementFeeVAT || 0;
 
     const totalServiceFees = reportData.totalCollectedServiceFees || 0;
-    const serviceFeesExclVAT = Math.floor(totalServiceFees / 1.1);
-    const vatOnServiceFees = totalServiceFees - serviceFeesExclVAT;
+    // Use actual values from loan_service_fees table
+    const serviceFeesExclVAT = reportData.totalCollectedServiceFeesExclVAT || 0;
+    const vatOnServiceFees = reportData.totalCollectedServiceFeesVAT || 0;
 
     const collectedFeeExcl = reportData.totalCollectedFees || 0;
     const collectedFeeGross = reportData.totalCollectedFees + collectedFeeVAT;

@@ -45,12 +45,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const id = localStorage.getItem("userId");
     setLoginId(id);
 
+    console.log({ id });
+
     const userInfoString = localStorage.getItem("userInfo");
     if (userInfoString) {
       try {
         const userInfo = JSON.parse(userInfoString);
+        setCurrentUser(userInfo);
         if (userInfo && userInfo.is_admin) {
-          setCurrentUser(userInfo);
           setIsAdmin(true);
         }
       } catch (error) {

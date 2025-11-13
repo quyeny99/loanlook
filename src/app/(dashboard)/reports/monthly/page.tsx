@@ -5,8 +5,8 @@ import { RefreshCw, ChevronRight } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   type Application,
-  type InternalEntry,
   type Statement,
+  type LoanServiceFee,
 } from "@/lib/data";
 import {
   getMonth,
@@ -98,13 +98,6 @@ type LoanSchedule = {
   }[];
 };
 
-type CollectedAmountEntry = {
-  id: number;
-  amount: number;
-  type: number;
-  date: string;
-};
-
 export default function MonthlyReportPage() {
   const { loginId, isAdmin } = useAuth();
   const currentYear = new Date().getFullYear();
@@ -122,13 +115,8 @@ export default function MonthlyReportPage() {
   const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<
     LoanSchedule[]
   >([]);
-  const [collectedAmounts, setCollectedAmounts] = useState<
-    CollectedAmountEntry[]
-  >([]);
-  const [serviceFeeEntries, setServiceFeeEntries] = useState<InternalEntry[]>(
-    []
-  );
   const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
+  const [loanServiceFees, setLoanServiceFees] = useState<LoanServiceFee[]>([]);
   const [overdueLoansCount, setOverdueLoansCount] = useState<number>(0);
   const [outstandingLoans, setOutstandingLoans] = useState<number>(0);
   const [loading, setLoading] = useState(false);
@@ -207,19 +195,17 @@ export default function MonthlyReportPage() {
         );
         const outstandingLoansUrl = `https://api.y99.vn/data/Loan/?sort=-id&login=${loginId}&values=id,outstanding,code&filter=${outstandingLoansFilter}`;
 
-        const serviceFeesFilter = encodeURIComponent(
-          JSON.stringify({
-            account__code: "HOAC03VND",
-            date__gte: fromDate,
-            date__lte: toDate,
-          })
-        );
-        const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type,date&filter=${serviceFeesFilter}&page=-1&login=${loginId}`;
-
         // Fetch loan_statements from Supabase
         const supabase = createClient();
         const supabaseQuery = supabase
           .from("loan_statements")
+          .select("*")
+          .gte("payment_date", fromDate)
+          .lte("payment_date", toDate);
+
+        // Fetch loan service fees from Supabase
+        const serviceFeesQuery = supabase
+          .from("loan_service_fees")
           .select("*")
           .gte("payment_date", fromDate)
           .lte("payment_date", toDate);
@@ -231,8 +217,8 @@ export default function MonthlyReportPage() {
           overdueDebtResponse,
           overdueLoansResponse,
           outstandingLoansResponse,
-          serviceFeesResponse,
           collectedAmountData,
+          serviceFeesData,
         ] = await Promise.all([
           fetch(appUrl),
           fetch(loanScheduleInterestUrl),
@@ -240,8 +226,8 @@ export default function MonthlyReportPage() {
           fetch(overdueDebtUrl),
           fetch(overdueLoansUrl),
           fetch(outstandingLoansUrl),
-          fetch(serviceFeesUrl),
           supabaseQuery,
+          serviceFeesQuery,
         ]);
 
         const appData = await appResponse.json();
@@ -250,7 +236,21 @@ export default function MonthlyReportPage() {
         const overdueDebtData = await overdueDebtResponse.json();
         const overdueLoansData = await overdueLoansResponse.json();
         const outstandingLoansData = await outstandingLoansResponse.json();
-        const serviceFeesData = await serviceFeesResponse.json();
+
+        // Fetch and set loan service fees from Supabase
+        const { data: serviceFeesDataResult, error: serviceFeesError } =
+          serviceFeesData;
+
+        if (serviceFeesError) {
+          console.error(
+            "Error fetching loan service fees from Supabase:",
+            serviceFeesError
+          );
+          setLoanServiceFees([]);
+        } else {
+          const serviceFees = (serviceFeesDataResult || []) as LoanServiceFee[];
+          setLoanServiceFees(serviceFees);
+        }
 
         // Parse Supabase loan_statements data
         const { data: statementsData, error: statementsError } =
@@ -262,19 +262,9 @@ export default function MonthlyReportPage() {
             statementsError
           );
           setLoanStatements([]);
-          setCollectedAmounts([]);
         } else {
           const statements = (statementsData || []) as Statement[];
           setLoanStatements(statements);
-
-          // Convert to old format for compatibility
-          const convertedEntries = statements.map((statement) => ({
-            id: parseInt(statement.id.split("-")[0]) || 0,
-            amount: statement.total_amount,
-            type: 1,
-            date: statement.payment_date,
-          }));
-          setCollectedAmounts(convertedEntries);
         }
 
         setApplications(appData.rows || []);
@@ -282,7 +272,6 @@ export default function MonthlyReportPage() {
         setFeeSchedules(feeScheduleData.rows || []);
         setOverdueDebtSchedules(overdueDebtData.rows || []);
         setOverdueLoansCount(overdueLoansData.total_rows || 0);
-        setServiceFeeEntries(serviceFeesData.rows || []);
 
         // Calculate total outstanding amount from outstanding loans
         const totalOutstanding = (outstandingLoansData.rows || []).reduce(
@@ -302,9 +291,8 @@ export default function MonthlyReportPage() {
         setInterestSchedules([]);
         setFeeSchedules([]);
         setOverdueDebtSchedules([]);
-        setCollectedAmounts([]);
-        setServiceFeeEntries([]);
         setLoanStatements([]);
+        setLoanServiceFees([]);
         setOverdueLoansCount(0);
         setOutstandingLoans(0);
       } finally {
@@ -339,42 +327,101 @@ export default function MonthlyReportPage() {
       });
 
       // Calculate collected interest and fees from Supabase loan_statements
-      const collectedInterestForMonth = loanStatements
-        .filter((statement) => {
-          const paymentTime = parseISO(statement.payment_date);
-          return isSameMonth(paymentTime, monthDate);
-        })
-        .reduce((acc, statement) => acc + (statement.interest_amount || 0), 0);
+      // Filter statements by payment_date in the current month
+      const targetYear = parseInt(year);
+      const targetMonth = month; // month is 0-indexed (0-11)
 
-      const collectedFeesForMonth = loanStatements
-        .filter((statement) => {
-          const paymentTime = parseISO(statement.payment_date);
-          return isSameMonth(paymentTime, monthDate);
-        })
-        .reduce((acc, statement) => acc + (statement.management_fee || 0), 0);
+      const statementsForMonth = loanStatements.filter((statement) => {
+        if (!statement.payment_date) return false;
+        try {
+          // Parse payment_date - handle both "YYYY-MM-DD" and "YYYY-MM-DDTHH:mm:ss" formats
+          const paymentDate = parseISO(statement.payment_date);
+          // Check if the payment date's year and month match the target
+          return (
+            paymentDate.getFullYear() === targetYear &&
+            paymentDate.getMonth() === targetMonth
+          );
+        } catch {
+          // Fallback: try string comparison if parseISO fails
+          const targetYearMonth = `${year}-${String(month + 1).padStart(
+            2,
+            "0"
+          )}`;
+          const paymentDateStr = statement.payment_date.substring(0, 7);
+          return paymentDateStr === targetYearMonth;
+        }
+      });
 
-      const collectedAmountsForMonth = collectedAmounts.filter(
-        (entry) => entry.date && isSameMonth(parseISO(entry.date), monthDate)
-      );
-
-      const collectedAmountForMonth = collectedAmountsForMonth.reduce(
-        (acc, entry) => {
-          if (entry.type === 1) return acc + entry.amount;
-          if (entry.type === 2) return acc - entry.amount;
-          return acc;
-        },
+      // Calculate collected interest from loan_statements
+      const collectedInterestForMonth = statementsForMonth.reduce(
+        (acc, statement) => acc + (statement.interest_amount || 0),
         0
       );
 
-      const serviceFeesForMonth = serviceFeeEntries
-        .filter(
-          (entry) => entry.date && isSameMonth(parseISO(entry.date), monthDate)
-        )
-        .reduce((acc, entry) => {
-          if (entry.type === 1) return acc + entry.amount;
-          if (entry.type === 2) return acc - entry.amount;
-          return acc;
-        }, 0);
+      // Calculate collected fees (management fee) from loan_statements
+      const collectedFeesForMonth = statementsForMonth.reduce(
+        (acc, statement) => acc + (statement.management_fee || 0),
+        0
+      );
+
+      // Calculate collected amount from loan_statements (total_amount)
+      const collectedAmountForMonth = statementsForMonth.reduce(
+        (acc, statement) => acc + (Number(statement.total_amount) || 0),
+        0
+      );
+
+      const collectedInterestVATForMonth = statementsForMonth.reduce(
+        (acc, statement) => acc + (statement.interest_vat || 0),
+        0
+      );
+      const collectedFeesVATForMonth = statementsForMonth.reduce(
+        (acc, statement) => acc + (statement.management_fee_vat || 0),
+        0
+      );
+
+      const collectedSettlementFeeVATForMonth = statementsForMonth.reduce(
+        (acc, statement) => acc + (statement.settlement_fee_vat || 0),
+        0
+      );
+
+      // Calculate collected service fees from loan_service_fees table
+      // Filter service fees by payment_date in the current month
+      const serviceFeesForMonth = loanServiceFees.filter((fee) => {
+        if (!fee.payment_date) return false;
+        try {
+          const paymentDate = parseISO(fee.payment_date);
+          return (
+            paymentDate.getFullYear() === targetYear &&
+            paymentDate.getMonth() === targetMonth
+          );
+        } catch {
+          // Fallback: try string comparison if parseISO fails
+          const targetYearMonth = `${year}-${String(month + 1).padStart(
+            2,
+            "0"
+          )}`;
+          const paymentDateStr = fee.payment_date.substring(0, 7);
+          return paymentDateStr === targetYearMonth;
+        }
+      });
+
+      const serviceFeesForMonthFromTable = serviceFeesForMonth.reduce(
+        (acc, fee) => acc + (fee.total_amount || 0),
+        0
+      );
+
+      // Calculate VAT amount from loan_service_fees for this month
+      const serviceFeesVATForMonth = serviceFeesForMonth.reduce(
+        (acc, fee) => acc + (fee.vat_amount || 0),
+        0
+      );
+
+      // Calculate service fees excluding VAT for this month
+      const serviceFeesExclVATForMonth = serviceFeesForMonth.reduce(
+        (acc, fee) =>
+          acc + (fee.appraisal_fee || 0) + (fee.disbursement_fee || 0),
+        0
+      );
 
       // Adjustments
       const monthlyAdjustments = adjustments.filter((adj) =>
@@ -393,10 +440,6 @@ export default function MonthlyReportPage() {
           return sum;
         }, 0);
 
-      const totalAdjustmentServiceFee = monthlyAdjustments
-        .filter((adj) => adj.type === "service_fee")
-        .reduce((sum, adj) => sum + adj.amount, 0);
-
       const totalDisbursedCount =
         disbursedMonthApps.length + countAdjustmentDisbursement;
       const totalLoanAmount =
@@ -406,8 +449,8 @@ export default function MonthlyReportPage() {
         ) + totalAdjustmentDisbursement;
       const finalCollectedFees = collectedFeesForMonth;
       const finalCollectedInterest = collectedInterestForMonth;
-      const finalCollectedServiceFees =
-        serviceFeesForMonth + totalAdjustmentServiceFee;
+      // Use service fees from Supabase table only, no adjustments
+      const finalCollectedServiceFees = serviceFeesForMonthFromTable;
 
       const totalRevenue = finalCollectedFees + finalCollectedInterest;
       const totalGrossRevenueForMonth =
@@ -436,11 +479,16 @@ export default function MonthlyReportPage() {
         Website: monthApps.filter((a) => a.source__name === "Website").length,
         collectedFees: finalCollectedFees,
         collectedInterest: finalCollectedInterest,
+        collectedInterestVAT: collectedInterestVATForMonth,
+        collectedFeesVAT: collectedFeesVATForMonth,
+        collectedSettlementFeeVAT: collectedSettlementFeeVATForMonth,
         overdueDebt,
         collectedServiceFees: finalCollectedServiceFees,
+        collectedServiceFeesVAT: serviceFeesVATForMonth,
+        collectedServiceFeesExclVAT: serviceFeesExclVATForMonth,
         totalRevenue,
         totalCollectedAmount: collectedAmountForMonth,
-        totalCollectedCount: collectedAmountsForMonth.length,
+        totalCollectedCount: statementsForMonth.length,
         totalGrossRevenue: totalGrossRevenueForMonth,
       };
     });
@@ -512,6 +560,14 @@ export default function MonthlyReportPage() {
 
     const totalCollectedServiceFees = monthlyData.reduce(
       (acc, month) => acc + month.collectedServiceFees,
+      0
+    );
+    const totalCollectedServiceFeesVAT = monthlyData.reduce(
+      (acc, month) => acc + (month.collectedServiceFeesVAT || 0),
+      0
+    );
+    const totalCollectedServiceFeesExclVAT = monthlyData.reduce(
+      (acc, month) => acc + (month.collectedServiceFeesExclVAT || 0),
       0
     );
     const totalRevenue = monthlyData.reduce(
@@ -598,6 +654,8 @@ export default function MonthlyReportPage() {
       totalOverdueDebt,
       totalOverdueDebtCount,
       totalCollectedServiceFees,
+      totalCollectedServiceFeesVAT,
+      totalCollectedServiceFeesExclVAT,
       totalRevenue,
       totalGrossRevenue,
       totalCollectedAmount,
@@ -619,9 +677,8 @@ export default function MonthlyReportPage() {
     year,
     overdueDebtSchedules,
     overdueLoansCount,
-    collectedAmounts,
-    serviceFeeEntries,
     loanStatements,
+    loanServiceFees,
     outstandingLoans,
   ]);
 

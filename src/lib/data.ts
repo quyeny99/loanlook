@@ -286,4 +286,20 @@ export type BlacklistedCustomer = {
   updated_at: string;
 };
 
+export type LoanServiceFee = {
+  id: string;
+  loan_id: string;
+  payment_date: string;
+  appraisal_fee: number;
+  appraisal_fee_vat: number;
+  disbursement_fee: number;
+  disbursement_fee_vat: number;
+  vat_amount: number;
+  total_amount: number;
+  note: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export const loansData: Loan[] = [];

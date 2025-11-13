@@ -20,8 +20,8 @@ import LoanTypeChart from "@/components/reports/daily/loan-type-chart";
 import SourceChart from "@/components/reports/date-range/source-chart";
 import {
   type Application,
-  type InternalEntry,
   type Statement,
+  type LoanServiceFee,
 } from "@/lib/data";
 import { useAuth } from "@/context/AuthContext";
 import { adjustments } from "@/lib/constants";
@@ -93,10 +93,8 @@ export default function DateRangeReportsPage() {
   const [overdueDebtSchedules, setOverdueDebtSchedules] = useState<
     LoanSchedule[]
   >([]);
-  const [serviceFeeEntries, setServiceFeeEntries] = useState<InternalEntry[]>(
-    []
-  );
   const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
+  const [loanServiceFees, setLoanServiceFees] = useState<LoanServiceFee[]>([]);
   const [overdueLoansCount, setOverdueLoansCount] = useState<number>(0);
   const [outstandingLoans, setOutstandingLoans] = useState<number>(0);
   const [loading, setLoading] = useState(false);
@@ -127,14 +125,6 @@ export default function DateRangeReportsPage() {
           })
         );
 
-        const serviceFeesFilter = encodeURIComponent(
-          JSON.stringify({
-            account__code: "HOAC03VND",
-            date__gte: formattedFromDate,
-            date__lte: formattedToDate,
-          })
-        );
-
         const overdueDebtFilter = encodeURIComponent(
           JSON.stringify({
             to_date__gte: "2025-08-01",
@@ -145,7 +135,6 @@ export default function DateRangeReportsPage() {
 
         const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
         const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
-        const serviceFeesUrl = `https://api.y99.vn/data/Internal_Entry/?sort=-id&values=id,amount,type&filter=${serviceFeesFilter}&login=${loginId}`;
 
         const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(
           ","
@@ -200,31 +189,37 @@ export default function DateRangeReportsPage() {
           .gte("payment_date", formattedFromDate)
           .lte("payment_date", formattedToDate);
 
+        // Fetch loan service fees from Supabase
+        const serviceFeesQuery = supabase
+          .from("loan_service_fees")
+          .select("*")
+          .gte("payment_date", formattedFromDate)
+          .lte("payment_date", formattedToDate);
+
         const [
           disbursedResponse,
           createdResponse,
-          serviceFeesResponse,
           interestScheduleResponse,
           feeScheduleResponse,
           overdueDebtResponse,
           overdueLoansResponse,
           outstandingLoansResponse,
           collectedAmountData,
+          serviceFeesData,
         ] = await Promise.all([
           fetch(disbursedUrl),
           fetch(createdUrl),
-          fetch(serviceFeesUrl),
           fetch(loanScheduleInterestUrl),
           fetch(loanScheduleFeesUrl),
           fetch(overdueDebtUrl),
           fetch(overdueLoansUrl),
           fetch(outstandingLoansUrl),
           supabaseQuery,
+          serviceFeesQuery,
         ]);
 
         const disbursedData = await disbursedResponse.json();
         const createdData = await createdResponse.json();
-        const serviceFeesData = await serviceFeesResponse.json();
         const interestScheduleData = await interestScheduleResponse.json();
         const feeScheduleData = await feeScheduleResponse.json();
         const overdueDebtData = await overdueDebtResponse.json();
@@ -234,7 +229,6 @@ export default function DateRangeReportsPage() {
         setInterestSchedules(interestScheduleData.rows || []);
         setFeeSchedules(feeScheduleData.rows || []);
         setOverdueDebtSchedules(overdueDebtData.rows || []);
-        setServiceFeeEntries(serviceFeesData.rows || []);
         setOverdueLoansCount(overdueLoansData.total_rows || 0);
 
         setDisbursedApplications(disbursedData.rows || []);
@@ -266,7 +260,6 @@ export default function DateRangeReportsPage() {
           setLoanStatements([]);
         } else {
           const statements = (statementsData || []) as Statement[];
-          console.log(statements);
           const totalCollected = statements.reduce(
             (acc: number, statement: Statement) => {
               return acc + (statement.total_amount || 0);
@@ -277,6 +270,21 @@ export default function DateRangeReportsPage() {
           setCollectedAmount({ total: totalCollected, count: collectedCount });
           setLoanStatements(statements);
         }
+
+        // Fetch and set loan service fees from Supabase
+        const { data: serviceFeesDataResult, error: serviceFeesError } =
+          serviceFeesData;
+
+        if (serviceFeesError) {
+          console.error(
+            "Error fetching loan service fees from Supabase:",
+            serviceFeesError
+          );
+          setLoanServiceFees([]);
+        } else {
+          const serviceFees = (serviceFeesDataResult || []) as LoanServiceFee[];
+          setLoanServiceFees(serviceFees);
+        }
       } catch (error) {
         console.error("Failed to fetch applications", error);
         setDisbursedApplications([]);
@@ -284,8 +292,8 @@ export default function DateRangeReportsPage() {
         setInterestSchedules([]);
         setFeeSchedules([]);
         setOverdueDebtSchedules([]);
-        setServiceFeeEntries([]);
         setLoanStatements([]);
+        setLoanServiceFees([]);
         setOverdueLoansCount(0);
         setOutstandingLoans(0);
         setCollectedAmount({ total: 0, count: 0 });
@@ -457,43 +465,6 @@ export default function DateRangeReportsPage() {
       0
     );
 
-    const filteredServiceFees =
-      fromDate && toDate
-        ? adjustments.filter((adj) => {
-            if (adj.type !== "service_fee") return false;
-            const adjDate = parseISO(adj.date);
-            return isWithinInterval(adjDate, {
-              start: startDate,
-              end: endDate,
-            });
-          })
-        : [];
-
-    const totalAdjustmentServiceFee = filteredServiceFees.reduce(
-      (sum, adj) => sum + adj.amount,
-      0
-    );
-
-    const totalAdjustmentPotentialFee = adjustments.reduce((sum, adj) => {
-      if (
-        adj.type === "potential_fee" &&
-        isWithinInterval(parseISO(adj.date), { start: startDate, end: endDate })
-      ) {
-        return sum + adj.amount;
-      }
-      return sum;
-    }, 0);
-
-    const totalAdjustmentPotentialInterest = adjustments.reduce((sum, adj) => {
-      if (
-        adj.type === "potential_interest" &&
-        isWithinInterval(parseISO(adj.date), { start: startDate, end: endDate })
-      ) {
-        return sum + adj.amount;
-      }
-      return sum;
-    }, 0);
-
     // End Adjustments calculator
 
     // Calculate collected interest and fees from Supabase loan_statements
@@ -564,17 +535,32 @@ export default function DateRangeReportsPage() {
     }, 0);
     const overdueDebtCount = overdueLoansCount;
 
-    const collectedServiceFees = serviceFeeEntries.reduce(
-      (acc: number, entry: InternalEntry) => {
-        if (entry.type === 1) {
-          return acc + entry.amount;
-        } else if (entry.type === 2) {
-          return acc - entry.amount;
-        }
-        return acc;
+    // Calculate collected service fees from loan_service_fees table
+    const collectedServiceFeesFromTable = loanServiceFees.reduce(
+      (acc: number, fee: LoanServiceFee) => {
+        return acc + (fee.total_amount || 0);
       },
       0
     );
+
+    // Calculate VAT amount from loan_service_fees (sum of vat_amount)
+    const collectedServiceFeesVAT = loanServiceFees.reduce(
+      (acc: number, fee: LoanServiceFee) => {
+        return acc + (fee.vat_amount || 0);
+      },
+      0
+    );
+
+    // Calculate service fees excluding VAT (sum of fees without VAT)
+    const collectedServiceFeesExclVAT = loanServiceFees.reduce(
+      (acc: number, fee: LoanServiceFee) => {
+        return acc + (fee.appraisal_fee || 0) + (fee.disbursement_fee || 0);
+      },
+      0
+    );
+
+    // Use loan_service_fees as primary source
+    const collectedServiceFees = collectedServiceFeesFromTable;
 
     const estimatedProfit = [...interestSchedules, ...feeSchedules].reduce(
       (sum, s) => sum + s.pay_amount,
@@ -602,15 +588,17 @@ export default function DateRangeReportsPage() {
       typeData,
       sourceData,
       collectedFees: collectedFees,
-      potentialFees: potentialFees + totalAdjustmentPotentialFee,
+      potentialFees: potentialFees,
       collectedInterest: collectedInterest,
-      potentialInterest: potentialInterest + totalAdjustmentPotentialInterest,
+      potentialInterest: potentialInterest,
       overdueDebt,
       overdueDebtCount,
       estimatedProfit,
       totalCollectedAmount,
       totalGrossRevenue,
-      collectedServiceFees: collectedServiceFees + totalAdjustmentServiceFee,
+      collectedServiceFees: collectedServiceFees,
+      collectedServiceFeesVAT: collectedServiceFeesVAT,
+      collectedServiceFeesExclVAT: collectedServiceFeesExclVAT,
       totalCollectedPrincipal,
       totalOverdueFees,
       totalSettlementFees,
@@ -630,9 +618,9 @@ export default function DateRangeReportsPage() {
     toDate,
     overdueDebtSchedules,
     overdueLoansCount,
-    serviceFeeEntries,
     collectedAmount,
     loanStatements,
+    loanServiceFees,
     outstandingLoans,
   ]);
 
