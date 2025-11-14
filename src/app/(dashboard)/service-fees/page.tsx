@@ -41,15 +41,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { type LoanServiceFee } from "@/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const currencyFormatter = new Intl.NumberFormat("de-DE", {});
-const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-});
+
 const paymentDateFormatter = new Intl.DateTimeFormat("vi-VN", {
   year: "numeric",
   month: "2-digit",
@@ -71,7 +66,8 @@ function ServiceFeesPageContent() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [searchInput, setSearchInput] = useState("");
-  const { isAdmin } = useAuth();
+  const { isAdmin, loginId } = useAuth();
+  const { toast } = useToast();
   // Get current page and search from URL params
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchTerm = searchParams.get("search") || "";
@@ -207,6 +203,15 @@ function ServiceFeesPageContent() {
       const supabase = createClient();
       const params = new URLSearchParams(searchParams.toString());
 
+      if (!loginId) {
+        toast({
+          title: "Error",
+          description: "Please log in to save the service fee.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (serviceFee.id) {
         // Update existing service fee
         const { error } = await supabase
@@ -242,6 +247,7 @@ function ServiceFeesPageContent() {
           disbursement_fee_vat: serviceFee.disbursement_fee_vat,
           vat_amount: serviceFee.vat_amount,
           total_amount: serviceFee.total_amount,
+          created_by: loginId,
         });
 
         if (error) {

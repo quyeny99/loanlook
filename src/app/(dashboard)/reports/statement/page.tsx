@@ -42,6 +42,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { type Statement } from "@/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const currencyFormatter = new Intl.NumberFormat("de-DE", {});
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
@@ -67,7 +68,8 @@ function StatementPageContent() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [searchInput, setSearchInput] = useState("");
-  const { isAdmin } = useAuth();
+  const { isAdmin, loginId } = useAuth();
+  const { toast } = useToast();
   // Get current page and search from URL params
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchTerm = searchParams.get("search") || "";
@@ -203,6 +205,15 @@ function StatementPageContent() {
       const supabase = createClient();
       const params = new URLSearchParams(searchParams.toString());
 
+      if (!loginId) {
+        toast({
+          title: "Error",
+          description: "Please log in to save the statement.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (statement.id) {
         // Update existing statement
         const { error } = await supabase
@@ -247,6 +258,7 @@ function StatementPageContent() {
           interest_vat: statement.interest_vat || 0,
           management_fee_vat: statement.management_fee_vat || 0,
           settlement_fee_vat: statement.settlement_fee_vat || 0,
+          created_by: loginId,
           total_amount: statement.total_amount,
         });
 
