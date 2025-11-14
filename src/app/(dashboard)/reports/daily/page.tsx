@@ -18,6 +18,7 @@ import SourceChart from "@/components/reports/daily/source-chart";
 import { useAuth } from "@/context/AuthContext";
 import { adjustments } from "@/lib/constants";
 import { createClient } from "@/utils/supabase/client";
+import { applyDisbursementAdjustments } from "@/lib/adjustments";
 
 const COLORS = [
   "#3b82f6",
@@ -30,6 +31,9 @@ const COLORS = [
 const API_BASE_URL = "https://api.y99.vn/data/Application/";
 const API_VALUES =
   "id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date";
+
+const API_VALUES_DISBURSED =
+  "id,payment_status__code,loanapp__disbursement,loanapp__dbm_entry__date,approve_amount,approve_term,code,commission,country,country__name,country__en,legal_type__name,province,product__type__en,source__name,legal_type__code";
 
 export default function ReportsPage() {
   const { loginId, isAdmin } = useAuth();
@@ -64,7 +68,7 @@ export default function ReportsPage() {
         );
 
         const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
-        const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
+        const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES_DISBURSED}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
 
         // Fetch outstanding loans from loans disbursed on the selected date
         const outstandingLoansFilter = encodeURIComponent(
@@ -191,9 +195,22 @@ export default function ReportsPage() {
       (app) => app.status === 4
     ).length;
 
-    const disbursedApps = disbursedApplications.filter(
-      (app) => app.status === 7
+    // Start Adjustments calculator - Apply adjustments to disbursedApplications
+    // Filter adjustments for disbursement type on the selected date
+    const filteredAdjustmentsDisbursement = adjustments.filter((adj) => {
+      if (adj.type !== "disbursement") return false;
+      return isSameDay(parseISO(adj.date), date);
+    });
+
+    // Apply adjustments to disbursed applications
+    // All applications from API (filtered by loanapp__dbm_entry__date) already have status = 7
+    // Virtual applications are also created with status = 7
+    const adjustedDisbursedApplications = applyDisbursementAdjustments(
+      disbursedApplications,
+      filteredAdjustmentsDisbursement
     );
+
+    const disbursedApps = adjustedDisbursedApplications;
     const loanAmount = disbursedApps.reduce(
       (acc, app) => acc + (app.loanapp__disbursement || 0),
       0
@@ -212,18 +229,18 @@ export default function ReportsPage() {
     ).length;
 
     const paperData = [
-      { name: "Căn cước công dân", value: 0, fill: "#3b82f6" },
-      { name: "Hộ chiếu", value: 0, fill: "#a855f7" },
+      { name: "Căn cước công dân", code: "CCCD", value: 0, fill: "#3b82f6" },
+      { name: "Hộ chiếu", code: "HC", value: 0, fill: "#a855f7" },
     ];
-    disbursedApplications.forEach((app) => {
-      const name = app.legal_type__name || "Unknown";
-      const existing = paperData.find((item) => item.name === name);
+    adjustedDisbursedApplications.forEach((app) => {
+      const code = app.legal_type__code || "Unknown";
+      const existing = paperData.find((item) => item.code === code);
       if (existing) {
         existing.value += 1;
       }
     });
 
-    const regionData = disbursedApplications
+    const regionData = adjustedDisbursedApplications
       .reduce((acc, app) => {
         const name = app.province || "Unknown";
         const existing = acc.find((item) => item.name === name);
@@ -267,7 +284,9 @@ export default function ReportsPage() {
       },
     ];
 
-    const typeData = disbursedApplications
+    console.log("adjustedDisbursedApplications", adjustedDisbursedApplications);
+
+    const typeData = adjustedDisbursedApplications
       .reduce((acc, app) => {
         const name = app.product__type__en || "Unknown";
         const existing = acc.find((item) => item.name === name);
@@ -340,22 +359,7 @@ export default function ReportsPage() {
       0
     );
 
-    // Adjustments
-    const dailyAdjustments = adjustments.filter((adj) =>
-      isSameDay(parseISO(adj.date), date)
-    );
-
-    const totalAdjustmentDisbursement = dailyAdjustments
-      .filter((adj) => adj.type === "disbursement")
-      .reduce((sum, adj) => sum + adj.amount, 0);
-
-    const countAdjustmentDisbursement = dailyAdjustments
-      .filter((adj) => adj.type === "disbursement")
-      .reduce((sum, adj) => {
-        if (adj.amount > 0) sum += 1;
-        else if (adj.amount < 0) sum -= 1;
-        return sum;
-      }, 0);
+    // End Adjustments calculator
 
     // Calculate collected service fees from loan_service_fees table
     const collectedServiceFeesFromTable = loanServiceFees.reduce(
@@ -381,9 +385,6 @@ export default function ReportsPage() {
       0
     );
 
-    const finalLoanAmount = loanAmount + totalAdjustmentDisbursement;
-    const finalDisbursedCount =
-      disbursedApps.length + countAdjustmentDisbursement;
     // Use service fees from Supabase table only, no adjustments
     const finalCollectedServiceFees = collectedServiceFeesFromTable;
 
@@ -394,8 +395,8 @@ export default function ReportsPage() {
     return {
       totalApplications,
       totalRejected,
-      loanAmount: finalLoanAmount > 0 ? finalLoanAmount : 0,
-      disbursedCount: finalDisbursedCount > 0 ? finalDisbursedCount : 0,
+      loanAmount: loanAmount > 0 ? loanAmount : 0,
+      disbursedCount: disbursedApps.length,
       totalCommission,
       averageLoanTerm: Math.round(averageLoanTerm),
       paperData,

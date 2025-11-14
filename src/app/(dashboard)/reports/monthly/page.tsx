@@ -25,6 +25,7 @@ import MonthlyFinancialsChart from "@/components/reports/monthly/monthly-financi
 import { useAuth } from "@/context/AuthContext";
 import { adjustments } from "@/lib/constants";
 import { createClient } from "@/utils/supabase/client";
+import { applyDisbursementAdjustments } from "@/lib/adjustments";
 
 const COLORS = [
   "#0088FE",
@@ -318,6 +319,14 @@ export default function MonthlyReportPage() {
         (app) =>
           app.create_time && getMonth(new Date(app.create_time)) === month
       );
+      // Start Adjustments calculator - Apply adjustments to disbursedMonthApps
+      // Filter adjustments for disbursement type in the current month
+      const filteredAdjustmentsDisbursement = adjustments.filter((adj) => {
+        if (adj.type !== "disbursement") return false;
+        return isSameMonth(parseISO(adj.date), monthDate);
+      });
+
+      // Get all disbursed apps for this month
       const disbursedMonthApps = applications.filter((app) => {
         return (
           app.status === 7 &&
@@ -325,6 +334,19 @@ export default function MonthlyReportPage() {
           isSameMonth(parseISO(app.loanapp__dbm_entry__date), monthDate)
         );
       });
+
+      // Apply adjustments to disbursed applications
+      const adjustedDisbursedMonthApps = applyDisbursementAdjustments(
+        disbursedMonthApps,
+        filteredAdjustmentsDisbursement
+      );
+
+      const totalDisbursedCount = adjustedDisbursedMonthApps.length;
+      const totalLoanAmount = adjustedDisbursedMonthApps.reduce(
+        (acc, app) => acc + (app.loanapp__disbursement || 0),
+        0
+      );
+      // End Adjustments calculator
 
       // Calculate collected interest and fees from Supabase loan_statements
       // Filter statements by payment_date in the current month
@@ -422,31 +444,6 @@ export default function MonthlyReportPage() {
           acc + (fee.appraisal_fee || 0) + (fee.disbursement_fee || 0),
         0
       );
-
-      // Adjustments
-      const monthlyAdjustments = adjustments.filter((adj) =>
-        isSameMonth(parseISO(adj.date), monthDate)
-      );
-
-      const totalAdjustmentDisbursement = monthlyAdjustments
-        .filter((adj) => adj.type === "disbursement")
-        .reduce((sum, adj) => sum + adj.amount, 0);
-
-      const countAdjustmentDisbursement = monthlyAdjustments
-        .filter((adj) => adj.type === "disbursement")
-        .reduce((sum, adj) => {
-          if (adj.amount > 0) sum += 1;
-          else if (adj.amount < 0) sum -= 1;
-          return sum;
-        }, 0);
-
-      const totalDisbursedCount =
-        disbursedMonthApps.length + countAdjustmentDisbursement;
-      const totalLoanAmount =
-        disbursedMonthApps.reduce(
-          (acc, app) => acc + (app.loanapp__disbursement || 0),
-          0
-        ) + totalAdjustmentDisbursement;
       const finalCollectedFees = collectedFeesForMonth;
       const finalCollectedInterest = collectedInterestForMonth;
       // Use service fees from Supabase table only, no adjustments
@@ -472,7 +469,7 @@ export default function MonthlyReportPage() {
         "4. Rejected": monthApps.filter((a) => a.status === 4).length,
         "5. Approved": monthApps.filter((a) => a.status === 5).length,
         "6. Contract signed": monthApps.filter((a) => a.status === 6).length,
-        "7. Disbursed": totalDisbursedCount > 0 ? totalDisbursedCount : 0,
+        "7. Disbursed": totalDisbursedCount,
         "Loan Amount": totalLoanAmount > 0 ? totalLoanAmount : 0,
         Apps: monthApps.filter((a) => a.source__name === "Apps").length,
         CTV: monthApps.filter((a) => a.source__name === "CTV").length,
@@ -493,18 +490,32 @@ export default function MonthlyReportPage() {
       };
     });
 
+    // Start Adjustments calculator for yearly totals - Apply adjustments to all disbursed apps
+    const yearlyAdjustments = adjustments.filter((adj) => {
+      if (adj.type !== "disbursement") return false;
+      return isSameYear(parseISO(adj.date), new Date(parseInt(year), 0, 1));
+    });
+
+    // Get all disbursed apps for the year
     const disbursedApps = applications.filter((app) => app.status === 7);
-    const totalLoans = disbursedApps.length;
-    const totalLoanAmount = disbursedApps.reduce(
+
+    // Apply adjustments to disbursed applications
+    const adjustedDisbursedApps = applyDisbursementAdjustments(
+      disbursedApps,
+      yearlyAdjustments
+    );
+
+    const totalLoans = adjustedDisbursedApps.length;
+    const totalLoanAmount = adjustedDisbursedApps.reduce(
       (acc, app) => acc + (app.loanapp__disbursement || 0),
       0
     );
-    const totalCommission = disbursedApps.reduce(
+    const totalCommission = adjustedDisbursedApps.reduce(
       (acc, app) => acc + (app.commission || 0),
       0
     );
 
-    const allLoanRegions = disbursedApps
+    const allLoanRegions = adjustedDisbursedApps
       .reduce((acc, app) => {
         const name = app.province || "Unknown";
         const existing = acc.find((item) => item.name === name);
@@ -531,7 +542,7 @@ export default function MonthlyReportPage() {
       fill: COLORS[index % COLORS.length],
     }));
 
-    const loanTypeData = disbursedApps.reduce((acc, app) => {
+    const loanTypeData = adjustedDisbursedApps.reduce((acc, app) => {
       const name = app.product__type__en || "Unknown";
       const existing = acc.find((item) => item.name === name);
       if (existing) {
@@ -541,6 +552,7 @@ export default function MonthlyReportPage() {
       }
       return acc;
     }, [] as { name: string; value: number; fill: string }[]);
+    // End Adjustments calculator
 
     const totalCollectedFees = monthlyData.reduce(
       (acc, month) => acc + month.collectedFees,
@@ -620,31 +632,9 @@ export default function MonthlyReportPage() {
       0
     );
 
-    const yearlyAdjustments = adjustments.filter((adj) =>
-      isSameYear(parseISO(adj.date), new Date(parseInt(year), 0, 1))
-    );
-
-    const totalYearlyAdjustmentDisbursement = yearlyAdjustments
-      .filter((adj) => adj.type === "disbursement")
-      .reduce((sum, adj) => sum + adj.amount, 0);
-
-    const countYearlyAdjustmentDisbursement = yearlyAdjustments
-      .filter((adj) => adj.type === "disbursement")
-      .reduce((sum, adj) => {
-        if (adj.amount > 0) sum += 1;
-        else if (adj.amount < 0) sum -= 1;
-        return sum;
-      }, 0);
-
     return {
-      totalLoans:
-        totalLoans + countYearlyAdjustmentDisbursement > 0
-          ? totalLoans + countYearlyAdjustmentDisbursement
-          : 0,
-      totalLoanAmount:
-        totalLoanAmount + totalYearlyAdjustmentDisbursement > 0
-          ? totalLoanAmount + totalYearlyAdjustmentDisbursement
-          : 0,
+      totalLoans: totalLoans,
+      totalLoanAmount: totalLoanAmount > 0 ? totalLoanAmount : 0,
       totalCommission,
       monthlyData,
       loanRegionsData: loanRegionsDataWithColors,

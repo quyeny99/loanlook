@@ -26,6 +26,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { adjustments } from "@/lib/constants";
 import { createClient } from "@/utils/supabase/client";
+import { applyDisbursementAdjustments } from "@/lib/adjustments";
 
 const COLORS = [
   "#3b82f6",
@@ -56,6 +57,9 @@ const LOAN_SCHEDULE_API_VALUES = [
   "pay_amount",
   "detail",
 ];
+
+const API_VALUES_DISBURSED =
+  "id,payment_status__code,loanapp__disbursement,loanapp__dbm_entry__date,approve_amount,approve_term,code,commission,country,country__name,country__en,legal_type__name,province,product__type__en,source__name,legal_type__code";
 
 type LoanSchedule = {
   id: number;
@@ -134,7 +138,7 @@ export default function DateRangeReportsPage() {
           })
         );
 
-        const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
+        const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES_DISBURSED}&filter=${disbursementFilter}&page=-1&login=${loginId}`;
         const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${creationFilter}&page=-1&login=${loginId}`;
 
         const loanScheduleInterestUrl = `https://api.y99.vn/data/Loan_Schedule/?login=${loginId}&sort=to_date,-type&values=${LOAN_SCHEDULE_API_VALUES.join(
@@ -313,9 +317,33 @@ export default function DateRangeReportsPage() {
 
   const reportData = useMemo(() => {
     const totalApplications = createdApplications.length;
-    const disbursedApps = disbursedApplications.filter(
-      (app) => app.status === 7
+
+    // Start Adjustments calculator - Apply adjustments to disbursedApplications
+    const startDate = fromDate ? startOfDay(fromDate) : parseISO("2025-08-01");
+    const endDate = toDate ? endOfDay(toDate) : parseISO("2025-08-01");
+
+    // Filter adjustments for disbursement type within date range
+    const filteredAdjustmentsDisbursement =
+      fromDate && toDate
+        ? adjustments.filter((adj) => {
+            if (adj.type !== "disbursement") return false;
+            const adjDate = parseISO(adj.date);
+            return isWithinInterval(adjDate, {
+              start: startDate,
+              end: endDate,
+            });
+          })
+        : [];
+
+    // Apply adjustments to disbursed applications
+    const adjustedDisbursedApplications = applyDisbursementAdjustments(
+      disbursedApplications,
+      filteredAdjustmentsDisbursement
     );
+
+    // Filter to only disbursed apps (status === 7)
+    const disbursedApps = adjustedDisbursedApplications;
+
     const totalLoanAmount = disbursedApps.reduce(
       (acc, app) => acc + (app.loanapp__disbursement || 0),
       0
@@ -335,18 +363,18 @@ export default function DateRangeReportsPage() {
         : 0;
 
     const paperData = [
-      { name: "Căn cước công dân", value: 0, fill: "#3b82f6" },
-      { name: "Hộ chiếu", value: 0, fill: "#a855f7" },
+      { name: "Căn cước công dân", code: "CCCD", value: 0, fill: "#3b82f6" },
+      { name: "Hộ chiếu", code: "HC", value: 0, fill: "#a855f7" },
     ];
-    disbursedApplications.forEach((app) => {
-      const name = app.legal_type__name || "Unknown";
-      const existing = paperData.find((item) => item.name === name);
+    adjustedDisbursedApplications.forEach((app) => {
+      const code = app.legal_type__code || "Unknown";
+      const existing = paperData.find((item) => item.code === code);
       if (existing) {
         existing.value += 1;
       }
     });
 
-    const allLoanRegions = disbursedApplications
+    const allLoanRegions = adjustedDisbursedApplications
       .reduce((acc, app) => {
         const name = app.province || "Unknown";
         const existing = acc.find((item) => item.name === name);
@@ -411,7 +439,7 @@ export default function DateRangeReportsPage() {
       },
     ];
 
-    const typeData = disbursedApplications.reduce((acc, app) => {
+    const typeData = adjustedDisbursedApplications.reduce((acc, app) => {
       const name = app.product__type__en || "Unknown";
       const existing = acc.find((item) => item.name === name);
       if (existing) {
@@ -434,37 +462,6 @@ export default function DateRangeReportsPage() {
         source["Total applications"] += 1;
       }
     });
-
-    const startDate = fromDate ? startOfDay(fromDate) : parseISO("2025-08-01");
-    const endDate = toDate ? endOfDay(toDate) : parseISO("2025-08-01");
-
-    // Start Adjustments calculator
-
-    const filteredAdjustmentsDisbursement =
-      fromDate && toDate
-        ? adjustments.filter((adj) => {
-            if (adj.type !== "disbursement") return false;
-            const adjDate = parseISO(adj.date);
-            return isWithinInterval(adjDate, {
-              start: startDate,
-              end: endDate,
-            });
-          })
-        : [];
-
-    const totalAdjustmentDisbursement = filteredAdjustmentsDisbursement.reduce(
-      (sum, adj) => sum + adj.amount,
-      0
-    );
-
-    const countAdjustmentDisbursement = filteredAdjustmentsDisbursement.reduce(
-      (sum, adj) => {
-        if (adj.amount > 0) sum += 1;
-        else if (adj.amount < 0) sum -= 1;
-        return sum;
-      },
-      0
-    );
 
     // End Adjustments calculator
 
@@ -568,19 +565,15 @@ export default function DateRangeReportsPage() {
       0
     );
 
+    console.log("adjustedDisbursedApplications", adjustedDisbursedApplications);
+
     const totalCollectedAmount = collectedAmount.total;
     const totalGrossRevenue = totalCollectedAmount + collectedServiceFees;
 
     return {
       totalApplications,
-      disbursedCount:
-        disbursedApps.length + countAdjustmentDisbursement > 0
-          ? disbursedApps.length + countAdjustmentDisbursement
-          : 0,
-      totalLoanAmount:
-        totalLoanAmount + totalAdjustmentDisbursement < 0
-          ? 0
-          : totalLoanAmount + totalAdjustmentDisbursement,
+      disbursedCount: disbursedApps.length,
+      totalLoanAmount: totalLoanAmount < 0 ? 0 : totalLoanAmount,
       totalCommission,
       averageLoanTerm: averageLoanTerm,
       paperData,
