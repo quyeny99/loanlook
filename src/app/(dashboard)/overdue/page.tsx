@@ -22,8 +22,8 @@ import { useAuth } from "@/context/AuthContext";
 
 const tabDescriptions = {
   all: "Displays all loans that are due today or already overdue.",
-  active: "Displays loans that are due for payment today.",
-  late: "Displays loans that are overdue by less than 7 days.",
+  active: "Displays loans that are overdue between 1 and 3 days.",
+  late: "Displays loans that are overdue between 4 and 6 days.",
   warning: "Displays loans that are overdue between 7 and 14 days.",
   critical: "Displays loans that are overdue by more than 14 days.",
 };
