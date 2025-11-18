@@ -7,7 +7,7 @@ import {
   type Application,
   type Statement,
   type LoanServiceFee,
-} from "@/lib/data";
+} from "@/lib/types";
 import {
   getMonth,
   isSameMonth,
@@ -23,7 +23,7 @@ import MonthlyLoanAmountChart from "@/components/reports/monthly/monthly-loan-am
 import MonthlySourceChart from "@/components/reports/monthly/monthly-source-chart";
 import MonthlyFinancialsChart from "@/components/reports/monthly/monthly-financials-chart";
 import { useAuth } from "@/context/AuthContext";
-import { adjustments } from "@/lib/constants";
+import { adjustments } from "@/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { applyDisbursementAdjustments } from "@/lib/adjustments";
 

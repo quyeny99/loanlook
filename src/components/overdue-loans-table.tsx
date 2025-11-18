@@ -14,15 +14,29 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { Loan } from "@/lib/data";
+import type { Loan, OverdueLoanStatus } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
 import { LoanPagination } from "@/components/loan-pagination";
+import { createClient } from "@/utils/supabase/client";
+import {
+  OVERDUE_CUSTOM_STATUS,
+  OVERDUE_CUSTOM_STATUS_LABELS_EN,
+  OVERDUE_CUSTOM_STATUS_COLORS,
+  type OverdueCustomStatus,
+} from "@/lib/constants";
 
 type OverdueStatus = "all" | "active" | "late" | "warning" | "critical";
 
@@ -38,6 +52,10 @@ function getRowColorByDueDays(dueDays: number | null | undefined): string {
   return "";
 }
 
+type LoanWithCustomStatus = Loan & {
+  custom_status?: string | null;
+};
+
 export function OverdueLoansTable({
   tab = "all",
   refreshToken = 0,
@@ -47,8 +65,14 @@ export function OverdueLoansTable({
   refreshToken?: number;
   onLoadingChange?: (loading: boolean) => void;
 }) {
-  const [loans, setLoans] = React.useState<Loan[]>([]);
+  const [loans, setLoans] = React.useState<LoanWithCustomStatus[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [updatingStatus, setUpdatingStatus] = React.useState<Set<string>>(
+    new Set()
+  );
+  const [statusMap, setStatusMap] = React.useState<
+    Map<string, OverdueLoanStatus>
+  >(new Map());
   const { loginId } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -117,11 +141,16 @@ export function OverdueLoansTable({
         })
       );
 
-      console.log({ filter });
-
       const url = `https://api.y99.vn/data/Loan/?values=${values}&sort=-id&login=${userId}&filter=${filter}`;
 
-      const response = await fetch(url);
+      // Fetch loans and overdue_loan_status in parallel
+      const supabase = createClient();
+      const overdueStatusQuery = supabase
+        .from("overdue_loan_status")
+        .select("*");
+
+      const [response, { data: overdueStatusData, error: overdueStatusError }] =
+        await Promise.all([fetch(url), overdueStatusQuery]);
 
       if (!response.ok) {
         console.error("API Error:", response.status);
@@ -139,7 +168,69 @@ export function OverdueLoansTable({
 
       const overdueLoans = data.rows || [];
 
-      setLoans(overdueLoans);
+      // Handle Supabase error
+      if (overdueStatusError) {
+        console.error(
+          "Error fetching overdue loan status:",
+          overdueStatusError
+        );
+      }
+
+      // Create a map of loan_id -> OverdueLoanStatus
+      const newStatusMap = new Map<string, OverdueLoanStatus>();
+      if (overdueStatusData) {
+        (overdueStatusData as OverdueLoanStatus[]).forEach((status) => {
+          newStatusMap.set(status.loan_id, status);
+        });
+      }
+
+      // Get list of current loan codes
+      const currentLoanCodes = new Set(
+        overdueLoans.map((loan: Loan) => loan.code)
+      );
+
+      // Find status records that no longer exist in current loans
+      // Compare with all records from Supabase, not just statusMap
+      const statusesToDelete: string[] = [];
+      if (overdueStatusData) {
+        (overdueStatusData as OverdueLoanStatus[]).forEach((status) => {
+          if (!currentLoanCodes.has(status.loan_id)) {
+            statusesToDelete.push(status.loan_id);
+          }
+        });
+      }
+
+      // Delete status records for loans that are no longer overdue
+      if (statusesToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from("overdue_loan_status")
+          .delete()
+          .in("loan_id", statusesToDelete);
+
+        if (deleteError) {
+          console.error(
+            "Error deleting overdue loan status records:",
+            deleteError
+          );
+        } else {
+          // Remove deleted records from newStatusMap
+          statusesToDelete.forEach((loanId) => {
+            newStatusMap.delete(loanId);
+          });
+        }
+      }
+
+      setStatusMap(newStatusMap);
+
+      // Merge custom_status into loans based on loan.code = loan_id
+      const loansWithStatus: LoanWithCustomStatus[] = overdueLoans.map(
+        (loan: Loan) => ({
+          ...loan,
+          custom_status: newStatusMap.get(loan.code)?.custom_status || null,
+        })
+      );
+
+      setLoans(loansWithStatus);
     } catch (error) {
       console.error("Failed to fetch overdue loans:", error);
       if (error instanceof Error) {
@@ -169,6 +260,87 @@ export function OverdueLoansTable({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  const handleStatusChange = async (
+    loanCode: string,
+    newStatus: OverdueCustomStatus
+  ) => {
+    setUpdatingStatus((prev) => new Set(prev).add(loanCode));
+    try {
+      const supabase = createClient();
+      const existingStatus = statusMap.get(loanCode);
+
+      if (existingStatus) {
+        // Update existing record
+        const { error } = await supabase
+          .from("overdue_loan_status")
+          .update({
+            custom_status: newStatus,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("loan_id", loanCode);
+
+        if (error) {
+          console.error("Error updating overdue loan status:", error);
+          throw error;
+        }
+
+        // Update local state
+        const updatedStatus: OverdueLoanStatus = {
+          ...existingStatus,
+          custom_status: newStatus,
+          updated_at: new Date().toISOString(),
+        };
+        setStatusMap((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(loanCode, updatedStatus);
+          return newMap;
+        });
+      } else {
+        // Create new record
+        const newStatusRecord = {
+          loan_id: loanCode,
+          custom_status: newStatus,
+        };
+
+        const { data, error } = await supabase
+          .from("overdue_loan_status")
+          .insert(newStatusRecord)
+          .select()
+          .single();
+
+        if (error) {
+          console.error("Error creating overdue loan status:", error);
+          throw error;
+        }
+
+        // Update local state
+        if (data) {
+          setStatusMap((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(loanCode, data as OverdueLoanStatus);
+            return newMap;
+          });
+        }
+      }
+
+      // Update loans state
+      setLoans((prev) =>
+        prev.map((loan) =>
+          loan.code === loanCode ? { ...loan, custom_status: newStatus } : loan
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      // Optionally show toast notification here
+    } finally {
+      setUpdatingStatus((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(loanCode);
+        return newSet;
+      });
+    }
+  };
 
   const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "decimal",
@@ -203,7 +375,7 @@ export function OverdueLoansTable({
     },
     { label: "Due Amount", style: { width: "120px" }, className: "text-right" },
     { label: "Due Date", style: { width: "120px" } },
-    { label: "Status", style: { width: "120px" } },
+    { label: "Status", style: { width: "150px" } },
   ];
 
   const totalRows = loans.length;
@@ -282,23 +454,86 @@ export function OverdueLoansTable({
                     )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <Badge
-                      variant={"default"}
-                      className={cn({
-                        "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300":
-                          loan.status === 2,
-                        "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300":
-                          loan.status === 1,
-                        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300":
-                          loan.status === 3,
-                        "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300":
-                          loan.status === 5,
-                        "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300":
-                          loan.status === 8,
-                      })}
+                    <Select
+                      value={
+                        loan.custom_status ||
+                        OVERDUE_CUSTOM_STATUS.OVERDUE_FOLLOW_UP
+                      }
+                      onValueChange={(value) =>
+                        handleStatusChange(
+                          loan.code,
+                          value as OverdueCustomStatus
+                        )
+                      }
+                      disabled={updatingStatus.has(loan.code)}
                     >
-                      {loan.status__name}
-                    </Badge>
+                      {(() => {
+                        const currentStatus = (loan.custom_status ||
+                          OVERDUE_CUSTOM_STATUS.OVERDUE_FOLLOW_UP) as OverdueCustomStatus;
+                        const colors =
+                          OVERDUE_CUSTOM_STATUS_COLORS[currentStatus];
+                        const textColorMap: Record<string, string> = {
+                          "text-yellow-800": "rgb(113, 63, 18)",
+                          "text-amber-800": "rgb(120, 53, 15)",
+                          "text-orange-800": "rgb(154, 52, 18)",
+                          "text-red-800": "rgb(153, 27, 27)",
+                          "text-blue-800": "rgb(30, 64, 175)",
+                          "text-green-800": "rgb(22, 101, 52)",
+                          "text-red-900": "rgb(127, 29, 29)",
+                          "text-purple-800": "rgb(107, 33, 168)",
+                          "text-red-950": "rgb(69, 10, 10)",
+                        };
+                        const textColor =
+                          textColorMap[colors.text] || "inherit";
+                        return (
+                          <SelectTrigger
+                            className={cn(
+                              "w-[180px] h-8 text-xs font-medium",
+                              colors.text
+                            )}
+                            style={{
+                              color: textColor,
+                            }}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                        );
+                      })()}
+                      <SelectContent>
+                        {Object.entries(OVERDUE_CUSTOM_STATUS).map(
+                          ([key, value]) => {
+                            const colors = OVERDUE_CUSTOM_STATUS_COLORS[value];
+                            // Map Tailwind text color classes to actual color values
+                            const textColorMap: Record<string, string> = {
+                              "text-yellow-800": "rgb(113, 63, 18)",
+                              "text-amber-800": "rgb(120, 53, 15)",
+                              "text-orange-800": "rgb(154, 52, 18)",
+                              "text-red-800": "rgb(153, 27, 27)",
+                              "text-blue-800": "rgb(30, 64, 175)",
+                              "text-green-800": "rgb(22, 101, 52)",
+                              "text-red-900": "rgb(127, 29, 29)",
+                              "text-purple-800": "rgb(107, 33, 168)",
+                              "text-red-950": "rgb(69, 10, 10)",
+                            };
+                            const textColor =
+                              textColorMap[colors.text] || "inherit";
+
+                            return (
+                              <SelectItem
+                                key={key}
+                                value={value}
+                                className={cn(colors.text)}
+                                style={{
+                                  color: textColor,
+                                }}
+                              >
+                                {OVERDUE_CUSTOM_STATUS_LABELS_EN[value]}
+                              </SelectItem>
+                            );
+                          }
+                        )}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                 </TableRow>
               ))

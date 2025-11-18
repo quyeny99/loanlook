@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import type { BlacklistedCustomer } from "@/lib/data";
+import type { BlacklistedCustomer } from "@/lib/types";
 
 type DeleteBlacklistCustomerDialogProps = {
   isOpen: boolean;

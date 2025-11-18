@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import type { BlacklistedCustomer } from "@/lib/data";
+import type { BlacklistedCustomer } from "@/lib/types";
 import { useEffect } from "react";
 
 const formSchema = z.object({

@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Ban, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { BlacklistedCustomer } from "@/lib/data";
+import type { BlacklistedCustomer } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 

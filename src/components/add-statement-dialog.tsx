@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { type Statement } from "@/lib/data";
+import { type Statement } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({

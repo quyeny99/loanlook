@@ -6,7 +6,7 @@ import {
   type Application,
   type Statement,
   type LoanServiceFee,
-} from "@/lib/data";
+} from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ChevronRight } from "lucide-react";
 import SummaryCards from "@/components/reports/daily/summary-cards";
@@ -16,7 +16,7 @@ import StatusChart from "@/components/reports/daily/status-chart";
 import LoanTypeChart from "@/components/reports/daily/loan-type-chart";
 import SourceChart from "@/components/reports/daily/source-chart";
 import { useAuth } from "@/context/AuthContext";
-import { adjustments } from "@/lib/constants";
+import { adjustments } from "@/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { applyDisbursementAdjustments } from "@/lib/adjustments";
 

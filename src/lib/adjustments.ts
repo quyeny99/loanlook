@@ -1,5 +1,4 @@
-import { type Application } from "@/lib/data";
-import { type Adjustment } from "@/lib/constants";
+import { type Application, type Adjustment } from "@/lib/types";
 
 /**
  * Apply disbursement adjustments to a list of applications

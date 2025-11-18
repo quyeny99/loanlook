@@ -38,7 +38,7 @@ import { AddServiceFeeDialog } from "@/components/add-service-fee-dialog";
 import { DeleteServiceFeeDialog } from "@/components/delete-service-fee-dialog";
 import { LoanPagination } from "@/components/loan-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { type LoanServiceFee } from "@/lib/data";
+import { type LoanServiceFee } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";

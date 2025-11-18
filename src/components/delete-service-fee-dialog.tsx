@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { type LoanServiceFee } from "@/lib/data";
+import { type LoanServiceFee } from "@/lib/types";
 
 type DeleteServiceFeeDialogProps = {
   isOpen: boolean;

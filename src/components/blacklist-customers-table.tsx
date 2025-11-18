@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { BlacklistedCustomer } from "@/lib/data";
+import type { BlacklistedCustomer } from "@/lib/types";
 import { LoanPagination } from "@/components/loan-pagination";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";

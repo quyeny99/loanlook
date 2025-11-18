@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { Loan } from '@/lib/data';
+import type { Loan } from '@/lib/types';
 
 type LoanTableProps = {
   loans: Loan[];

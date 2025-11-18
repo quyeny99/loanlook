@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { type LoanServiceFee } from "@/lib/data";
+import { type LoanServiceFee } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({

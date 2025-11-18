@@ -39,7 +39,7 @@ import { AddStatementDialog } from "@/components/add-statement-dialog";
 import { DeleteStatementDialog } from "@/components/delete-statement-dialog";
 import { LoanPagination } from "@/components/loan-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { type Statement } from "@/lib/data";
+import { type Statement } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
