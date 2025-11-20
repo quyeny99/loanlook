@@ -1,4 +1,5 @@
 import Header from "@/components/header";
+import { AuthGuard } from "@/components/auth-guard";
 
 export default function DashboardLayout({
   children,
@@ -6,9 +7,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      <Header />
-      <div className="pt-24 mt-16 p-6 sm:p-8">{children}</div>
-    </div>
+    <AuthGuard>
+      <div>
+        <Header />
+        <div className="pt-24 mt-16 p-6 sm:p-8">{children}</div>
+      </div>
+    </AuthGuard>
   );
 }

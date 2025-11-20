@@ -20,6 +20,9 @@ import { cn } from "@/lib/utils";
 import type { BlacklistedCustomer } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { canManageBlacklist, canAccessPage } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 export default function BlacklistPage() {
   const [refreshToken, setRefreshToken] = useState(0);
@@ -32,6 +35,14 @@ export default function BlacklistPage() {
     useState<BlacklistedCustomer | null>(null);
   const [resetToPage1, setResetToPage1] = useState(false);
   const { toast } = useToast();
+  const { currentProfile } = useAuth();
+
+  // Check access permission
+  if (currentProfile && !canAccessPage(currentProfile.role, "/blacklist")) {
+    redirect("/");
+  }
+
+  const canManage = canManageBlacklist(currentProfile?.role);
 
   const handleAddSuccess = () => {
     const isEditMode = !!customerToEdit;
@@ -115,13 +126,15 @@ export default function BlacklistPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="default"
-                    onClick={() => setIsAddDialogOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Customer
-                  </Button>
+                  {canManage && (
+                    <Button
+                      variant="default"
+                      onClick={() => setIsAddDialogOpen(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Customer
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="icon"
@@ -148,8 +161,8 @@ export default function BlacklistPage() {
               <BlacklistCustomersTable
                 refreshToken={refreshToken}
                 onLoadingChange={setTableLoading}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+                onEdit={canManage ? handleEdit : undefined}
+                onDelete={canManage ? handleDelete : undefined}
                 resetToPage1={resetToPage1}
                 onResetPage1Complete={() => setResetToPage1(false)}
               />

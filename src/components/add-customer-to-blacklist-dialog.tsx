@@ -51,7 +51,7 @@ export function AddCustomerToBlacklistDialog({
   customerToEdit,
 }: AddCustomerToBlacklistDialogProps) {
   const { toast } = useToast();
-  const { loginId } = useAuth();
+  const { loginId, currentProfile } = useAuth();
   const isEditMode = !!customerToEdit;
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -94,18 +94,9 @@ export function AddCustomerToBlacklistDialog({
         return;
       }
 
-      // Get user info from localStorage (saved during login, no API call needed)
-      const userInfoString = localStorage.getItem("userInfo");
-      let blacklistedByName = "Unknown";
-      if (userInfoString) {
-        try {
-          const userInfo = JSON.parse(userInfoString);
-          blacklistedByName =
-            userInfo.fullname || userInfo.username || "Unknown";
-        } catch (e) {
-          console.error("Failed to parse user info", e);
-        }
-      }
+      // Get user name from currentProfile context
+      const blacklistedByName =
+        currentProfile?.full_name || currentProfile?.username || "Unknown";
 
       const supabase = createClient();
       let error;

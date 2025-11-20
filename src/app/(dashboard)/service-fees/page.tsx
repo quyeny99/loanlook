@@ -42,6 +42,8 @@ import { type LoanServiceFee } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { canCreate, canUpdate, canDelete, canAccessPage } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 const currencyFormatter = new Intl.NumberFormat("de-DE", {});
 
@@ -66,8 +68,17 @@ function ServiceFeesPageContent() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [searchInput, setSearchInput] = useState("");
-  const { isAdmin, loginId } = useAuth();
+  const { isAdmin, loginId, currentProfile } = useAuth();
   const { toast } = useToast();
+
+  // Check access permission
+  if (currentProfile && !canAccessPage(currentProfile.role, "/service-fees")) {
+    redirect("/");
+  }
+
+  const canCreateServiceFee = canCreate(currentProfile?.role);
+  const canUpdateServiceFee = canUpdate(currentProfile?.role);
+  const canDeleteServiceFee = canDelete(currentProfile?.role);
   // Get current page and search from URL params
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchTerm = searchParams.get("search") || "";
@@ -325,7 +336,7 @@ function ServiceFeesPageContent() {
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 className="w-[250px]"
               />
-              {isAdmin && (
+              {canCreateServiceFee && (
                 <Button onClick={openAddDialog}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add service fee
@@ -362,7 +373,7 @@ function ServiceFeesPageContent() {
                   Total Fee
                 </TableHead>
                 <TableHead style={{ width: "12%" }}>Notes</TableHead>
-                {isAdmin && (
+                {canCreateServiceFee && (
                   <TableHead
                     className="text-right"
                     style={{ width: "5%" }}
@@ -402,7 +413,7 @@ function ServiceFeesPageContent() {
                     <TableCell>
                       <Skeleton className="h-4 w-32" />
                     </TableCell>
-                    {isAdmin && (
+                    {canCreateServiceFee && (
                       <TableCell className="text-right">
                         <Skeleton className="h-8 w-8 ml-auto" />
                       </TableCell>
@@ -412,7 +423,7 @@ function ServiceFeesPageContent() {
               ) : serviceFeeData.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={isAdmin ? 11 : 10}
+                    colSpan={(canUpdateServiceFee || canDeleteServiceFee) ? 11 : 10}
                     className="text-center py-12"
                   >
                     <p className="text-muted-foreground">
@@ -457,7 +468,7 @@ function ServiceFeesPageContent() {
                           </div>
                         </TableCell>
 
-                        {isAdmin && (
+                        {(canUpdateServiceFee || canDeleteServiceFee) && (
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -466,19 +477,23 @@ function ServiceFeesPageContent() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => openEditDialog(row)}
-                                >
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-red-500"
-                                  onClick={() => openDeleteDialog(row)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                                </DropdownMenuItem>
+                                {canUpdateServiceFee && (
+                                  <DropdownMenuItem
+                                    onClick={() => openEditDialog(row)}
+                                  >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                )}
+                                {canDeleteServiceFee && (
+                                  <DropdownMenuItem
+                                    className="text-red-500"
+                                    onClick={() => openDeleteDialog(row)}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>

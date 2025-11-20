@@ -27,6 +27,8 @@ import { useAuth } from "@/context/AuthContext";
 import { adjustments } from "@/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { applyDisbursementAdjustments } from "@/lib/adjustments";
+import { canAccessPage } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 const COLORS = [
   "#3b82f6",
@@ -79,6 +81,12 @@ type LoanSchedule = {
 };
 
 export default function DateRangeReportsPage() {
+  const { currentProfile } = useAuth();
+
+  // Check access permission
+  if (currentProfile && !canAccessPage(currentProfile.role, "/reports/date-range")) {
+    redirect("/");
+  }
   const { loginId, isAdmin } = useAuth();
   const [fromDate, setFromDate] = useState<Date | undefined>(
     startOfMonth(new Date())

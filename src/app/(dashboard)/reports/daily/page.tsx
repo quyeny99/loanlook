@@ -19,6 +19,8 @@ import { useAuth } from "@/context/AuthContext";
 import { adjustments } from "@/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { applyDisbursementAdjustments } from "@/lib/adjustments";
+import { canAccessPage } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 const COLORS = [
   "#3b82f6",
@@ -36,7 +38,12 @@ const API_VALUES_DISBURSED =
   "id,payment_status__code,loanapp__disbursement,loanapp__dbm_entry__date,approve_amount,approve_term,code,commission,country,country__name,country__en,legal_type__name,province,product__type__en,source__name,legal_type__code";
 
 export default function ReportsPage() {
-  const { loginId, isAdmin } = useAuth();
+  const { loginId, isAdmin, currentProfile } = useAuth();
+
+  // Check access permission
+  if (currentProfile && !canAccessPage(currentProfile.role, "/reports/daily")) {
+    redirect("/");
+  }
   const [date, setDate] = useState<Date>(subDays(new Date(), 1));
   const [createdApplications, setCreatedApplications] = useState<Application[]>(
     []

@@ -43,6 +43,8 @@ import { type Statement } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { canCreate, canUpdate, canDelete, canAccessPage } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 const currencyFormatter = new Intl.NumberFormat("de-DE", {});
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
@@ -68,8 +70,17 @@ function StatementPageContent() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [searchInput, setSearchInput] = useState("");
-  const { isAdmin, loginId } = useAuth();
+  const { isAdmin, loginId, currentProfile } = useAuth();
   const { toast } = useToast();
+
+  // Check access permission
+  if (currentProfile && !canAccessPage(currentProfile.role, "/reports/statement")) {
+    redirect("/");
+  }
+
+  const canCreateStatement = canCreate(currentProfile?.role);
+  const canUpdateStatement = canUpdate(currentProfile?.role);
+  const canDeleteStatement = canDelete(currentProfile?.role);
   // Get current page and search from URL params
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchTerm = searchParams.get("search") || "";
@@ -347,7 +358,7 @@ function StatementPageContent() {
                 onChange={(e) => handleSearchInputChange(e.target.value)}
                 className="w-[250px]"
               />
-              {isAdmin && (
+              {canCreateStatement && (
                 <Button onClick={openAddDialog}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add statement
@@ -399,7 +410,7 @@ function StatementPageContent() {
                   Total Amount
                 </TableHead>
                 <TableHead style={{ width: "12%" }}>Note</TableHead>
-                {isAdmin && (
+                {canCreateStatement && (
                   <TableHead
                     className="text-right"
                     style={{ width: "8%" }}
@@ -518,7 +529,7 @@ function StatementPageContent() {
                             {row.note}
                           </div>
                         </TableCell>
-                        {isAdmin && (
+                        {(canUpdateStatement || canDeleteStatement) && (
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -527,19 +538,23 @@ function StatementPageContent() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => openEditDialog(row)}
-                                >
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-red-500"
-                                  onClick={() => openDeleteDialog(row)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                                </DropdownMenuItem>
+                                {canUpdateStatement && (
+                                  <DropdownMenuItem
+                                    onClick={() => openEditDialog(row)}
+                                  >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                )}
+                                {canDeleteStatement && (
+                                  <DropdownMenuItem
+                                    className="text-red-500"
+                                    onClick={() => openDeleteDialog(row)}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>

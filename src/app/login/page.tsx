@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -23,8 +24,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { getAllowedEmails } from "@/lib/auth";
 import { useAuth } from "@/context/AuthContext";
+import { createClient } from "@/utils/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -35,6 +37,29 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { signIn } = useAuth();
+  const [isChecking, setIsChecking] = useState(true);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const checkAuth = () => {
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        router.replace("/");
+        return;
+      }
+      setIsChecking(false);
+    };
+
+    // Check immediately
+    checkAuth();
+
+    // Set timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      setIsChecking(false);
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,6 +68,15 @@ export default function LoginPage() {
       password: "",
     },
   });
+
+  // Show loading if checking authentication
+  if (isChecking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -68,9 +102,6 @@ export default function LoginPage() {
         return;
       }
 
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userId", data.rows.id);
-
       // Fetch user details after successful login
       const userFilter = JSON.stringify({ username: values.email });
       const userValues =
@@ -85,21 +116,42 @@ export default function LoginPage() {
 
       const userData = await userResponse.json();
 
-      // Check if user is allowed to access the system by email
-      const allowedEmails = await getAllowedEmails();
-      let role = "user";
-      if (allowedEmails.includes(values.email)) {
-        role = "cs";
-      } else if (userData.rows[0].is_admin) {
-        role = "admin";
-      }
-
       if (userResponse.ok && userData.rows && userData.rows.length > 0) {
-        localStorage.setItem(
-          "userInfo",
-          JSON.stringify({ ...userData.rows[0], role })
-        );
-        signIn({ ...userData.rows[0], role });
+        // Check and create profile in Supabase
+        const supabase = createClient();
+        const username = values.email;
+
+        // Check if profile exists and get role
+        const { data: existingProfile, error: checkError } = await supabase
+          .from("profiles")
+          .select("id, role")
+          .eq("username", username)
+          .maybeSingle();
+
+        // If profile doesn't exist, create it (role will use default 'user' from database)
+        if (!existingProfile && !checkError) {
+          const fullName = userData.rows[0].fullname || null;
+          const id = userData.rows[0].id;
+
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert({
+              id,
+              username: username,
+              full_name: fullName,
+            });
+
+          if (insertError) {
+            console.error("Failed to create profile:", insertError);
+            // Don't block login if profile creation fails
+          }
+        } else if (checkError) {
+          // Some error occurred while checking
+          console.error("Error checking profile:", checkError);
+        }
+
+        // Sign in with userId - profile will be loaded by AuthContext
+        signIn(userData.rows[0].id);
         toast({
           title: "Success",
           description: "You have successfully logged in.",

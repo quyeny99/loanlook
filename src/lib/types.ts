@@ -330,3 +330,12 @@ export type OverdueLoanStatus = {
   created_at: string;
   updated_at: string;
 };
+
+export type Profile = {
+  id: number;
+  username: string;
+  full_name: string | null;
+  role: string;
+  created_at: string;
+  updated_at: string;
+};

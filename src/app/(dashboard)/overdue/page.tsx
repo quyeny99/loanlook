@@ -17,8 +17,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Download } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, canAccessPage } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { redirect } from "next/navigation";
 
 const tabDescriptions = {
   all: "Displays all loans that are due today or already overdue.",
@@ -78,7 +79,12 @@ export default function OverduePage() {
   const [exportLoading, setExportLoading] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
   const [tableLoading, setTableLoading] = useState(false);
-  const { isAdmin } = useAuth();
+  const { isAdmin, currentProfile } = useAuth();
+
+  // Check access permission
+  if (currentProfile && !canAccessPage(currentProfile.role, "/overdue")) {
+    redirect("/");
+  }
 
   async function handleExportAll() {
     try {
