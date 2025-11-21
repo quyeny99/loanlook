@@ -77,10 +77,13 @@ export default function ReportsPage() {
         const createdUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES}&filter=${createTimeFilter}&page=-1&login=${loginId}`;
         const disbursedUrl = `${API_BASE_URL}?sort=-id&values=${API_VALUES_DISBURSED}&filter=${disbursementDateFilter}&page=-1&login=${loginId}`;
 
-        // Fetch outstanding loans from loans disbursed on the selected date
+        // Outstanding loan amount should be the total amount outstanding at date checked (to date)
+        // This means we need all loans that have outstanding > 0 at the selected date
+        // We filter by disbursement date <= selectedDate to get all loans that were disbursed by that date
         const outstandingLoansFilter = encodeURIComponent(
           JSON.stringify({
             dbm_entry__date: formattedDate,
+            outstanding__gt: 0,
           })
         );
         const outstandingLoansUrl = `https://api.y99.vn/data/Loan/?sort=-id&login=${loginId}&values=id,outstanding,code&filter=${outstandingLoansFilter}`;

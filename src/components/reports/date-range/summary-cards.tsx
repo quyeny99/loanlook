@@ -83,6 +83,10 @@ export default function SummaryCards({
   const settlementFeeExcl = reportData.totalSettlementFees || 0;
   const settlementFeeGross = reportData.totalSettlementFees + settlementFeeVAT;
 
+  console.log({
+    isAdmin,
+  });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
       <Card>

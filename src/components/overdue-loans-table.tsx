@@ -184,13 +184,14 @@ export function OverdueLoansTable({
         });
       }
 
-      // Get list of current loan codes
+      // Get list of current loan codes from overdueLoans
       const currentLoanCodes = new Set(
         overdueLoans.map((loan: Loan) => loan.code)
       );
 
-      // Find status records that no longer exist in current loans
-      // Compare with all records from Supabase, not just statusMap
+      // Find status records that no longer exist in current overdueLoans
+      // Only delete status records for loans that are no longer in the overdue list
+      // This means the loan has been paid off or is no longer overdue
       const statusesToDelete: string[] = [];
       if (overdueStatusData) {
         (overdueStatusData as OverdueLoanStatus[]).forEach((status) => {
@@ -200,7 +201,8 @@ export function OverdueLoansTable({
         });
       }
 
-      // Delete status records for loans that are no longer overdue
+      // Delete status records for loans that are no longer in overdueLoans
+      // This happens when overdueLoans has changed (loans paid off, no longer overdue)
       if (statusesToDelete.length > 0) {
         const { error: deleteError } = await supabase
           .from("overdue_loan_status")

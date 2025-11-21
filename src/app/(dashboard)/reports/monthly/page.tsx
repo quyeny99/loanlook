@@ -105,7 +105,10 @@ export default function MonthlyReportPage() {
   const { currentProfile } = useAuth();
 
   // Check access permission
-  if (currentProfile && !canAccessPage(currentProfile.role, "/reports/monthly")) {
+  if (
+    currentProfile &&
+    !canAccessPage(currentProfile.role, "/reports/monthly")
+  ) {
     redirect("/");
   }
   const { loginId, isAdmin } = useAuth();
@@ -198,8 +201,9 @@ export default function MonthlyReportPage() {
         // Fetch outstanding loans from loans disbursed in the year
         const outstandingLoansFilter = encodeURIComponent(
           JSON.stringify({
-            dbm_entry__date__gte: fromDate,
+            // dbm_entry__date__gte: fromDate,
             dbm_entry__date__lte: toDate,
+            outstanding__gt: 0,
           })
         );
         const outstandingLoansUrl = `https://api.y99.vn/data/Loan/?sort=-id&login=${loginId}&values=id,outstanding,code&filter=${outstandingLoansFilter}`;

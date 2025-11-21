@@ -84,7 +84,10 @@ export default function DateRangeReportsPage() {
   const { currentProfile } = useAuth();
 
   // Check access permission
-  if (currentProfile && !canAccessPage(currentProfile.role, "/reports/date-range")) {
+  if (
+    currentProfile &&
+    !canAccessPage(currentProfile.role, "/reports/date-range")
+  ) {
     redirect("/");
   }
   const { loginId, isAdmin } = useAuth();
@@ -186,10 +189,13 @@ export default function DateRangeReportsPage() {
           })
         )}&sort=-id&summary=annotate&login=${loginId}&filter=${overdueLoansFilter}`;
 
+        // Outstanding loan amount should be the total amount outstanding at date checked (to date)
+        // This means we need all loans that have outstanding > 0 at the toDate
+        // We filter by disbursement date <= toDate to get all loans that were disbursed by that date
         const outstandingLoansFilter = encodeURIComponent(
           JSON.stringify({
-            dbm_entry__date__gte: formattedFromDate,
             dbm_entry__date__lte: formattedToDate,
+            outstanding__gt: 0,
           })
         );
         const outstandingLoansUrl = `https://api.y99.vn/data/Loan/?sort=-id&login=${loginId}&values=id,outstanding,code&filter=${outstandingLoansFilter}`;
