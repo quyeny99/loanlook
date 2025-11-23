@@ -29,7 +29,6 @@ import { useToast } from "@/hooks/use-toast";
 import type { ExcludeDisbursement } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { parseISO, format as formatDate } from "date-fns";
-import { createClient } from "@/utils/supabase/client";
 import {
   insertExcludedDisbursement,
   updateExcludedDisbursement,
@@ -42,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ControllerRenderProps } from "react-hook-form";
+import { COUNTRIES, LEGAL_TYPES } from "@/lib/constants";
 
 // Date Input Component
 function DateInput({
@@ -410,7 +410,7 @@ export function AddExcludeDisbursementDialog({
       legal_type__name: "Căn cước công dân",
       legal_type__code: "CCCD",
       province: "",
-      product__type__en: "Unsecured Loan",
+      product__type__en: "Pawning",
       source__name: "Website",
       reason: "",
       direction: "out",
@@ -444,7 +444,7 @@ export function AddExcludeDisbursementDialog({
         legal_type__name: disbursementToEdit.legal_type__name || "",
         legal_type__code: disbursementToEdit.legal_type__code || "",
         province: disbursementToEdit.province || "",
-        product__type__en: disbursementToEdit.product__type__en || "",
+        product__type__en: disbursementToEdit.product__type__en || "Pawning",
         source__name: disbursementToEdit.source__name || "",
         reason: disbursementToEdit.reason || "",
         direction: disbursementToEdit.direction || "out",
@@ -468,7 +468,7 @@ export function AddExcludeDisbursementDialog({
         legal_type__name: "Căn cước công dân",
         legal_type__code: "CCCD",
         province: "",
-        product__type__en: "Unsecured Loan",
+        product__type__en: "Pawning",
         source__name: "Website",
         reason: "",
         direction: "out",
@@ -495,7 +495,7 @@ export function AddExcludeDisbursementDialog({
         legal_type__name: values.legal_type__name || null,
         legal_type__code: values.legal_type__code || null,
         province: values.province || null,
-        product__type__en: values.product__type__en || null,
+        product__type__en: values.product__type__en || "Pawning",
         source__name: values.source__name || null,
       };
 
@@ -722,27 +722,7 @@ export function AddExcludeDisbursementDialog({
                       <Select
                         value={field.value}
                         onValueChange={(value) => {
-                          const countries: Record<
-                            string,
-                            { name: string; en: string; id: number }
-                          > = {
-                            "Việt Nam": {
-                              name: "Việt Nam",
-                              en: "Vietnam",
-                              id: 1,
-                            },
-                            Singapore: {
-                              name: "Singapore",
-                              en: "Singapore",
-                              id: 2,
-                            },
-                            "Đài Loan": {
-                              name: "Đài Loan",
-                              en: "Taiwan",
-                              id: 3,
-                            },
-                          };
-                          const country = countries[value];
+                          const country = COUNTRIES[value];
                           if (country) {
                             field.onChange(country.name);
                             form.setValue("country__en", country.en);
@@ -790,17 +770,7 @@ export function AddExcludeDisbursementDialog({
                       <Select
                         value={field.value}
                         onValueChange={(value) => {
-                          const types: Record<
-                            string,
-                            { name: string; code: string }
-                          > = {
-                            "Căn cước công dân": {
-                              name: "Căn cước công dân",
-                              code: "CCCD",
-                            },
-                            "Hộ chiếu": { name: "Hộ chiếu", code: "HC" },
-                          };
-                          const type = types[value];
+                          const type = LEGAL_TYPES[value];
                           if (type) {
                             field.onChange(type.name);
                             form.setValue("legal_type__code", type.code);
@@ -837,10 +807,10 @@ export function AddExcludeDisbursementDialog({
                           <SelectValue placeholder="Chọn loại sản phẩm" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="Pawning">Pawning</SelectItem>
                           <SelectItem value="Unsecured Loan">
                             Unsecured Loan
                           </SelectItem>
-                          <SelectItem value="Pawning">Pawning</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>

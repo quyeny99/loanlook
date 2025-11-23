@@ -197,3 +197,37 @@ export const USER_ROLES = {
 } as const;
 
 export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
+// Countries
+export const COUNTRIES: Record<
+  string,
+  { name: string; en: string; id: number }
+> = {
+  "Việt Nam": {
+    name: "Việt Nam",
+    en: "Vietnam",
+    id: 1,
+  },
+  Singapore: {
+    name: "Singapore",
+    en: "Singapore",
+    id: 2,
+  },
+  "Đài Loan": {
+    name: "Đài Loan",
+    en: "Taiwan",
+    id: 3,
+  },
+} as const;
+
+// Legal Types
+export const LEGAL_TYPES: Record<
+  string,
+  { name: string; code: string }
+> = {
+  "Căn cước công dân": {
+    name: "Căn cước công dân",
+    code: "CCCD",
+  },
+  "Hộ chiếu": { name: "Hộ chiếu", code: "HC" },
+} as const;
