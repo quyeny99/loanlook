@@ -46,7 +46,7 @@ type SummaryCardsProps = {
     totalSettlementFeeVAT: number;
     outstandingLoans: number;
   };
-  isAdmin: boolean;
+  canViewAll: boolean;
   collectedAmount: {
     total: number;
     count: number;
@@ -60,7 +60,7 @@ export default function SummaryCards({
   setToDate,
   currencyFormatter,
   reportData,
-  isAdmin,
+  canViewAll,
   collectedAmount,
 }: SummaryCardsProps) {
   // Use VAT amounts directly from loan_statements
@@ -82,10 +82,6 @@ export default function SummaryCards({
 
   const settlementFeeExcl = reportData.totalSettlementFees || 0;
   const settlementFeeGross = reportData.totalSettlementFees + settlementFeeVAT;
-
-  console.log({
-    isAdmin,
-  });
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
@@ -154,8 +150,8 @@ export default function SummaryCards({
             <p className="text-2xl font-bold text-orange-500">
               {currencyFormatter.format(reportData.totalCollectedAmount)} ₫
             </p>
-          </div>
-          {isAdmin && (
+            </div>
+          {canViewAll && (
             <div className="mt-2 space-y-1 text-xs text-muted-foreground">
               <div className="grid grid-cols-1 xl:grid-cols-2 items-center gap-2 space-y-1">
                 <p>
@@ -243,7 +239,7 @@ export default function SummaryCards({
         </CardContent>
       </Card>
 
-      {isAdmin && (
+      {canViewAll && (
         <>
           <Card>
             <CardHeader>
@@ -480,6 +476,7 @@ export default function SummaryCards({
                 mode="single"
                 selected={fromDate}
                 onSelect={setFromDate}
+                defaultMonth={fromDate || new Date()}
                 initialFocus
               />
             </PopoverContent>
@@ -513,6 +510,7 @@ export default function SummaryCards({
                 mode="single"
                 selected={toDate}
                 onSelect={setToDate}
+                defaultMonth={toDate || new Date()}
                 initialFocus
               />
             </PopoverContent>

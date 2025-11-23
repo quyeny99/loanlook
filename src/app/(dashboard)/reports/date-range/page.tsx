@@ -22,67 +22,26 @@ import {
   type Application,
   type Statement,
   type LoanServiceFee,
+  type LoanSchedule,
 } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
 import { getAdjustments } from "@/lib/data";
 import type { Adjustment } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { applyDisbursementAdjustments } from "@/lib/adjustments";
-import { canAccessPage } from "@/lib/utils";
+import { canAccessPage, canViewAllReports } from "@/lib/utils";
 import { redirect } from "next/navigation";
-
-const COLORS = [
-  "#3b82f6",
-  "#a855f7",
-  "#2dd4bf",
-  "#f97316",
-  "#ec4899",
-  "#84cc16",
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884d8",
-];
-const currencyFormatter = new Intl.NumberFormat("de-DE", {});
-const API_BASE_URL = "https://api.y99.vn/data/Application/";
-const API_VALUES =
-  "id,payment_status__code,loanapp__disbursement,legal_type__code,fees,source,source__name,legal_type,status__index,appcntr__signature,appcntr__update_time,appcntr__user__fullname,approve_time,product,commission,customer,customer__code,product__type__en,update_time,updater__fullname,updater__fullname,source__name,creator__fullname,approver,approver__fullname,product,product__type__name,product__type__en,product__type__code,product__category__name,product__category__code,product__commission,branch,customer,customer__code,status,status__name,status__en,branch__id,branch__name,branch__code,branch__type__en,branch__type__code,branch__type__id,branch__type__name,country__id,country__code,country__name,country__en,currency,currency__code,loan_amount,loan_term,code,fullname,phone,province,district,address,sex,sex__name,sex__en,issue_place,loan_term,loan_amount,legal_type__name,legal_code,legal_type__en,issue_date,issue_place,country,collaborator,collaborator__id,collaborator__user,collaborator__fullname,collaborator__code,create_time,update_time,salary_income,business_income,other_income,living_expense,loan_expense,other_expense,credit_fee,disbursement_fee,loan_fee,colateral_fee,note,commission,commission_rate,payment_status,payment_info,history,ability,ability__name,ability__en,ability__code,doc_audit,onsite_audit,approve_amount,approve_term,loanapp,loanapp__code,purpose,purpose__code,purpose__name,purpose__en,purpose__index,loanapp__dbm_entry__date";
-const LOAN_SCHEDULE_API_VALUES = [
-  "id",
-  "type",
-  "status",
-  "paid_amount",
-  "remain_amount",
-  "ovd_amount",
-  "itr_income",
-  "to_date",
-  "pay_amount",
-  "detail",
-];
-
-const API_VALUES_DISBURSED =
-  "id,payment_status__code,loanapp__disbursement,loanapp__dbm_entry__date,approve_amount,approve_term,code,commission,country,country__name,country__en,legal_type__name,province,product__type__en,source__name,legal_type__code";
-
-type LoanSchedule = {
-  id: number;
-  type: number;
-  status: number;
-  paid_amount: number;
-  remain_amount: number;
-  ovd_amount: number;
-  itr_income: number;
-  to_date: string;
-  pay_amount: number;
-  detail: {
-    paid: number;
-    time: string;
-    pay_amount: number;
-  }[];
-};
+import {
+  API_BASE_URL,
+  API_VALUES,
+  API_VALUES_DISBURSED,
+  LOAN_SCHEDULE_API_VALUES,
+  currencyFormatter,
+  CHART_COLORS,
+} from "@/lib/constants";
 
 export default function DateRangeReportsPage() {
-  const { currentProfile } = useAuth();
+  const { loginId, isAdmin, currentProfile } = useAuth();
 
   // Check access permission
   if (
@@ -91,7 +50,7 @@ export default function DateRangeReportsPage() {
   ) {
     redirect("/");
   }
-  const { loginId, isAdmin } = useAuth();
+  const canViewAll = canViewAllReports(currentProfile?.role);
   const [fromDate, setFromDate] = useState<Date | undefined>(
     startOfMonth(new Date())
   );
@@ -417,7 +376,7 @@ export default function DateRangeReportsPage() {
 
     const regionDataWithColors = regionData.map((item, index) => ({
       ...item,
-      fill: COLORS[index % COLORS.length],
+      fill: CHART_COLORS[index % CHART_COLORS.length],
     }));
 
     const statusData = [
@@ -464,7 +423,11 @@ export default function DateRangeReportsPage() {
       if (existing) {
         existing.value += 1;
       } else {
-        acc.push({ name, value: 1, fill: COLORS[acc.length % COLORS.length] });
+        acc.push({
+          name,
+          value: 1,
+          fill: CHART_COLORS[acc.length % CHART_COLORS.length],
+        });
       }
       return acc;
     }, [] as { name: string; value: number; fill: string }[]);
@@ -671,7 +634,7 @@ export default function DateRangeReportsPage() {
         setToDate={setToDate}
         currencyFormatter={currencyFormatter}
         reportData={reportData}
-        isAdmin={isAdmin}
+        canViewAll={canViewAll}
         collectedAmount={collectedAmount}
       />
 

@@ -45,7 +45,7 @@ import { useToast } from "@/hooks/use-toast";
 import { canCreate, canUpdate, canDelete, canAccessPage } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
-const currencyFormatter = new Intl.NumberFormat("de-DE", {});
+import { currencyFormatter } from "@/lib/constants";
 
 const paymentDateFormatter = new Intl.DateTimeFormat("vi-VN", {
   year: "numeric",

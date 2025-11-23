@@ -468,8 +468,8 @@ export function AddExcludeDisbursementDialog({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const supabase = createClient();
-      let error;
+      const { insertExcludedDisbursement, updateExcludedDisbursement } =
+        await import("@/lib/supabase");
 
       const dataToSave = {
         date: values.date,
@@ -490,24 +490,20 @@ export function AddExcludeDisbursementDialog({
         province: values.province || null,
         product__type__en: values.product__type__en || null,
         source__name: values.source__name || null,
-        updated_at: new Date().toISOString(),
       };
 
+      let error;
       if (isEditMode && disbursementToEdit) {
         // Update existing disbursement
-        const { error: updateError } = await supabase
-          .from("excluded_disbursements")
-          .update(dataToSave)
-          .eq("id", disbursementToEdit.id);
-
-        error = updateError;
+        const result = await updateExcludedDisbursement(
+          disbursementToEdit.id,
+          dataToSave
+        );
+        error = result.error;
       } else {
         // Insert new disbursement
-        const { error: insertError } = await supabase
-          .from("excluded_disbursements")
-          .insert(dataToSave);
-
-        error = insertError;
+        const result = await insertExcludedDisbursement(dataToSave);
+        error = result.error;
       }
 
       if (error) {
@@ -585,7 +581,7 @@ export function AddExcludeDisbursementDialog({
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date *</FormLabel>
+                    <FormLabel>Disbursement Date *</FormLabel>
                     <FormControl>
                       <DateInput
                         field={field}

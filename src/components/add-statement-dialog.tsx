@@ -34,6 +34,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { type Statement } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
+import { currencyFormatter } from "@/lib/constants";
 
 const formSchema = z.object({
   loan_id: z.string().min(1, "Mã khoản vay là bắt buộc."),
@@ -51,8 +52,6 @@ const formSchema = z.object({
   settlement_fee_vat: z.coerce.number().min(0),
   total_amount: z.coerce.number().min(0),
 });
-
-const currencyFormatter = new Intl.NumberFormat("de-DE");
 
 const FormattedNumberInput = React.forwardRef<
   HTMLInputElement,

@@ -2,12 +2,11 @@
 'use client';
 
 import PieChartCard from '@/components/reports/shared/pie-chart';
+import { RADIAN } from '@/lib/constants';
 
 type LoanRegionsChartProps = {
     data: { name: string; value: number; fill: string }[];
 };
-
-const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
   const radius = outerRadius * 1.4;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);

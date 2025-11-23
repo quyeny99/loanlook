@@ -363,3 +363,26 @@ export type ExcludeDisbursement = {
   created_at: string;
   updated_at: string;
 };
+
+export type LoanSchedule = {
+  id: number;
+  type: number;
+  status: number;
+  paid_amount: number;
+  remain_amount: number;
+  ovd_amount: number;
+  itr_income?: number;
+  to_date: string;
+  pay_amount: number;
+  detail: {
+    paid: number;
+    time: string;
+    pay_amount: number;
+  }[];
+};
+
+export type OverdueStatus = "all" | "active" | "late" | "warning" | "critical";
+
+export type LoanWithCustomStatus = Loan & {
+  custom_status?: string | null;
+};

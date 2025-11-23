@@ -27,7 +27,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { Loan, OverdueLoanStatus } from "@/lib/types";
+import type {
+  Loan,
+  OverdueLoanStatus,
+  OverdueStatus,
+  LoanWithCustomStatus,
+} from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
 import { LoanPagination } from "@/components/loan-pagination";
 import { createClient } from "@/utils/supabase/client";
@@ -37,24 +42,6 @@ import {
   OVERDUE_CUSTOM_STATUS_COLORS,
   type OverdueCustomStatus,
 } from "@/lib/constants";
-
-type OverdueStatus = "all" | "active" | "late" | "warning" | "critical";
-
-function getRowColorByDueDays(dueDays: number | null | undefined): string {
-  if (dueDays === 0) return "bg-green-50 border-green-500 hover:bg-green-100";
-  if (dueDays !== null && dueDays !== undefined) {
-    if (dueDays >= 1 && dueDays <= 6)
-      return "bg-yellow-50 border-yellow-500 hover:bg-yellow-100";
-    if (dueDays >= 7 && dueDays <= 14)
-      return "bg-orange-200 border-orange-500 hover:bg-orange-300";
-    if (dueDays >= 15) return "bg-red-200 border-red-500 hover:bg-red-300";
-  }
-  return "";
-}
-
-type LoanWithCustomStatus = Loan & {
-  custom_status?: string | null;
-};
 
 export function OverdueLoansTable({
   tab = "all",

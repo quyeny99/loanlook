@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { currencyFormatter } from "@/lib/constants";
 
 type SummaryCardsProps = {
   reportData: {
@@ -44,18 +45,16 @@ type SummaryCardsProps = {
   };
   date: Date;
   setDate: (date: Date) => void;
-  isAdmin: boolean;
+  canViewAll: boolean;
   collectedServiceFees: number;
 };
-
-const currencyFormatter = new Intl.NumberFormat("de-DE", {});
 
 export default function SummaryCards({
   reportData,
   collectedAmount,
   date,
   setDate,
-  isAdmin,
+  canViewAll,
   collectedServiceFees,
 }: SummaryCardsProps) {
   // Use VAT amounts directly from loan_statements
@@ -160,7 +159,7 @@ export default function SummaryCards({
               {currencyFormatter.format(reportData.totalCollectedAmount)} ₫
             </p>
           </div>
-          {isAdmin && (
+          {canViewAll && (
             <div className="mt-2 space-y-1 text-xs text-muted-foreground">
               <div className="grid grid-cols-2 items-center gap-2 space-y-1">
                 <p>
@@ -247,7 +246,7 @@ export default function SummaryCards({
           </div>
         </CardContent>
       </Card>
-      {isAdmin && (
+      {canViewAll && (
         <>
           <Card>
             <CardHeader>
@@ -448,6 +447,7 @@ export default function SummaryCards({
                 mode="single"
                 selected={date}
                 onSelect={(day) => day && setDate(day)}
+                defaultMonth={date}
                 initialFocus
               />
             </PopoverContent>

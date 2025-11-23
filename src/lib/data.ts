@@ -1,6 +1,6 @@
 import type { Loan, Adjustment } from "./types";
 import type { ExcludeDisbursement } from "./types";
-import { createClient } from "@/utils/supabase/client";
+import { getAllExcludedDisbursements } from "./supabase";
 
 export const loansData: Loan[] = [];
 
@@ -10,18 +10,9 @@ export const loansData: Loan[] = [];
  */
 export async function getAdjustments(): Promise<Adjustment[]> {
   try {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("excluded_disbursements")
-      .select("*")
-      .order("date", { ascending: false });
+    const data = await getAllExcludedDisbursements();
 
-    if (error) {
-      console.error("Error fetching adjustments:", error);
-      return [];
-    }
-
-    if (!data) {
+    if (!data || data.length === 0) {
       return [];
     }
 

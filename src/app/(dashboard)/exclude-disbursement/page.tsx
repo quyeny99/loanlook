@@ -71,12 +71,10 @@ export default function ExcludeDisbursementPage() {
     if (!disbursementToDelete) return;
 
     try {
-      const { createClient } = await import("@/utils/supabase/client");
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("excluded_disbursements")
-        .delete()
-        .eq("id", disbursementToDelete.id);
+      const { deleteExcludedDisbursement } = await import("@/lib/supabase");
+      const { error } = await deleteExcludedDisbursement(
+        disbursementToDelete.id
+      );
 
       if (error) {
         console.error("Error deleting exclude disbursement:", error);

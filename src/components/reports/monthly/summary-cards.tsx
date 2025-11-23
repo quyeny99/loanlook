@@ -33,7 +33,7 @@ type SummaryCardsProps = {
     year: string;
     setYear: (year: string) => void;
     years: string[];
-    isAdmin: boolean;
+    canViewAll: boolean;
 };
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', {
@@ -42,8 +42,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {
     maximumFractionDigits: 0,
 });
 
-
-export default function SummaryCards({ reportData, year, setYear, years, isAdmin }: SummaryCardsProps) {
+export default function SummaryCards({ reportData, year, setYear, years, canViewAll }: SummaryCardsProps) {
     // Use VAT amounts directly from loan_statements
     const collectedInterestVAT = reportData.totalInterestVAT || 0;
     const collectedFeeVAT = reportData.totalManagementFeeVAT || 0;
@@ -107,7 +106,7 @@ export default function SummaryCards({ reportData, year, setYear, years, isAdmin
                             </div>
                         </CardContent>
                     </Card>
-            {isAdmin && (
+            {canViewAll && (
                 <>
                   
                     <Card>

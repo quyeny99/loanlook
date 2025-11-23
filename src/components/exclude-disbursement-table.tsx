@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import type { ExcludeDisbursement } from "@/lib/types";
 import { LoanPagination } from "@/components/loan-pagination";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/utils/supabase/client";
+import { getExcludedDisbursementsPaginated } from "@/lib/supabase";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,37 +74,13 @@ export function ExcludeDisbursementTable({
   const fetchDisbursements = React.useCallback(async () => {
     try {
       setLoading(true);
-      const supabase = createClient();
+      const { data, count } = await getExcludedDisbursementsPaginated(
+        page,
+        pageSize
+      );
 
-      // Get total count
-      const { count, error: countError } = await supabase
-        .from("excluded_disbursements")
-        .select("*", { count: "exact", head: true });
-
-      if (countError) {
-        console.error("Error counting excluded disbursements:", countError);
-      } else if (count !== null) {
-        setTotalRows(count);
-      }
-
-      // Calculate pagination
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
-
-      // Fetch data with pagination
-      const { data, error } = await supabase
-        .from("excluded_disbursements")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (error) {
-        console.error("Error fetching excluded disbursements:", error);
-        setDisbursements([]);
-        return;
-      }
-
-      setDisbursements(data || []);
+      setDisbursements(data);
+      setTotalRows(count);
     } catch (error) {
       console.error("Failed to fetch exclude disbursements:", error);
       if (error instanceof Error) {
