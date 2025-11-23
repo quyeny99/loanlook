@@ -11,6 +11,7 @@ import {
   Users,
   LayoutDashboard,
   Menu,
+  XCircle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -175,6 +176,18 @@ export default function Header() {
           >
             <Ban className="h-4 w-4" />
             <span className="ml-2">Blacklist</span>
+          </Button>
+        )}
+      {/* Exclude Disbursement - user, admin, shareholder, accountant, ca */}
+      {currentProfile?.role &&
+        canAccessPage(currentProfile.role, "/exclude-disbursement") && (
+          <Button
+            variant="ghost"
+            onClick={() => handleNavigation("/exclude-disbursement")}
+            className={showText ? "w-full justify-start" : ""}
+          >
+            <XCircle className="h-4 w-4" />
+            <span className="ml-2">Exclude Disbursement</span>
           </Button>
         )}
       {/* Profiles - admin only */}

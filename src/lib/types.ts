@@ -339,3 +339,27 @@ export type Profile = {
   created_at: string;
   updated_at: string;
 };
+
+export type ExcludeDisbursement = {
+  id: string; // UUID
+  date: string;
+  type: string;
+  amount: number;
+  reason: string | null;
+  related_ln_code: string;
+  related_ap_code: string;
+  reference_month: string | null;
+  fullname: string | null;
+  approve_term: number | null;
+  commission: number | null;
+  country: number | null;
+  country__name: string | null;
+  country__en: string | null;
+  legal_type__name: string | null;
+  legal_type__code: string | null;
+  province: string | null;
+  product__type__en: string | null;
+  source__name: string | null;
+  created_at: string;
+  updated_at: string;
+};
