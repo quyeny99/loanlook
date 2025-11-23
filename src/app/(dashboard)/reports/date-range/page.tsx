@@ -41,7 +41,7 @@ import {
 } from "@/lib/constants";
 
 export default function DateRangeReportsPage() {
-  const { loginId, isAdmin, currentProfile } = useAuth();
+  const { loginId, currentProfile } = useAuth();
 
   // Check access permission
   if (
@@ -304,7 +304,6 @@ export default function DateRangeReportsPage() {
     const filteredAdjustmentsDisbursement =
       fromDate && toDate
         ? adjustments.filter((adj) => {
-            if (adj.type !== "disbursement") return false;
             const adjDate = parseISO(adj.date);
             return isWithinInterval(adjDate, {
               start: startDate,

@@ -50,7 +50,7 @@ export async function getExcludedDisbursementsPaginated(
   const { data, error } = await supabase
     .from("excluded_disbursements")
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("date", { ascending: false })
     .range(from, to);
 
   if (error) {
@@ -65,9 +65,7 @@ export async function insertExcludedDisbursement(
   data: Omit<ExcludeDisbursement, "id" | "created_at" | "updated_at">
 ): Promise<{ error: any }> {
   const supabase = createClient();
-  const { error } = await supabase
-    .from("excluded_disbursements")
-    .insert(data);
+  const { error } = await supabase.from("excluded_disbursements").insert(data);
 
   return { error };
 }
@@ -140,9 +138,7 @@ export async function insertBlacklistedCustomer(
   > & { blacklisted_by_name: string }
 ): Promise<{ error: any }> {
   const supabase = createClient();
-  const { error } = await supabase
-    .from("blacklisted_customers")
-    .insert(data);
+  const { error } = await supabase.from("blacklisted_customers").insert(data);
 
   return { error };
 }
@@ -152,7 +148,11 @@ export async function updateBlacklistedCustomer(
   data: Partial<
     Omit<
       BlacklistedCustomer,
-      "id" | "created_at" | "updated_at" | "blacklisted_by" | "blacklisted_by_name"
+      | "id"
+      | "created_at"
+      | "updated_at"
+      | "blacklisted_by"
+      | "blacklisted_by_name"
     >
   >
 ): Promise<{ error: any }> {
@@ -254,9 +254,7 @@ export async function updateLoanStatement(
   return { error };
 }
 
-export async function deleteLoanStatement(
-  id: string
-): Promise<{ error: any }> {
+export async function deleteLoanStatement(id: string): Promise<{ error: any }> {
   const supabase = createClient();
   const { error } = await supabase
     .from("loan_statements")
@@ -402,7 +400,9 @@ export async function insertOverdueLoanStatus(
 
 export async function updateOverdueLoanStatus(
   loanId: string,
-  data: Partial<Omit<OverdueLoanStatus, "loan_id" | "created_at" | "updated_at">>
+  data: Partial<
+    Omit<OverdueLoanStatus, "loan_id" | "created_at" | "updated_at">
+  >
 ): Promise<{ error: any }> {
   const supabase = createClient();
   const { error } = await supabase
@@ -483,4 +483,3 @@ export async function updateProfileRole(
 
   return { error };
 }
-

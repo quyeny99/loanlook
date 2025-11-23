@@ -6,7 +6,8 @@ export const loansData: Loan[] = [];
 
 /**
  * Fetch adjustments from excluded_disbursements table
- * Converts ExcludeDisbursement to Adjustment format with negative amount to exclude from reports
+ * Converts ExcludeDisbursement to Adjustment format
+ * Uses direction field to determine if amount should be positive (in) or negative (out)
  */
 export async function getAdjustments(): Promise<Adjustment[]> {
   try {
@@ -17,11 +18,12 @@ export async function getAdjustments(): Promise<Adjustment[]> {
     }
 
     // Convert ExcludeDisbursement to Adjustment format
-    // Use negative amount to exclude from reports
+    // Keep direction field to determine if amount should be added or subtracted
     return data.map((excluded: ExcludeDisbursement) => ({
       date: excluded.date,
       type: "disbursement", // Convert type to "disbursement" for compatibility
-      amount: excluded.amount, // Negative amount to exclude
+      amount: Math.abs(excluded.amount), // Always use positive amount, direction determines operation
+      direction: excluded.direction,
       reason: excluded.reason || "",
       related_ln_code: excluded.related_ln_code,
       related_ap_code: excluded.related_ap_code,

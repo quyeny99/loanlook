@@ -2,6 +2,7 @@ export type Adjustment = {
   date: string;
   type: string;
   amount: number;
+  direction: "in" | "out";
   reason: string;
   related_ln_code: string;
   related_ap_code: string;
@@ -343,8 +344,8 @@ export type Profile = {
 export type ExcludeDisbursement = {
   id: string; // UUID
   date: string;
-  type: string;
   amount: number;
+  direction: "in" | "out";
   reason: string | null;
   related_ln_code: string;
   related_ap_code: string;

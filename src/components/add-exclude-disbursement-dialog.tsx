@@ -31,6 +31,10 @@ import { useEffect, useState } from "react";
 import { parseISO, format as formatDate } from "date-fns";
 import { createClient } from "@/utils/supabase/client";
 import {
+  insertExcludedDisbursement,
+  updateExcludedDisbursement,
+} from "@/lib/supabase";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -368,6 +372,9 @@ const formSchema = z.object({
   product__type__en: z.string().min(1, "Product Type là bắt buộc."),
   source__name: z.string().min(1, "Source Name là bắt buộc."),
   reason: z.string().min(1, "Lý do loại trừ là bắt buộc."),
+  direction: z.enum(["in", "out"], {
+    required_error: "Hướng điều chỉnh là bắt buộc.",
+  }),
 });
 
 type AddExcludeDisbursementDialogProps = {
@@ -406,6 +413,7 @@ export function AddExcludeDisbursementDialog({
       product__type__en: "Unsecured Loan",
       source__name: "Website",
       reason: "",
+      direction: "out",
     },
   });
 
@@ -439,6 +447,7 @@ export function AddExcludeDisbursementDialog({
         product__type__en: disbursementToEdit.product__type__en || "",
         source__name: disbursementToEdit.source__name || "",
         reason: disbursementToEdit.reason || "",
+        direction: disbursementToEdit.direction || "out",
       });
     } else {
       const today = new Date();
@@ -462,19 +471,17 @@ export function AddExcludeDisbursementDialog({
         product__type__en: "Unsecured Loan",
         source__name: "Website",
         reason: "",
+        direction: "out",
       });
     }
   }, [disbursementToEdit, isEditMode, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const { insertExcludedDisbursement, updateExcludedDisbursement } =
-        await import("@/lib/supabase");
-
       const dataToSave = {
         date: values.date,
-        type: "exclude_disbursement",
         amount: values.amount,
+        direction: values.direction,
         reason: values.reason || null,
         related_ln_code: values.related_ln_code,
         related_ap_code: values.related_ap_code,
@@ -843,28 +850,57 @@ export function AddExcludeDisbursementDialog({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="source__name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Source *</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn nguồn" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Website">Website</SelectItem>
-                        <SelectItem value="App">App</SelectItem>
-                        <SelectItem value="CTV">CTV</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="source__name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Source *</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn nguồn" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Website">Website</SelectItem>
+                          <SelectItem value="App">App</SelectItem>
+                          <SelectItem value="CTV">CTV</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="direction"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Direction *</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn hướng điều chỉnh" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="in">In (Cộng)</SelectItem>
+                          <SelectItem value="out">Out (Trừ)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}

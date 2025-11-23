@@ -15,8 +15,8 @@ export function applyDisbursementAdjustments(
 
   // Process each adjustment
   filteredAdjustments.forEach((adj) => {
-    if (adj.amount > 0) {
-      // Positive adjustment: Add or create application
+    if (adj.direction === "in") {
+      // "in" direction: Add or create application
       // First, try to find existing application by related_ap_code
       const existingAppIndex = adjustedApplications.findIndex(
         (app) => app.code === adj.related_ap_code
@@ -57,8 +57,8 @@ export function applyDisbursementAdjustments(
         };
         adjustedApplications.push(virtualApp);
       }
-    } else if (adj.amount < 0) {
-      // Negative adjustment: Remove or reduce application
+    } else if (adj.direction === "out") {
+      // "out" direction: Remove or reduce application
       const existingAppIndex = adjustedApplications.findIndex(
         (app) => app.code === adj.related_ap_code
       );
@@ -66,7 +66,7 @@ export function applyDisbursementAdjustments(
       if (existingAppIndex >= 0) {
         const currentDisbursement =
           adjustedApplications[existingAppIndex].loanapp__disbursement || 0;
-        const adjustmentAmount = Math.abs(adj.amount);
+        const adjustmentAmount = adj.amount;
 
         if (currentDisbursement <= adjustmentAmount) {
           // Remove the application if adjustment amount >= current disbursement

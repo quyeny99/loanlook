@@ -22,6 +22,7 @@ import { useAuth } from "@/context/AuthContext";
 import { canAccessPage } from "@/lib/utils";
 import type { ExcludeDisbursement } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { deleteExcludedDisbursement } from "@/lib/supabase";
 
 export default function ExcludeDisbursementPage() {
   const [refreshToken, setRefreshToken] = useState(0);
@@ -71,7 +72,6 @@ export default function ExcludeDisbursementPage() {
     if (!disbursementToDelete) return;
 
     try {
-      const { deleteExcludedDisbursement } = await import("@/lib/supabase");
       const { error } = await deleteExcludedDisbursement(
         disbursementToDelete.id
       );
