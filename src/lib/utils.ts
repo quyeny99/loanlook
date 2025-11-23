@@ -60,7 +60,7 @@ export const canAccessPage = (
     case "/profiles":
       return role === "admin";
     case "/exclude-disbursement":
-      return ["user", "admin", "shareholder", "accountant", "ca"].includes(role);
+      return ["admin", "accountant"].includes(role);
     default:
       return false;
   }

@@ -178,7 +178,7 @@ export default function Header() {
             <span className="ml-2">Blacklist</span>
           </Button>
         )}
-      {/* Exclude Disbursement - user, admin, shareholder, accountant, ca */}
+      {/* Exclude Disbursement - admin, accountant only */}
       {currentProfile?.role &&
         canAccessPage(currentProfile.role, "/exclude-disbursement") && (
           <Button
