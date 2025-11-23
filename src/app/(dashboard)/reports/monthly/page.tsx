@@ -23,7 +23,8 @@ import MonthlyLoanAmountChart from "@/components/reports/monthly/monthly-loan-am
 import MonthlySourceChart from "@/components/reports/monthly/monthly-source-chart";
 import MonthlyFinancialsChart from "@/components/reports/monthly/monthly-financials-chart";
 import { useAuth } from "@/context/AuthContext";
-import { adjustments } from "@/lib/data";
+import { getAdjustments } from "@/lib/data";
+import type { Adjustment } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { applyDisbursementAdjustments } from "@/lib/adjustments";
 import { canAccessPage } from "@/lib/utils";
@@ -131,6 +132,7 @@ export default function MonthlyReportPage() {
   const [loanServiceFees, setLoanServiceFees] = useState<LoanServiceFee[]>([]);
   const [overdueLoansCount, setOverdueLoansCount] = useState<number>(0);
   const [outstandingLoans, setOutstandingLoans] = useState<number>(0);
+  const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(
@@ -232,6 +234,7 @@ export default function MonthlyReportPage() {
           outstandingLoansResponse,
           collectedAmountData,
           serviceFeesData,
+          adjustmentsData,
         ] = await Promise.all([
           fetch(appUrl),
           fetch(loanScheduleInterestUrl),
@@ -241,7 +244,10 @@ export default function MonthlyReportPage() {
           fetch(outstandingLoansUrl),
           supabaseQuery,
           serviceFeesQuery,
+          getAdjustments(),
         ]);
+
+        setAdjustments(adjustmentsData);
 
         const appData = await appResponse.json();
         const interestScheduleData = await interestScheduleResponse.json();

@@ -24,7 +24,8 @@ import {
   type LoanServiceFee,
 } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
-import { adjustments } from "@/lib/data";
+import { getAdjustments } from "@/lib/data";
+import type { Adjustment } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { applyDisbursementAdjustments } from "@/lib/adjustments";
 import { canAccessPage } from "@/lib/utils";
@@ -112,6 +113,7 @@ export default function DateRangeReportsPage() {
   const [loanServiceFees, setLoanServiceFees] = useState<LoanServiceFee[]>([]);
   const [overdueLoansCount, setOverdueLoansCount] = useState<number>(0);
   const [outstandingLoans, setOutstandingLoans] = useState<number>(0);
+  const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({
     total: 0,
@@ -225,6 +227,7 @@ export default function DateRangeReportsPage() {
           outstandingLoansResponse,
           collectedAmountData,
           serviceFeesData,
+          adjustmentsData,
         ] = await Promise.all([
           fetch(disbursedUrl),
           fetch(createdUrl),
@@ -235,6 +238,7 @@ export default function DateRangeReportsPage() {
           fetch(outstandingLoansUrl),
           supabaseQuery,
           serviceFeesQuery,
+          getAdjustments(),
         ]);
 
         const disbursedData = await disbursedResponse.json();
@@ -265,6 +269,7 @@ export default function DateRangeReportsPage() {
           0
         );
         setOutstandingLoans(totalOutstanding);
+        setAdjustments(adjustmentsData);
 
         // Calculate collected amount from Supabase loan_statements
         const { data: statementsData, error: statementsError } =

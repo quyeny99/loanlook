@@ -16,11 +16,12 @@ import StatusChart from "@/components/reports/daily/status-chart";
 import LoanTypeChart from "@/components/reports/daily/loan-type-chart";
 import SourceChart from "@/components/reports/daily/source-chart";
 import { useAuth } from "@/context/AuthContext";
-import { adjustments } from "@/lib/data";
+import { getAdjustments } from "@/lib/data";
 import { createClient } from "@/utils/supabase/client";
 import { applyDisbursementAdjustments } from "@/lib/adjustments";
 import { canAccessPage } from "@/lib/utils";
 import { redirect } from "next/navigation";
+import type { Adjustment } from "@/lib/types";
 
 const COLORS = [
   "#3b82f6",
@@ -54,6 +55,7 @@ export default function ReportsPage() {
   const [loanStatements, setLoanStatements] = useState<Statement[]>([]);
   const [loanServiceFees, setLoanServiceFees] = useState<LoanServiceFee[]>([]);
   const [outstandingLoans, setOutstandingLoans] = useState<number>(0);
+  const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
   const [loading, setLoading] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState({
     total: 0,
@@ -107,13 +109,17 @@ export default function ReportsPage() {
           outstandingLoansResponse,
           collectedAmountData,
           serviceFeesData,
+          adjustmentsData,
         ] = await Promise.all([
           fetch(createdUrl),
           fetch(disbursedUrl),
           fetch(outstandingLoansUrl),
           supabaseQuery,
           serviceFeesQuery,
+          getAdjustments(),
         ]);
+
+        setAdjustments(adjustmentsData);
 
         const createdData = await createdResponse.json();
         const disbursedData = await disbursedResponse.json();
