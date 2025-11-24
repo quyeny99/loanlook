@@ -40,6 +40,7 @@ import {
   OVERDUE_CUSTOM_STATUS,
   OVERDUE_CUSTOM_STATUS_LABELS_EN,
   OVERDUE_CUSTOM_STATUS_COLORS,
+  getRowColorByDueDays,
   type OverdueCustomStatus,
 } from "@/lib/constants";
 
