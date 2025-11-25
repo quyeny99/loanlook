@@ -6,7 +6,6 @@ import {
   isWithinInterval,
   startOfDay,
   endOfDay,
-  getMonth,
 } from "date-fns";
 import type {
   Application,
@@ -66,10 +65,10 @@ export function filterAdjustmentsByDateRange(
   endDate: Date | undefined
 ): Adjustment[] {
   if (!startDate || !endDate) return [];
-  
+
   const start = startOfDay(startDate);
   const end = endOfDay(endDate);
-  
+
   return adjustments.filter((adj) => {
     if (adj.type !== "disbursement") return false;
     const adjDate = parseISO(adj.date);
@@ -95,18 +94,18 @@ export function calculateLoanStatistics(applications: Application[]) {
     (acc, app) => acc + (app.loanapp__disbursement || 0),
     0
   );
-  
+
   const totalCommission = applications.reduce(
     (acc, app) => acc + (app.commission || 0),
     0
   );
-  
+
   const averageLoanTerm =
     applications.length > 0
       ? applications.reduce((acc, app) => acc + (app.approve_term || 0), 0) /
         applications.length
       : 0;
-  
+
   const commissionCount = applications.filter((app) => app.commission).length;
 
   return {
@@ -125,7 +124,7 @@ export function generatePaperData(applications: Application[]) {
     { name: "Căn cước công dân", code: "CCCD", value: 0, fill: "#3b82f6" },
     { name: "Hộ chiếu", code: "HC", value: 0, fill: "#a855f7" },
   ];
-  
+
   applications.forEach((app) => {
     const code = app.legal_type__code || "Unknown";
     const existing = paperData.find((item) => item.code === code);
@@ -133,7 +132,7 @@ export function generatePaperData(applications: Application[]) {
       existing.value += 1;
     }
   });
-  
+
   return paperData;
 }
 
@@ -212,21 +211,20 @@ export function generateStatusData(applications: Application[]) {
  * Generate type data (product types) chart data
  */
 export function generateTypeData(applications: Application[]) {
-  return applications
-    .reduce((acc, app) => {
-      const name = app.product__type__en || "Unknown";
-      const existing = acc.find((item) => item.name === name);
-      if (existing) {
-        existing.value += 1;
-      } else {
-        acc.push({
-          name,
-          value: 1,
-          fill: CHART_COLORS[acc.length % CHART_COLORS.length],
-        });
-      }
-      return acc;
-    }, [] as { name: string; value: number; fill: string }[]);
+  return applications.reduce((acc, app) => {
+    const name = app.product__type__en || "Unknown";
+    const existing = acc.find((item) => item.name === name);
+    if (existing) {
+      existing.value += 1;
+    } else {
+      acc.push({
+        name,
+        value: 1,
+        fill: CHART_COLORS[acc.length % CHART_COLORS.length],
+      });
+    }
+    return acc;
+  }, [] as { name: string; value: number; fill: string }[]);
 }
 
 /**
@@ -238,7 +236,7 @@ export function generateSourceData(applications: Application[]) {
     { name: "CTV", Applications: 0 },
     { name: "Website", Applications: 0 },
   ];
-  
+
   applications.forEach((app) => {
     const sourceName = app.source__name || "Unknown";
     const source = sourceData.find((s) => s.name === sourceName);
@@ -246,7 +244,7 @@ export function generateSourceData(applications: Application[]) {
       source.Applications += 1;
     }
   });
-  
+
   return sourceData;
 }
 
@@ -363,8 +361,7 @@ export function filterStatementsByMonth(
     try {
       const paymentDate = parseISO(statement.payment_date);
       return (
-        paymentDate.getFullYear() === year &&
-        paymentDate.getMonth() === month
+        paymentDate.getFullYear() === year && paymentDate.getMonth() === month
       );
     } catch {
       const targetYearMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -387,8 +384,7 @@ export function filterServiceFeesByMonth(
     try {
       const paymentDate = parseISO(fee.payment_date);
       return (
-        paymentDate.getFullYear() === year &&
-        paymentDate.getMonth() === month
+        paymentDate.getFullYear() === year && paymentDate.getMonth() === month
       );
     } catch {
       const targetYearMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -447,4 +443,3 @@ export function calculateEstimatedProfit(
     0
   );
 }
-

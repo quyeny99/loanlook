@@ -33,7 +33,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { type LoanServiceFee } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
-import { currencyFormatter } from "@/lib/constants";
+import { FormattedNumberInput } from "@/components/formatted-number-input";
 
 const formSchema = z.object({
   loan_id: z.string().min(1, "Mã khoản vay là bắt buộc."),
@@ -94,77 +94,6 @@ const parseDateForDisplay = (
     return undefined;
   }
 };
-
-const FormattedNumberInput = React.forwardRef<
-  HTMLInputElement,
-  Omit<React.ComponentProps<typeof Input>, "onChange" | "value"> & {
-    value: number;
-    onChange: (value: number) => void;
-  }
->(({ value, onChange, onBlur, ...props }, ref) => {
-  const [displayValue, setDisplayValue] = React.useState(
-    currencyFormatter.format(value)
-  );
-
-  React.useEffect(() => {
-    setDisplayValue(currencyFormatter.format(value));
-  }, [value]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value;
-    const numericValue = Number(rawValue.replace(/\./g, "").replace(/,/g, "."));
-
-    if (!isNaN(numericValue)) {
-      onChange(numericValue);
-      setDisplayValue(rawValue);
-    } else if (rawValue === "") {
-      onChange(0);
-      setDisplayValue("");
-    }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value;
-    const numericValue = Number(rawValue.replace(/\./g, "").replace(/,/g, "."));
-    if (!isNaN(numericValue)) {
-      setDisplayValue(currencyFormatter.format(numericValue));
-    } else {
-      setDisplayValue(currencyFormatter.format(value));
-    }
-    onBlur?.(e);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (
-      !/[0-9]/.test(e.key) &&
-      ![
-        "Backspace",
-        "Tab",
-        "Enter",
-        "ArrowLeft",
-        "ArrowRight",
-        "Delete",
-        "Home",
-        "End",
-      ].includes(e.key)
-    ) {
-      e.preventDefault();
-    }
-  };
-
-  return (
-    <Input
-      ref={ref}
-      {...props}
-      value={displayValue}
-      onChange={handleInputChange}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      onFocus={(e) => e.target.select()}
-    />
-  );
-});
-FormattedNumberInput.displayName = "FormattedNumberInput";
 
 type AddServiceFeeDialogProps = {
   onSave: (
