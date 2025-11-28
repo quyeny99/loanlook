@@ -2,6 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   type Application,
@@ -657,18 +664,7 @@ export default function MonthlyReportPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center text-sm text-muted-foreground">
-        <span
-          className="cursor-pointer"
-          onClick={() => (window.location.href = "/reports")}
-        >
-          Reports
-        </span>
-        <ChevronRight className="h-4 w-4" />
-        <span className="font-semibold text-foreground">2. Monthly</span>
-      </div>
-
-      <div className="flex items-center justify-between mt-6 mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Monthly Loan Report for the Year
           <Button
@@ -680,15 +676,21 @@ export default function MonthlyReportPage() {
             <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </h1>
+        <Select value={year} onValueChange={setYear}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select year" />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((y) => (
+              <SelectItem key={y} value={y}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <SummaryCards
-        reportData={reportData}
-        year={year}
-        setYear={setYear}
-        years={years}
-        canViewAll={canViewAll}
-      />
+      <SummaryCards reportData={reportData} canViewAll={canViewAll} />
 
       {isAdmin && <MonthlyFinancialsChart data={reportData.monthlyData} />}
 

@@ -2,7 +2,6 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type SummaryCardsProps = {
     reportData: {
@@ -30,9 +29,6 @@ type SummaryCardsProps = {
         totalCollectedServiceFeesVAT: number;
         totalCollectedServiceFeesExclVAT: number;
     }
-    year: string;
-    setYear: (year: string) => void;
-    years: string[];
     canViewAll: boolean;
 };
 
@@ -42,7 +38,7 @@ const currencyFormatter = new Intl.NumberFormat('de-DE', {
     maximumFractionDigits: 0,
 });
 
-export default function SummaryCards({ reportData, year, setYear, years, canViewAll }: SummaryCardsProps) {
+export default function SummaryCards({ reportData, canViewAll }: SummaryCardsProps) {
     // Use VAT amounts directly from loan_statements
     const collectedInterestVAT = reportData.totalInterestVAT || 0;
     const collectedFeeVAT = reportData.totalManagementFeeVAT || 0;
@@ -211,21 +207,6 @@ export default function SummaryCards({ reportData, year, setYear, years, canView
                     </Card>
                 </>
             )}
-            <Card>
-                <CardHeader><CardTitle className='text-sm font-medium'>Select Year</CardTitle></CardHeader>
-                <CardContent>
-                    <Select value={year} onValueChange={setYear}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {years.map(y => (
-                          <SelectItem key={y} value={y}>{y}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                </CardContent>
-            </Card>
       </div>
     );
 }

@@ -10,9 +10,10 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
-import { RefreshCw, ChevronRight } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SummaryCards from "@/components/reports/date-range/summary-cards";
+import { DateRangePicker } from "@/components/date-range/date-range-picker";
 import LegalDocTypeChart from "@/components/reports/shared/legal-doc-type-chart";
 import LoanRegionsChart from "@/components/reports/date-range/loan-regions-chart";
 import StatusChart from "@/components/reports/date-range/status-chart";
@@ -601,18 +602,7 @@ export default function DateRangeReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center text-sm text-muted-foreground">
-        <span
-          className="cursor-pointer"
-          onClick={() => (window.location.href = "/reports")}
-        >
-          Reports
-        </span>
-        <ChevronRight className="h-4 w-4" />
-        <span className="font-semibold text-foreground">3. Date Range</span>
-      </div>
-
-      <div className="flex items-center justify-between mt-6 mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Loan Report by Date Range
           <Button
@@ -624,6 +614,15 @@ export default function DateRangeReportsPage() {
             <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </h1>
+        <DateRangePicker
+          initialDateFrom={fromDate}
+          initialDateTo={toDate}
+          onUpdate={(values) => {
+            setFromDate(values.range.from);
+            setToDate(values.range.to);
+          }}
+          showCompare={false}
+        />
       </div>
 
       <SummaryCards

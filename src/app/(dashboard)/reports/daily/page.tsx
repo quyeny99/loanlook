@@ -10,6 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ChevronRight } from "lucide-react";
 import SummaryCards from "@/components/reports/daily/summary-cards";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import LegalDocTypeChart from "@/components/reports/shared/legal-doc-type-chart";
 import LoanAreasChart from "@/components/reports/daily/loan-areas-chart";
 import StatusChart from "@/components/reports/daily/status-chart";
@@ -294,18 +302,7 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center text-sm text-muted-foreground">
-        <span
-          className="cursor-pointer"
-          onClick={() => (window.location.href = "/reports")}
-        >
-          Reports
-        </span>
-        <ChevronRight className="h-4 w-4" />
-        <span className="font-semibold text-foreground">1. Daily</span>
-      </div>
-
-      <div className="flex items-center justify-between mt-6 mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           Daily Report
           <Button
@@ -317,13 +314,34 @@ export default function ReportsPage() {
             <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </h1>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"outline"}
+              className={cn(
+                "w-[240px] justify-start text-left font-normal",
+                !date && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? format(date, "dd/MM/yyyy") : <span>DD/MM/YYYY</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={(day) => day && setDate(day)}
+              defaultMonth={date}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <SummaryCards
         reportData={reportData}
         collectedAmount={collectedAmount}
-        date={date}
-        setDate={setDate}
         canViewAll={canViewAll}
         collectedServiceFees={reportData.collectedServiceFees}
       />

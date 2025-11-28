@@ -1,5 +1,9 @@
-import Header from "@/components/header";
 import { AuthGuard } from "@/components/auth-guard";
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+} from "@/components/ui/sidebar";
 
 export default function DashboardLayout({
   children,
@@ -8,10 +12,14 @@ export default function DashboardLayout({
 }>) {
   return (
     <AuthGuard>
-      <div>
-        <Header />
-        <div className="pt-24 mt-16 p-6 sm:p-8">{children}</div>
-      </div>
+      <SidebarProvider>
+        <DashboardSidebar />
+        <SidebarInset>
+          <div className="flex flex-1 flex-col gap-4 p-4">
+            {children}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
     </AuthGuard>
   );
 }

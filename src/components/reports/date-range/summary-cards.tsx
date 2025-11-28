@@ -150,7 +150,7 @@ export default function SummaryCards({
             <p className="text-2xl font-bold text-orange-500">
               {currencyFormatter.format(reportData.totalCollectedAmount)} ₫
             </p>
-            </div>
+          </div>
           {canViewAll && (
             <div className="mt-2 space-y-1 text-xs text-muted-foreground">
               <div className="grid grid-cols-1 xl:grid-cols-2 items-center gap-2 space-y-1">
@@ -449,74 +449,6 @@ export default function SummaryCards({
           </Card>
         </>
       )}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">From Date</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !fromDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {fromDate ? (
-                  format(fromDate, "dd/MM/yyyy")
-                ) : (
-                  <span>DD/MM/YYYY</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={fromDate}
-                onSelect={setFromDate}
-                defaultMonth={fromDate || new Date()}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">To Date</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !toDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {toDate ? (
-                  format(toDate, "dd/MM/yyyy")
-                ) : (
-                  <span>DD/MM/YYYY</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={toDate}
-                onSelect={setToDate}
-                defaultMonth={toDate || new Date()}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </CardContent>
-      </Card>
     </div>
   );
 }

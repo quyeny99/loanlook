@@ -22,9 +22,12 @@ import { LoanPagination } from "@/components/loan-pagination";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { canUpdate } from "@/lib/utils";
+import { canUpdate, canDelete } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 import { format } from "date-fns";
+import { DeleteProfileDialog } from "@/components/delete-profile-dialog";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 export function ProfilesTable({
   refreshToken = 0,
@@ -43,6 +46,13 @@ export function ProfilesTable({
   const [updatingRoles, setUpdatingRoles] = React.useState<Set<number>>(
     new Set()
   );
+  const [deletingProfiles, setDeletingProfiles] = React.useState<Set<number>>(
+    new Set()
+  );
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [profileToDelete, setProfileToDelete] = React.useState<Profile | null>(
+    null
+  );
   const { toast } = useToast();
   const { currentProfile, loadUserProfile, loginId } = useAuth();
   const router = useRouter();
@@ -50,6 +60,7 @@ export function ProfilesTable({
   const searchParams = useSearchParams();
 
   const canUpdateRole = canUpdate(currentProfile?.role);
+  const canDeleteProfile = canDelete(currentProfile?.role);
 
   const pageParam = searchParams.get("page");
   const pageSizeParam = searchParams.get("pageSize");
@@ -197,6 +208,84 @@ export function ProfilesTable({
     }
   };
 
+  const handleDeleteClick = (profile: Profile) => {
+    setProfileToDelete(profile);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!profileToDelete) return;
+
+    setDeletingProfiles((prev) => new Set(prev).add(profileToDelete.id));
+
+    try {
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", profileToDelete.id);
+
+      if (error) {
+        console.error("Failed to delete profile - Error details:", {
+          error,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        });
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            error.message ||
+            error.details ||
+            "Failed to delete profile. Please check your permissions.",
+        });
+        return;
+      }
+
+      // Remove from local state
+      setProfiles((prev) => prev.filter((p) => p.id !== profileToDelete.id));
+      setTotalCount((prev) => Math.max(0, prev - 1));
+
+      toast({
+        title: "Success",
+        description: "Profile deleted successfully.",
+      });
+
+      // If we're on a page that no longer has items, go to previous page
+      const remainingCount = totalCount - 1;
+      const maxPage = Math.ceil(remainingCount / pageSize);
+      if (page > maxPage && maxPage > 0) {
+        setPage(maxPage);
+      } else {
+        // Refresh to update pagination
+        fetchProfiles();
+      }
+    } catch (error: any) {
+      console.error("Error deleting profile - Exception:", {
+        error,
+        message: error?.message,
+        stack: error?.stack,
+      });
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error?.message || "An error occurred while deleting the profile.",
+      });
+    } finally {
+      setDeletingProfiles((prev) => {
+        const next = new Set(prev);
+        next.delete(profileToDelete.id);
+        return next;
+      });
+      setDeleteDialogOpen(false);
+      setProfileToDelete(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -255,13 +344,16 @@ export function ProfilesTable({
               <TableHead>Role</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Updated At</TableHead>
+              {canDeleteProfile && (
+                <TableHead className="w-[100px]">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {profiles.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={canDeleteProfile ? 7 : 6}
                   className="text-center py-8 text-muted-foreground"
                 >
                   No profiles found.
@@ -310,6 +402,27 @@ export function ProfilesTable({
                         )
                       : "-"}
                   </TableCell>
+                  {canDeleteProfile && (
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteClick(profile)}
+                        disabled={
+                          deletingProfiles.has(profile.id) ||
+                          currentProfile?.id === profile.id
+                        }
+                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title={
+                          currentProfile?.id === profile.id
+                            ? "Cannot delete your own profile"
+                            : "Delete profile"
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}
@@ -320,6 +433,12 @@ export function ProfilesTable({
         currentPage={page}
         totalPages={Math.ceil(totalCount / pageSize)}
         onPageChange={setPage}
+      />
+      <DeleteProfileDialog
+        isOpen={deleteDialogOpen}
+        setIsOpen={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        profile={profileToDelete}
       />
     </div>
   );
